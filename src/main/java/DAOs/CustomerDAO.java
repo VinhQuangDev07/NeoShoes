@@ -1,0 +1,122 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package DAOs;
+
+import Models.Customer;
+import Utils.Common;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+/**
+ *
+ * @author Le Huu Nghia - CE181052
+ */
+public class CustomerDAO extends DB.DBContext{
+    
+    public Customer findById(int id) {
+        String sql = "SELECT * FROM dbo.Customer WHERE CustomerId=? AND IsDeleted=0";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer c = new Customer();
+                    c.setId(rs.getInt("CustomerId"));
+                    c.setEmail(rs.getString("Email"));
+                    c.setPasswordHash(rs.getString("PasswordHash"));
+                    c.setName(rs.getString("Name"));
+                    c.setPhoneNumber(rs.getString("PhoneNumber"));
+                    c.setAvatar(rs.getString("Avatar"));
+                    c.setGender(rs.getString("Gender"));
+                    Timestamp cr = rs.getTimestamp("CreatedAt");
+                    Timestamp up = rs.getTimestamp("UpdatedAt");
+                    c.setCreatedAt(cr == null ? null : cr.toLocalDateTime());
+                    c.setUpdatedAt(up == null ? null : up.toLocalDateTime());
+                    c.setIsBlock(rs.getBoolean("IsBlock"));
+                    c.setIsDeleted(rs.getBoolean("IsDeleted"));
+                    return c;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Customer findByEmail(String email) {
+        String sql = "SELECT * FROM dbo.Customer WHERE Email=? AND IsDeleted=0";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Customer c = new Customer();
+                    c.setId(rs.getInt("CustomerId"));
+                    c.setEmail(rs.getString("Email"));
+                    c.setPasswordHash(rs.getString("PasswordHash"));
+                    c.setName(rs.getString("Name"));
+                    c.setPhoneNumber(rs.getString("PhoneNumber"));
+                    c.setAvatar(rs.getString("Avatar"));
+                    c.setGender(rs.getString("Gender"));
+                    Timestamp cr = rs.getTimestamp("CreatedAt");
+                    Timestamp up = rs.getTimestamp("UpdatedAt");
+                    c.setCreatedAt(cr == null ? null : cr.toLocalDateTime());
+                    c.setUpdatedAt(up == null ? null : up.toLocalDateTime());
+                    c.setIsBlock(rs.getBoolean("IsBlock"));
+                    c.setIsDeleted(rs.getBoolean("IsDeleted"));
+                    return c;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateProfile(int id, String name, String phone, String avatar, String gender) {
+        String sql = "UPDATE dbo.Customer SET Name=?, PhoneNumber=?, Avatar=?, Gender=?, UpdatedAt=? WHERE CustomerId=? AND IsDeleted=0";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setString(2, phone);
+            ps.setString(3, avatar);
+            ps.setString(4, gender);
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(6, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean changePassword(int id, String currentPlain, String newPlain) {
+        String getSql = "SELECT PasswordHash FROM dbo.Customer WHERE CustomerId=? AND IsDeleted=0";
+        String updSql = "UPDATE dbo.Customer SET PasswordHash=?, UpdatedAt=? WHERE CustomerId=?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(getSql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String oldHash = rs.getString(1);
+                    if (!Common.verifyPassword(currentPlain, oldHash)) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            try (PreparedStatement up = con.prepareStatement(updSql)) {
+                up.setString(1, Common.hashPassword(newPlain));
+                up.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+                up.setInt(3, id);
+                return up.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+}
