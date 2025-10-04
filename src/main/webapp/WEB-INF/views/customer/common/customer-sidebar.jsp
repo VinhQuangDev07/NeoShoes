@@ -16,7 +16,7 @@
                    data-page="profile" 
                    class="nav-link-item">
                     <div class="nav-icon-wrapper">
-                        <i data-lucide="user" class="nav-icon"></i>
+                        <i class="fas fa-user nav-icon"></i>
                     </div>
                     <div class="nav-text-wrapper">
                         <span class="nav-title">Profile</span>
@@ -30,7 +30,7 @@
                    data-page="order" 
                    class="nav-link-item">
                     <div class="nav-icon-wrapper">
-                        <i data-lucide="shopping-bag" class="nav-icon"></i>
+                        <i class="fas fa-shopping-bag nav-icon"></i>
                     </div>
                     <div class="nav-text-wrapper">
                         <span class="nav-title">Orders</span>
@@ -38,19 +38,6 @@
                     </div>
                 </a>
 
-                <!-- Vouchers Link -->
-                <a href="${pageContext.request.contextPath}/vouchers" 
-                   id="vouchers" 
-                   data-page="vouchers" 
-                   class="nav-link-item">
-                    <div class="nav-icon-wrapper">
-                        <i data-lucide="ticket" class="nav-icon"></i>
-                    </div>
-                    <div class="nav-text-wrapper">
-                        <span class="nav-title">Vouchers</span>
-                        <p class="nav-description">Your discount codes</p>
-                    </div>
-                </a>
 
             </div>
         </nav>
