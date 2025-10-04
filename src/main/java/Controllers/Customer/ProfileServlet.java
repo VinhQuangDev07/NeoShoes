@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.Objects;
 
 /**
  *
@@ -44,18 +45,17 @@ public class ProfileServlet extends HttpServlet {
 //        int customerId = (int) session.getAttribute("customerId");
 
         int customerId = Integer.parseInt(request.getParameter("id"));
-        
+
         Customer customer = customerDAO.findById(customerId);
-        
+
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
-
         if (customer != null) {
             request.setAttribute("customer", customer);
         }
-        
+
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
 //        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);
     }
@@ -85,11 +85,28 @@ public class ProfileServlet extends HttpServlet {
         boolean success = false;
 
         if ("updateProfile".equals(action)) {
+
+            Customer currentCustomer = customerDAO.findById(customerId);
+
             // ====== Update profile ======
             String name = request.getParameter("name");
             String phone = request.getParameter("phone");
             String avatar = request.getParameter("avatar");
             String gender = request.getParameter("gender");
+
+            boolean changed = false;
+            if (!Objects.equals(name, currentCustomer.getName())) {
+                changed = true;
+            }
+            if (!Objects.equals(phone, currentCustomer.getPhoneNumber())) {
+                changed = true;
+            }
+            if (!Objects.equals(avatar, currentCustomer.getAvatar())) {
+                changed = true;
+            }
+            if (!Objects.equals(gender, currentCustomer.getGender())) {
+                changed = true;
+            }
 
             success = customerDAO.updateProfile(customerId, name, phone, avatar, gender);
             if (success) {
