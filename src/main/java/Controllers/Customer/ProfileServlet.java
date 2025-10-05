@@ -4,7 +4,9 @@
  */
 package Controllers.Customer;
 
+import DAOs.AddressDAO;
 import DAOs.CustomerDAO;
+import Models.Address;
 import Models.Customer;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,6 +16,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -36,27 +42,39 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        AddressDAO addressDAO = new AddressDAO();
+        List<Address> addressList;
+
 //        HttpSession session = request.getSession(false);
 //        if (session == null || session.getAttribute("customerId") == null) {
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
-
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        
-        Customer customer = customerDAO.findById(customerId);
-        
+//        int customerId = Integer.parseInt(request.getParameter("id"));
+//        
+//        Customer customer = customerDAO.findById(customerId);
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
+//
+//        if (customer != null) {
+//            request.setAttribute("customer", customer);
+//        }
+        int customerId = 2;
+        Customer customer = customerDAO.findById(customerId);
+        request.setAttribute("customer", customer);
 
-        if (customer != null) {
-            request.setAttribute("customer", customer);
+        try {
+            addressList = addressDAO.getAllAddressByCustomerId(customerId);
+            request.setAttribute("addressList", addressList);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
+
 //        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);
     }
 
