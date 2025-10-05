@@ -4,7 +4,7 @@
  */
 package Controllers.Customer;
 
-import DAOs.CustomerDAO;
+import DAO.CustomerDAO;
 import Models.Customer;
 import Utils.CloudinaryConfig;
 import java.io.IOException;
