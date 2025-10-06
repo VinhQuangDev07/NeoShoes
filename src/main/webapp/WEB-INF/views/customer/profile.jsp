@@ -21,7 +21,7 @@
         .form-floating {
             position: relative;
             margin-bottom: 15px;
-        }
+        }      
 
         .customer-sidebar {
             height: 326px;
@@ -207,7 +207,7 @@
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
-                                <form method="post" id="profileForm"
+                                <form method="post" id="profileForm" 
                                       action="${pageContext.request.contextPath}/profile" 
                                       enctype="multipart/form-data">
                                     <input type="hidden" name="id" value="${customer.id}"/>
@@ -327,7 +327,8 @@
                         }
                     });
                 });
-// avatar upload preview
+
+                // avatar upload preview
                 const avatarUpload = document.getElementById('avatarUpload');
                 const avatarInput = document.getElementById('avatarInput');
                 const avatarPreview = document.getElementById('avatarPreview');
@@ -377,7 +378,7 @@
                         reader.readAsDataURL(file);
                     }
                 });
-
+                
                 // PROFILE FORM
                 const profileForm = document.getElementById("profileForm");
                 const nameInput = document.getElementById("name");
