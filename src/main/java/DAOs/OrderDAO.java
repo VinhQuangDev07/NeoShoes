@@ -32,8 +32,8 @@ public class OrderDAO extends DBContext {
         try {
             Connection con = getConnection();
             if (con == null) {
-                System.out.println("❌ Database connection failed - returning sample data");
-                return getSampleOrders(customerId);
+                System.out.println("❌ Database connection failed");
+                return new ArrayList<>();
             }
             System.out.println("✅ Database connected successfully");
             
@@ -75,14 +75,12 @@ public class OrderDAO extends DBContext {
         } catch (SQLException e) {
             System.out.println("❌ SQL Error: " + e.getMessage());
             e.printStackTrace();
-            // Return sample data on error
-            return getSampleOrders(customerId);
+            return new ArrayList<>();
         }
         
-        // If no orders found, return sample data for demo
+        // If no orders found, return empty list
         if (orders.isEmpty()) {
-            System.out.println("⚠️ No orders found in database - returning sample data");
-            return getSampleOrders(customerId);
+            System.out.println("⚠️ No orders found in database");
         }
         
         return orders;
@@ -98,7 +96,7 @@ public class OrderDAO extends DBContext {
         try {
             Connection con = getConnection();
             if (con == null) {
-                return getSampleOrderItems(orderId);
+                return new ArrayList<>();
             }
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setInt(1, orderId);
@@ -119,65 +117,17 @@ public class OrderDAO extends DBContext {
             }
         } catch (SQLException e) {
             System.out.println("❌ Error loading order items: " + e.getMessage());
-            return getSampleOrderItems(orderId);
+            return new ArrayList<>();
         }
         
-        // If no items found, return sample items
+        // If no items found, return empty list
         if (items.isEmpty()) {
-            return getSampleOrderItems(orderId);
+            System.out.println("⚠️ No items found for order: " + orderId);
         }
         
         return items;
     }
     
-    private List<OrderItem> getSampleOrderItems(int orderId) {
-        List<OrderItem> items = new ArrayList<>();
-        
-        // Sample items based on order ID
-        if (orderId == 1) {
-            OrderItem item1 = new OrderItem();
-            item1.setId(1);
-            item1.setOrderId(orderId);
-            item1.setProductName("Nike Air Max 90");
-            item1.setColor("Black");
-            item1.setQuantity(1);
-            item1.setUnitPrice(new BigDecimal("150.00"));
-            item1.setLineTotal(new BigDecimal("150.00"));
-            items.add(item1);
-            
-            OrderItem item2 = new OrderItem();
-            item2.setId(2);
-            item2.setOrderId(orderId);
-            item2.setProductName("Adidas Ultraboost 22");
-            item2.setColor("Core Black");
-            item2.setQuantity(1);
-            item2.setUnitPrice(new BigDecimal("180.00"));
-            item2.setLineTotal(new BigDecimal("180.00"));
-            items.add(item2);
-        } else if (orderId == 2) {
-            OrderItem item = new OrderItem();
-            item.setId(3);
-            item.setOrderId(orderId);
-            item.setProductName("Converse Chuck 70 High");
-            item.setColor("Black");
-            item.setQuantity(1);
-            item.setUnitPrice(new BigDecimal("85.00"));
-            item.setLineTotal(new BigDecimal("85.00"));
-            items.add(item);
-        } else if (orderId == 3) {
-            OrderItem item = new OrderItem();
-            item.setId(4);
-            item.setOrderId(orderId);
-            item.setProductName("Vans Old Skool");
-            item.setColor("Black");
-            item.setQuantity(1);
-            item.setUnitPrice(new BigDecimal("75.00"));
-            item.setLineTotal(new BigDecimal("75.00"));
-            items.add(item);
-        }
-        
-        return items;
-    }
     
     public int createOrder(Order order) {
         String sql = "INSERT INTO [Order] (CustomerId, Status, SubtotalAmount, DiscountAmount, ShippingFee, TotalAmount, VoucherCode, PlacedAt, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -260,102 +210,6 @@ public class OrderDAO extends DBContext {
         }
     }
     
-    private List<Order> getSampleOrders(int customerId) {
-        List<Order> sampleOrders = new ArrayList<>();
-        
-        // Sample Order 1 - Delivered
-        Order order1 = new Order();
-        order1.setId(1001);
-        order1.setCustomerId(customerId);
-        order1.setSubtotalAmount(new BigDecimal("289.99"));
-        order1.setDiscountAmount(new BigDecimal("0.00"));
-        order1.setTotalAmount(new BigDecimal("299.99"));
-        order1.setShippingFee(new BigDecimal("10.00"));
-        order1.setStatus("COMPLETED");
-        order1.setCreatedAt(LocalDateTime.of(2025, 9, 29, 1, 7, 50));
-        order1.setUpdatedAt(LocalDateTime.of(2025, 9, 30, 1, 7, 50));
-        
-        // Add items to order1
-        List<OrderItem> items1 = new ArrayList<>();
-        OrderItem item1 = new OrderItem();
-        item1.setId(1);
-        item1.setOrderId(1001);
-        item1.setProductName("Nike Air Max 270");
-        item1.setColor("Black");
-        item1.setQuantity(1);
-        item1.setUnitPrice(new BigDecimal("189.99"));
-        item1.setLineTotal(new BigDecimal("189.99"));
-        items1.add(item1);
-        
-        OrderItem item2 = new OrderItem();
-        item2.setId(2);
-        item2.setOrderId(1001);
-        item2.setProductName("Adidas Ultraboost 22");
-        item2.setColor("White");
-        item2.setQuantity(1);
-        item2.setUnitPrice(new BigDecimal("99.99"));
-        item2.setLineTotal(new BigDecimal("99.99"));
-        items1.add(item2);
-        
-        order1.setItems(items1);
-        sampleOrders.add(order1);
-        
-        // Sample Order 2 - Shipping
-        Order order2 = new Order();
-        order2.setId(1002);
-        order2.setCustomerId(customerId);
-        order2.setSubtotalAmount(new BigDecimal("149.99"));
-        order2.setDiscountAmount(new BigDecimal("0.00"));
-        order2.setTotalAmount(new BigDecimal("159.99"));
-        order2.setShippingFee(new BigDecimal("10.00"));
-        order2.setStatus("SHIPPED");
-        order2.setCreatedAt(LocalDateTime.of(2025, 10, 1, 1, 7, 50));
-        order2.setUpdatedAt(LocalDateTime.of(2025, 10, 2, 1, 7, 50));
-        
-        // Add items to order2
-        List<OrderItem> items2 = new ArrayList<>();
-        OrderItem item3 = new OrderItem();
-        item3.setId(3);
-        item3.setOrderId(1002);
-        item3.setProductName("Jordan 1 Retro High");
-        item3.setColor("Red");
-        item3.setQuantity(1);
-        item3.setUnitPrice(new BigDecimal("149.99"));
-        item3.setLineTotal(new BigDecimal("149.99"));
-        items2.add(item3);
-        
-        order2.setItems(items2);
-        sampleOrders.add(order2);
-        
-        // Sample Order 3 - Pending
-        Order order3 = new Order();
-        order3.setId(1003);
-        order3.setCustomerId(customerId);
-        order3.setSubtotalAmount(new BigDecimal("79.99"));
-        order3.setDiscountAmount(new BigDecimal("0.00"));
-        order3.setTotalAmount(new BigDecimal("89.99"));
-        order3.setShippingFee(new BigDecimal("10.00"));
-        order3.setStatus("PENDING");
-        order3.setCreatedAt(LocalDateTime.of(2025, 10, 3, 23, 7, 50));
-        order3.setUpdatedAt(LocalDateTime.of(2025, 10, 3, 23, 7, 50));
-        
-        // Add items to order3
-        List<OrderItem> items3 = new ArrayList<>();
-        OrderItem item4 = new OrderItem();
-        item4.setId(4);
-        item4.setOrderId(1003);
-        item4.setProductName("Converse Chuck Taylor");
-        item4.setColor("Blue");
-        item4.setQuantity(1);
-        item4.setUnitPrice(new BigDecimal("79.99"));
-        item4.setLineTotal(new BigDecimal("79.99"));
-        items3.add(item4);
-        
-        order3.setItems(items3);
-        sampleOrders.add(order3);
-        
-        return sampleOrders;
-    }
 
     public Order findWithItems(int orderId) {
         System.out.println("🔍 OrderDAO.findWithItems() called for Order ID: " + orderId);
@@ -373,16 +227,16 @@ public class OrderDAO extends DBContext {
         try {
             Connection con = getConnection();
             if (con == null) {
-                System.out.println("❌ Database connection failed - returning sample data");
-                return getSampleOrderWithItems(orderId); // Return sample data if DB not available
+                System.out.println("❌ Database connection failed");
+                return null;
             }
             System.out.println("✅ Database connected successfully for order detail");
             PreparedStatement ps = con.prepareStatement(sqlOrder);
             ps.setInt(1, orderId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
-                    System.out.println("⚠️ Order not found in database - returning sample data");
-                    return getSampleOrderWithItems(orderId); // Return sample data if order not found
+                    System.out.println("⚠️ Order not found in database");
+                    return null;
                 }
                 System.out.println("📦 Found order in database: " + orderId);
                 
@@ -440,48 +294,11 @@ public class OrderDAO extends DBContext {
         } catch (SQLException e) {
             System.out.println("❌ SQL Error in findWithItems: " + e.getMessage());
             e.printStackTrace();
-            return getSampleOrderWithItems(orderId); // Return sample data on error
+            return null;
         }
     }
     
-    private Order getSampleOrderWithItems(int orderId) {
-        Order order = new Order();
-        order.setId(orderId);
-        order.setCustomerId(1); // Default customer ID
-        order.setSubtotalAmount(new BigDecimal("289.99"));
-        order.setDiscountAmount(new BigDecimal("0.00"));
-        order.setTotalAmount(new BigDecimal("299.99"));
-        order.setShippingFee(new BigDecimal("10.00"));
-        order.setStatus("COMPLETED");
-        order.setCreatedAt(LocalDateTime.now().minusDays(5));
-        order.setUpdatedAt(LocalDateTime.now().minusDays(1));
-        
-        // Sample order items
-        List<OrderItem> items = new ArrayList<>();
-        
-        OrderItem item1 = new OrderItem();
-        item1.setId(1);
-        item1.setOrderId(orderId);
-        item1.setProductName("Nike Air Max 270");
-        item1.setColor("Black");
-        item1.setQuantity(1);
-        item1.setUnitPrice(new BigDecimal("189.99"));
-        item1.setLineTotal(new BigDecimal("189.99"));
-        items.add(item1);
-        
-        OrderItem item2 = new OrderItem();
-        item2.setId(2);
-        item2.setOrderId(orderId);
-        item2.setProductName("Adidas Ultraboost 22");
-        item2.setColor("White");
-        item2.setQuantity(1);
-        item2.setUnitPrice(new BigDecimal("99.99"));
-        item2.setLineTotal(new BigDecimal("99.99"));
-        items.add(item2);
-        
-        order.setItems(items);
-        return order;
-    }
 }
+
 
 

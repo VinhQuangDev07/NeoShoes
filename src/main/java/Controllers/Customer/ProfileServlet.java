@@ -44,17 +44,17 @@ public class ProfileServlet extends HttpServlet {
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
 
-        int customerId = Integer.parseInt(request.getParameter("id"));
-
+//        int customerId = Integer.parseInt(request.getParameter("id"));
+        int customerId = 1; 
         Customer customer = customerDAO.findById(customerId);
-
+ request.setAttribute("customer", customer);
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
-        if (customer != null) {
-            request.setAttribute("customer", customer);
-        }
+//        if (customer != null) {
+//            request.setAttribute("customer", customer);
+//        }
 
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
 //        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);

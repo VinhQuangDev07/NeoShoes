@@ -292,7 +292,7 @@
                 gap: 12px;
             }
             .place-order-btn {
-                background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
+                background: #0b5ed7;
                 color: white;
                 border: none;
                 padding: 15px 20px;
