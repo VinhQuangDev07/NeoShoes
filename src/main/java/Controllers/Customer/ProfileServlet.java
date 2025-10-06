@@ -4,7 +4,9 @@
  */
 package Controllers.Customer;
 
+import DAOs.AddressDAO;
 import DAOs.CustomerDAO;
+import Models.Address;
 import Models.Customer;
 import Utils.CloudinaryConfig;
 import java.io.IOException;
@@ -15,6 +17,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.servlet.http.Part;
 import java.util.Objects;
 
@@ -40,6 +46,10 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        AddressDAO addressDAO = new AddressDAO();
+        List<Address> addressList;
+
 //        HttpSession session = request.getSession(false);
 //        if (session == null || session.getAttribute("customerId") == null) {
 //            response.sendRedirect(request.getContextPath() + "/login");
@@ -55,11 +65,20 @@ public class ProfileServlet extends HttpServlet {
 //            response.sendError(403);
 //            return;
 //        }
+      
+
         if (customer != null) {
+            try {
+                addressList = addressDAO.getAllAddressByCustomerId(customerId);
+                request.setAttribute("addressList", addressList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             request.setAttribute("customer", customer);
         }
 
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
+
 //        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);
     }
 

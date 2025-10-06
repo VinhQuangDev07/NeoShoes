@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
-    </head>
+    </head> 
     <style>
         /* Validation form */
         .form-floating {
@@ -304,200 +304,355 @@
                                 </form>
                             </div>
                         </div>
+
+                        <!-- Address Management -->                      
+                        <div class="card shadow-sm mt-3 p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="mb-0">Address</h3>
+                                <button type="button" id="toggleAddAddressForm" class="btn btn-primary btn-sm">
+                                    Add New Address
+                                </button>
+                            </div>
+                            <!-- Add Address Form -->
+                            <div class="d-none" id="addAddressCard">
+                                <div class="border rounded p-3 mb-3 bg-light">
+                                    <h5 class="mb-3">Add New Address</h5>
+                                    <form method="post" id="addAddressForm" action="${pageContext.request.contextPath}/address">
+                                        <input type="hidden" name="addressAction" value="addAddress" />
+                                        <input type="hidden" name="customerId" value="${customer.id}" />
+                                        <input type="hidden" name="isDeleted" value="false" />
+
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input name="addressName" type="text" id="addressName" class="form-control" placeholder="Address Name" required />
+                                                    <label for="addressName">Address Name</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input name="recipientName" type="text" id="recipientName" class="form-control" placeholder="Recipient Name" required />
+                                                    <label for="recipientName">Recipient Name</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input name="recipientPhone" type="tel" id="recipientPhone" class="form-control" placeholder="Phone Number" pattern="[\d+\- ]{7,15}" required />
+                                                    <label for="recipientPhone">Phone Number</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-floating">
+                                                    <input name="addressDetails" type="text" id="addressDetails" class="form-control" placeholder="Address Details" required />
+                                                    <label for="addressDetails">Address Details</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <div class="form-check">
+                                                    <input type="checkbox" class="form-check-input" id="isDefault" name="isDefault" value="true" />
+                                                    <label class="form-check-label" for="isDefault">Set as default address</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 d-flex gap-2 justify-content-end">
+                                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('toggleAddAddressForm').click()">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Add Address</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!--Address List-->
+                            <c:forEach var="addr" items="${addressList}">
+                                <div class="border rounded p-3 mb-3">
+                                    <form method="post" action="${pageContext.request.contextPath}/address" id="addressForm-${addr.addressId}">
+                                        <input type="hidden" name="addressAction" value="updateAddress"/>
+                                        <input type="hidden" name="addressId" value="${addr.addressId}"/>
+
+                                        <div class="mb-2">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" name="addressName" 
+                                                       id="addressName-${addr.addressId}" value="${addr.addressName}" readonly/>
+                                                <label for="addressName-${addr.addressId}">Address Name</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" name="recipientName"
+                                                       id="recipientName-${addr.addressId}" value="${addr.recipientName}" readonly/>
+                                                <label for="recipientName-${addr.addressId}">Recipient</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="form-floating">
+                                                <input type="tel" class="form-control" name="recipientPhone"
+                                                       id="recipientPhone-${addr.addressId}" value="${addr.recipientPhone}" 
+                                                       pattern="[\d+\- ]{7,15}" readonly/>
+                                                <label for="recipientPhone-${addr.addressId}">Phone</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" name="addressDetails"
+                                                       id="addressDetails-${addr.addressId}" value="${addr.addressDetails}" readonly/>
+                                                <label for="addressDetails-${addr.addressId}">Details</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="isDefault" value="true"
+                                                       id="isDefault-${addr.addressId}" disabled
+                                                       <c:if test="${addr.isDefault}">checked</c:if>>
+                                                <label class="form-check-label" for="isDefault-${addr.addressId}">Default</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <div id="viewButtons-${addr.addressId}">
+                                                <button type="button" class="btn btn-primary btn-sm" 
+                                                        onclick="enableEdit(${addr.addressId})">Edit</button>
+                                                <button type="button" class="btn btn-danger btn-sm" 
+                                                        onclick="deleteAddress(${addr.addressId})">Delete</button>
+                                            </div>
+
+                                            <div id="editButtons-${addr.addressId}" class="d-none">
+                                                <button type="button" class="btn btn-secondary btn-sm" 
+                                                        onclick="cancelEdit(${addr.addressId}, '${addr.addressName}', '${addr.recipientName}', '${addr.recipientPhone}', '${addr.addressDetails}')">Cancel</button>
+                                                <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </c:forEach>
+                        </div>
                     </div>
                 </div>
-            </div>
+ </div>
 
         </div>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://unpkg.com/lucide@latest"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://unpkg.com/lucide@latest"></script>
+                <script>
+                                                            document.addEventListener("DOMContentLoaded", () => {
+                                                                const btnToggle = document.getElementById("togglePasswordForm");
+                                                                const passwordCard = document.getElementById("passwordCard");
 
-        <script>
-                document.addEventListener("DOMContentLoaded", () => {
-                    const btnToggle = document.getElementById("togglePasswordForm");
-                    const passwordCard = document.getElementById("passwordCard");
+                                                                btnToggle.addEventListener("click", () => {
+                                                                    passwordCard.classList.toggle("d-none");
+                                                                    if (!passwordCard.classList.contains("d-none")) {
+                                                                        btnToggle.innerText = "Hide Change Password";
+                                                                    } else {
+                                                                        btnToggle.innerText = "Change Password";
+                                                                    }
+                                                                });
 
-                    btnToggle.addEventListener("click", () => {
-                        passwordCard.classList.toggle("d-none");
-                        if (!passwordCard.classList.contains("d-none")) {
-                            btnToggle.innerText = "Hide Change Password";
-                        } else {
-                            btnToggle.innerText = "Change Password";
-                        }
-                    });
-                });
+                                                                // Toggle Add Address Form
+                                                                const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
+                                                                const addAddressCard = document.getElementById("addAddressCard");
 
-                // avatar upload preview
-                const avatarUpload = document.getElementById('avatarUpload');
-                const avatarInput = document.getElementById('avatarInput');
-                const avatarPreview = document.getElementById('avatarPreview');
+                                                                btnToggleAddAddress.addEventListener("click", () => {
+                                                                    addAddressCard.classList.toggle("d-none");
+                                                                    if (!addAddressCard.classList.contains("d-none")) {
+                                                                        btnToggleAddAddress.innerText = "Hide Form";
+                                                                        // Scroll to form
+                                                                        addAddressCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                                                                    } else {
+                                                                        btnToggleAddAddress.innerText = "Add New Address";
+                                                                    }
+                                                                });
+                                                            });
 
-                avatarUpload.addEventListener('click', () => {
-                    avatarInput.click();
-                });
+                                                            // PROFILE FORM
+                                                            const profileForm = document.getElementById("profileForm");
+                                                            const nameInput = document.getElementById("name");
+                                                            const phoneInput = document.getElementById("phone");
+                                                            const avatarInput = document.getElementById("avatar");
+                                                            const genderSelect = document.getElementById("gender");
 
-                avatarInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        const file = e.target.files[0];
-                        const reader = new FileReader();
+                                                            profileForm.addEventListener("submit", e => {
+                                                                e.preventDefault();
+                                                                if (checkProfileInputs()) {
+                                                                    profileForm.submit();
+                                                                }
+                                                            });
 
-                        reader.onload = (e) => {
-                            avatarPreview.src = e.target.result;
-                            avatarPreview.style.display = 'block';
-                        };
+                                                            function checkProfileInputs() {
+                                                                let valid = true;
 
-                        reader.readAsDataURL(file);
-                    }
-                });
+                                                                const nameValue = nameInput.value.trim();
+                                                                const phoneValue = phoneInput.value.trim();
+                                                                const avatarValue = avatarInput.value.trim();
+                                                                const genderValue = genderSelect.value;
 
-                // Handle drag and drop for avatar
-                avatarUpload.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    avatarUpload.style.borderColor = '#0d6efd';
-                });
+                                                                if (nameValue === "" || nameValue.length < 3) {
+                                                                    setErrorInput(nameInput, "Full name must be at least 3 characters.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(nameInput);
+                                                                }
 
-                avatarUpload.addEventListener('dragleave', () => {
-                    avatarUpload.style.borderColor = '#dee2e6';
-                });
+                                                                if (phoneValue === "" || (phoneValue !== "" && !/^(0[0-9]{9})$/.test(phoneValue))) {
+                                                                    setErrorInput(phoneInput, "Phone must start with 0 and be 10 digits.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(phoneInput);
+                                                                }
 
-                avatarUpload.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    avatarUpload.style.borderColor = '#dee2e6';
+                                                                if (avatarValue !== "" && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(avatarValue)) {
+                                                                    setErrorInput(avatarInput, "Avatar must be a valid image URL.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(avatarInput);
+                                                                }
 
-                    if (e.dataTransfer.files.length > 0) {
-                        avatarInput.files = e.dataTransfer.files;
-                        const file = e.dataTransfer.files[0];
-                        const reader = new FileReader();
+                                                                if (genderValue === "") {
+                                                                    setErrorInput(genderSelect, "Please select gender.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(genderSelect);
+                                                                }
 
-                        reader.onload = (e) => {
-                            avatarPreview.src = e.target.result;
-                            avatarPreview.style.display = 'block';
-                        };
+                                                                return valid;
+                                                            }
 
-                        reader.readAsDataURL(file);
-                    }
-                });
-                
-                // PROFILE FORM
-                const profileForm = document.getElementById("profileForm");
-                const nameInput = document.getElementById("name");
-                const phoneInput = document.getElementById("phone");
-                const genderSelect = document.getElementById("gender");
+                                                            // PASSWORD FORM
+                                                            const passwordForm = document.getElementById("passwordForm");
+                                                            const currentPassword = document.getElementById("currentPassword");
+                                                            const newPassword = document.getElementById("newPassword");
+                                                            const confirmPassword = document.getElementById("confirmPassword");
 
-                profileForm.addEventListener("submit", e => {
-                    e.preventDefault();
-                    if (checkProfileInputs()) {
-                        profileForm.submit();
-                    }
-                });
+                                                            passwordForm.addEventListener("submit", e => {
+                                                                e.preventDefault();
+                                                                if (checkPasswordInputs()) {
+                                                                    passwordForm.submit();
+                                                                }
+                                                            });
 
-                function checkProfileInputs() {
-                    let valid = true;
+                                                            function checkPasswordInputs() {
+                                                                let valid = true;
 
-                    const nameValue = nameInput.value.trim();
-                    const phoneValue = phoneInput.value.trim();
-                    const genderValue = genderSelect.value;
+                                                                if (currentPassword.value.trim() === "") {
+                                                                    setErrorInput(currentPassword, "Current password cannot be blank.");
+                                                                    valid = false;
+                                                                } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(currentPassword.value)) {
+                                                                    setErrorInput(currentPassword, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(currentPassword);
+                                                                }
 
-                    if (nameValue === "" || nameValue.length < 3) {
-                        setErrorInput(nameInput, "Full name must be at least 3 characters.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(nameInput);
-                    }
+                                                                if (newPassword.value.trim() === "") {
+                                                                    setErrorInput(newPassword, "New password cannot be blank.");
+                                                                    valid = false;
+                                                                } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(newPassword.value)) {
+                                                                    setErrorInput(newPassword, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(newPassword);
+                                                                }
 
-                    if (phoneValue === "" || (phoneValue !== "" && !/^(0[0-9]{9})$/.test(phoneValue))) {
-                        setErrorInput(phoneInput, "Phone must start with 0 and be 10 digits.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(phoneInput);
-                    }
+                                                                if (confirmPassword.value.trim() === "") {
+                                                                    setErrorInput(confirmPassword, "Confirm password cannot be blank.");
+                                                                    valid = false;
+                                                                } else if (confirmPassword.value !== newPassword.value) {
+                                                                    setErrorInput(confirmPassword, "Passwords do not match.");
+                                                                    valid = false;
+                                                                } else {
+                                                                    setSuccessInput(confirmPassword);
+                                                                }
 
-                    if (genderValue === "") {
-                        setErrorInput(genderSelect, "Please select gender.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(genderSelect);
-                    }
+                                                                return valid;
+                                                            }
 
-                    return valid;
-                }
+                                                            // Initialize Lucide icons
+                                                            lucide.createIcons();
 
-                // PASSWORD FORM
-                const passwordForm = document.getElementById("passwordForm");
-                const currentPassword = document.getElementById("currentPassword");
-                const newPassword = document.getElementById("newPassword");
-                const confirmPassword = document.getElementById("confirmPassword");
+                                                            // Set active menu based on current page
+                                                            document.addEventListener("DOMContentLoaded", () => {
+                                                                const currentPath = window.location.pathname;
+                                                                const menuLinks = document.querySelectorAll('.nav-link-item');
 
-                passwordForm.addEventListener("submit", e => {
-                    e.preventDefault();
-                    if (checkPasswordInputs()) {
-                        passwordForm.submit();
-                    }
-                });
+                                                                menuLinks.forEach(link => {
+                                                                    const linkHref = link.getAttribute('href');
 
-                function checkPasswordInputs() {
-                    let valid = true;
+                                                                    // Remove active from all
+                                                                    link.classList.remove('active');
 
-                    if (currentPassword.value.trim() === "") {
-                        setErrorInput(currentPassword, "Current password cannot be blank.");
-                        valid = false;
-                    } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(currentPassword.value)) {
-                        setErrorInput(currentPassword, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(currentPassword);
-                    }
+                                                                    // Check if current path matches link href
+                                                                    if (currentPath.includes(linkHref.split('/').pop())) {
+                                                                        link.classList.add('active');
+                                                                    }
+                                                                });
 
-                    if (newPassword.value.trim() === "") {
-                        setErrorInput(newPassword, "New password cannot be blank.");
-                        valid = false;
-                    } else if (!/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(newPassword.value)) {
-                        setErrorInput(newPassword, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(newPassword);
-                    }
+                                                                // Default to profile if no match
+                                                                const hasActive = document.querySelector('.nav-link-item.active');
+                                                                if (!hasActive) {
+                                                                    document.getElementById('profile').classList.add('active');
+                                                                }
+                                                            });
+// Enable/Cancel/Delete Address Functions
+                                                            function enableEdit(addressId) {
+                                                                document.getElementById('addressName-' + addressId).removeAttribute('readonly');
+                                                                document.getElementById('recipientName-' + addressId).removeAttribute('readonly');
+                                                                document.getElementById('recipientPhone-' + addressId).removeAttribute('readonly');
+                                                                document.getElementById('addressDetails-' + addressId).removeAttribute('readonly');
 
-                    if (confirmPassword.value.trim() === "") {
-                        setErrorInput(confirmPassword, "Confirm password cannot be blank.");
-                        valid = false;
-                    } else if (confirmPassword.value !== newPassword.value) {
-                        setErrorInput(confirmPassword, "Passwords do not match.");
-                        valid = false;
-                    } else {
-                        setSuccessInput(confirmPassword);
-                    }
+                                                                const checkbox = document.getElementById('isDefault-' + addressId);
+                                                                if (!checkbox.checked) {
+                                                                    checkbox.removeAttribute('disabled');
+                                                                }
 
-                    return valid;
-                }
+                                                                document.getElementById('viewButtons-' + addressId).classList.add('d-none');
+                                                                document.getElementById('editButtons-' + addressId).classList.remove('d-none');
+                                                            }
 
-                // Initialize Lucide icons
-                lucide.createIcons();
+                                                            function cancelEdit(addressId, originalName, originalRecipient, originalPhone, originalDetails) {
+                                                                document.getElementById('addressName-' + addressId).value = originalName;
+                                                                document.getElementById('recipientName-' + addressId).value = originalRecipient;
+                                                                document.getElementById('recipientPhone-' + addressId).value = originalPhone;
+                                                                document.getElementById('addressDetails-' + addressId).value = originalDetails;
 
-                // Set active menu based on current page
-                document.addEventListener("DOMContentLoaded", () => {
-                    const currentPath = window.location.pathname;
-                    const menuLinks = document.querySelectorAll('.nav-link-item');
+                                                                document.getElementById('addressName-' + addressId).setAttribute('readonly', true);
+                                                                document.getElementById('recipientName-' + addressId).setAttribute('readonly', true);
+                                                                document.getElementById('recipientPhone-' + addressId).setAttribute('readonly', true);
+                                                                document.getElementById('addressDetails-' + addressId).setAttribute('readonly', true);
+                                                                document.getElementById('isDefault-' + addressId).setAttribute('disabled', true);
 
-                    menuLinks.forEach(link => {
-                        const linkHref = link.getAttribute('href');
+                                                                document.getElementById('viewButtons-' + addressId).classList.remove('d-none');
+                                                                document.getElementById('editButtons-' + addressId).classList.add('d-none');
+                                                            }
 
-                        // Remove active from all
-                        link.classList.remove('active');
+                                                            function deleteAddress(addressId) {
+                                                                if (confirm('Are you sure you want to delete this address?')) {
+                                                                    const form = document.createElement('form');
+                                                                    form.method = 'POST';
+                                                                    form.action = '<%= request.getContextPath()%>/address';
 
-                        // Check if current path matches link href
-                        if (currentPath.includes(linkHref.split('/').pop())) {
-                            link.classList.add('active');
-                        }
-                    });
+                                                                    const actionInput = document.createElement('input');
+                                                                    actionInput.type = 'hidden';
+                                                                    actionInput.name = 'addressAction';
+                                                                    actionInput.value = 'deleteAddress';
 
-                    // Default to profile if no match
-                    const hasActive = document.querySelector('.nav-link-item.active');
-                    if (!hasActive) {
-                        document.getElementById('profile').classList.add('active');
-                    }
-                });
-        </script>
-    </body>
-</html>
+                                                                    const idInput = document.createElement('input');
+                                                                    idInput.type = 'hidden';
+                                                                    idInput.name = 'addressId';
+                                                                    idInput.value = addressId;
+
+                                                                    form.appendChild(actionInput);
+                                                                    form.appendChild(idInput);
+                                                                    document.body.appendChild(form);
+                                                                    form.submit();
+                                                                }
+                                                            }
+                </script>
+                </body>
+                </html>
