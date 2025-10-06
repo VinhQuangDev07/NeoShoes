@@ -33,7 +33,7 @@ public class OrderDetailServlet extends HttpServlet {
 //            return;
 //        }
         
-        int customerId =1;
+        int customerId = 1;
         try {
 //            customerId = (int) session.getAttribute("customerId");
             System.out.println("✅ Customer ID from session: " + customerId);

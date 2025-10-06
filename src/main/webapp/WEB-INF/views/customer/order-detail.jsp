@@ -237,18 +237,137 @@
             .close-btn:hover {
                 background: #0056b3;
             }
+            .cancel-btn {
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 24px;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+            .cancel-btn:hover {
+                background: #c82333;
+            }
+            .cancel-btn:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+            }
+            .cancel-modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+            }
+            .cancel-modal-content {
+                background-color: white;
+                margin: 15% auto;
+                padding: 20px;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            }
+            .cancel-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            .cancel-modal-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: #dc3545;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .cancel-modal-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+            }
+            .cancel-modal-body {
+                margin-bottom: 20px;
+            }
+            .cancel-order-info {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+            }
+            .cancel-info-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+            .cancel-info-item:last-child {
+                margin-bottom: 0;
+            }
+            .cancel-info-label {
+                color: #666;
+                font-weight: 500;
+            }
+            .cancel-info-value {
+                color: #333;
+                font-weight: 600;
+            }
+            .cancel-warning {
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                color: #856404;
+                padding: 12px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .cancel-modal-footer {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+            .cancel-confirm-btn {
+                background: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            .cancel-confirm-btn:hover {
+                background: #c82333;
+            }
+            .cancel-cancel-btn {
+                background: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+            }
+            .cancel-cancel-btn:hover {
+                background: #5a6268;
+            }
         </style>
     </head>
     <body>
         <div class="container">
-            <div class="row">
-                <!-- Sidebar -->
-                <div class="col-lg-3">
-                    <jsp:include page="common/customer-sidebar.jsp"/>
-                </div>
-
+            <div class="row justify-content-center">
                 <!-- Main Content -->
-                <div class="col-lg-9">
+                <div class="col-lg-10 col-xl-8">
                     <div class="order-detail-modal">
                         <!-- Order Header -->
                         <div class="order-header">
@@ -335,7 +454,7 @@
                                                 <i class="fas fa-home"></i>
                                             </c:otherwise>
                                         </c:choose>
-                                    </div>
+                            </div>
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Delivered</div>
@@ -348,10 +467,10 @@
                                                         Not yet
                                                     </c:otherwise>
                                                 </c:choose>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
                             </div>
                         </div>
 
@@ -407,9 +526,64 @@
 
                         <!-- Footer -->
                         <div class="modal-footer">
+                            <c:choose>
+                                <c:when test="${order.status == 'PENDING' || order.status == 'APPROVED'}">
+                                    <button class="cancel-btn" onclick="showCancelModal()">
+                                        <i class="fas fa-times"></i>
+                                        Cancel Order
+                                    </button>
+                                </c:when>
+                                <c:otherwise>
+                                    <button class="cancel-btn" disabled>
+                                        <i class="fas fa-times"></i>
+                                        Cancel Order
+                                    </button>
+                                </c:otherwise>
+                            </c:choose>
                             <button class="close-btn" onclick="window.history.back()">Close</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancel Order Modal -->
+        <div id="cancelModal" class="cancel-modal">
+            <div class="cancel-modal-content">
+                <div class="cancel-modal-header">
+                    <div class="cancel-modal-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Cancel Order
+                    </div>
+                    <button class="cancel-modal-close" onclick="hideCancelModal()">&times;</button>
+                </div>
+                <div class="cancel-modal-body">
+                    <div class="cancel-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Are you sure you want to cancel this order? This action cannot be undone.</span>
+                    </div>
+                    <div class="cancel-order-info">
+                        <div class="cancel-info-item">
+                            <span class="cancel-info-label">Order ID:</span>
+                            <span class="cancel-info-value">#${order.id}</span>
+                        </div>
+                        <div class="cancel-info-item">
+                            <span class="cancel-info-label">Order Status:</span>
+                            <span class="cancel-info-value">${order.status}</span>
+                        </div>
+                        <div class="cancel-info-item">
+                            <span class="cancel-info-label">Total Amount:</span>
+                            <span class="cancel-info-value">$${order.totalAmount}</span>
+                        </div>
+                        <div class="cancel-info-item">
+                            <span class="cancel-info-label">Payment Status:</span>
+                            <span class="cancel-info-value">Completed</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="cancel-modal-footer">
+                    <button class="cancel-cancel-btn" onclick="hideCancelModal()">Keep Order</button>
+                    <button class="cancel-confirm-btn" onclick="confirmCancelOrder()">Confirm Cancel</button>
                 </div>
             </div>
         </div>
@@ -418,6 +592,35 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Custom JS -->
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
+        
+        <script>
+            function showCancelModal() {
+                document.getElementById('cancelModal').style.display = 'block';
+            }
+            
+            function hideCancelModal() {
+                document.getElementById('cancelModal').style.display = 'none';
+            }
+            
+            function confirmCancelOrder() {
+                // Here you would typically make an AJAX call to cancel the order
+                // For now, we'll just show an alert and redirect
+                if (confirm('Order will be cancelled. Refund will be processed if payment was made.')) {
+                    // Simulate API call
+                    alert('Order #${order.id} has been cancelled successfully!');
+                    // Redirect back to orders page
+                    window.location.href = '${pageContext.request.contextPath}/orders';
+                }
+            }
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('cancelModal');
+                if (event.target == modal) {
+                    hideCancelModal();
+                }
+            }
+        </script>
     </body>
-</html>
+    </html>
 

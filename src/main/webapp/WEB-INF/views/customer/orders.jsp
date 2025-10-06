@@ -20,81 +20,96 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 
         <style>
-            .order-card {
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                background: white;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .order-header {
+            .orders-container {
                 background: #f8f9fa;
-                padding: 15px 20px;
-                border-bottom: 1px solid #e0e0e0;
-                border-radius: 8px 8px 0 0;
+                min-height: 100vh;
+                padding: 20px 0;
             }
-            .order-items {
+            .orders-header {
+                background: white;
                 padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
             }
-            .order-item {
+            .orders-title {
                 display: flex;
                 align-items: center;
-                padding: 15px 0;
-                border-bottom: 1px solid #f0f0f0;
+                gap: 12px;
+                margin-bottom: 0;
             }
-            .order-item:last-child {
-                border-bottom: none;
-            }
-            .item-image {
-                width: 80px;
-                height: 80px;
-                object-fit: cover;
+            .orders-icon {
+                width: 40px;
+                height: 40px;
+                background: #007bff;
                 border-radius: 8px;
-                margin-right: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 18px;
+            }
+            .filter-tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .filter-tab {
+                padding: 8px 16px;
                 border: 1px solid #e0e0e0;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                background: white;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 14px;
+                font-weight: 500;
+                color: #666;
             }
-            .item-details {
-                flex: 1;
+            .filter-tab:hover {
+                border-color: #007bff;
+                color: #007bff;
             }
-            .item-name {
+            .filter-tab.active {
+                background: #007bff;
+                color: white;
+                border-color: #007bff;
+            }
+            .order-card {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                overflow: hidden;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .order-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            }
+            .order-header {
+                padding: 20px;
+                border-bottom: 1px solid #f0f0f0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .order-info {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .order-number {
                 font-weight: 600;
-                margin-bottom: 5px;
+                color: #007bff;
+                font-size: 16px;
             }
-            .item-quantity {
+            .order-date {
                 color: #666;
                 font-size: 14px;
             }
-            .item-price {
-                font-weight: 600;
-                color: #333;
-                margin-right: 15px;
-            }
-            .review-btn {
-                background: #ffc107;
-                border: 1px solid #ffc107;
-                color: #000;
-                padding: 10px 20px;
-                border-radius: 6px;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .review-btn:hover {
-                background: #e0a800;
-                border-color: #d39e00;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
-            }
-            .review-btn i {
-                font-size: 16px;
-            }
-            .status-badge {
-                padding: 4px 12px;
+            .order-status {
+                padding: 6px 12px;
                 border-radius: 20px;
                 font-size: 12px;
                 font-weight: 600;
@@ -115,159 +130,327 @@
                 background: #f8d7da;
                 color: #721c24;
             }
-            .filter-tabs {
+            .order-actions {
                 display: flex;
-                gap: 10px;
-                margin-bottom: 20px;
-                padding: 0 20px;
+                align-items: center;
+                gap: 15px;
             }
-            .filter-tab {
-                padding: 10px 20px;
-                border: 1px solid #ddd;
-                background: white;
-                border-radius: 4px;
-                cursor: pointer;
-                transition: all 0.3s;
+            .order-total {
+                font-weight: 600;
+                color: #007bff;
+                font-size: 16px;
             }
-            .filter-tab.active {
+            .details-btn {
                 background: #007bff;
                 color: white;
-                border-color: #007bff;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .details-btn:hover {
+                background: #0056b3;
+            }
+            .order-items {
+                padding: 20px;
+            }
+            .order-item {
+                display: flex;
+                align-items: center;
+                padding: 15px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .order-item:last-child {
+                border-bottom: none;
+            }
+            .item-image {
+                width: 60px;
+                height: 60px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-right: 15px;
+                border: 1px solid #e0e0e0;
+            }
+            .item-details {
+                flex: 1;
+            }
+            .item-name {
+                font-weight: 600;
+                margin-bottom: 4px;
+                color: #333;
+            }
+            .item-quantity {
+                color: #666;
+                font-size: 14px;
+            }
+            .item-price {
+                font-weight: 600;
+                color: #333;
+                margin-right: 15px;
+            }
+            .review-btn {
+                background: #ffc107;
+                border: 1px solid #ffc107;
+                color: #000;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .review-btn:hover {
+                background: #e0a800;
+                border-color: #d39e00;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+            }
+            .review-btn i {
+                font-size: 14px;
             }
             .delivery-info {
                 background: #f8f9fa;
                 padding: 15px 20px;
-                border-top: 1px solid #e0e0e0;
+                border-top: 1px solid #f0f0f0;
                 font-size: 14px;
                 color: #666;
-            }
-            .rating {
                 display: flex;
-                gap: 5px;
-                margin-top: 5px;
+                align-items: center;
+                gap: 8px;
             }
-            .rating i {
-                font-size: 20px;
-                color: #ddd;
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .empty-state i {
+                font-size: 4rem;
+                color: #ccc;
+                margin-bottom: 20px;
+            }
+            .empty-state h4 {
+                color: #666;
+                margin-bottom: 10px;
+            }
+            .empty-state p {
+                color: #999;
+                margin-bottom: 20px;
+            }
+            .start-shopping-btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                font-weight: 600;
                 cursor: pointer;
-                transition: color 0.2s;
+                transition: background 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
             }
-            .rating i:hover {
-                color: #ffc107;
+            .start-shopping-btn:hover {
+                background: #0056b3;
+            }
+            .user-profile-section {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                padding: 20px;
+                margin-bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 12px;
+            }
+            .user-avatar {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid #007bff;
+                box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+            }
+            .user-info h5 {
+                margin: 0;
+                color: #333;
+                font-weight: 600;
+                font-size: 16px;
+            }
+            .user-info p {
+                margin: 0;
+                color: #666;
+                font-size: 14px;
             }
         </style>
     </head>
     <body>
-
-
-        <div class="container">
+        <div class="orders-container">
+            <div class="container">
             <div class="row">
-                <!-- Sidebar -->
-                <div class="col-lg-3">
-                    <jsp:include page="common/customer-sidebar.jsp"/>
-                </div>
-
-                <!-- Main Content -->
-                <div class="col-lg-9">
-                    <!-- Page Header -->
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="d-flex align-items-center mb-4">
-                                    <i class="fas fa-folder-open me-3" style="font-size: 2rem; color: #007bff;"></i>
-                                    <h1 class="display-6 fw-bold mb-0">Your Orders</h1>
-                                </div>
+                    <!-- Sidebar -->
+                    <div class="col-lg-3">
+                        <!-- User Profile Section -->
+                        <div class="user-profile-section">
+                            <img src="https://cdn.prod.website-files.com/62d84e447b4f9e7263d31e94/6399a4d27711a5ad2c9bf5cd_ben-sweet-2LowviVHZ-E-unsplash-1.jpeg" 
+                                 alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <h5>HuyCG</h5>
+                                <p>My Account</p>
                             </div>
                         </div>
-                    </div>
-                    <!-- Filter Tabs -->
-                    <div class="filter-tabs">
-                        <div class="filter-tab active" onclick="filterOrders('all')">All</div>
-                        <div class="filter-tab" onclick="filterOrders('pending')">Pending</div>
-                        <div class="filter-tab" onclick="filterOrders('shipped')">Shipping</div>
-                        <div class="filter-tab" onclick="filterOrders('completed')">Delivered</div>
+                <jsp:include page="common/customer-sidebar.jsp"/>
                     </div>
 
-                    <c:if test="${empty orders}">
-                        <div class="text-center py-5">
-                            <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">No orders yet</h4>
-                            <p class="text-muted">You haven't placed any orders yet.</p>
-                            <a href="${pageContext.request.contextPath}/products" class="btn btn-primary">
-                                <i class="fas fa-shopping-cart me-2"></i>Start Shopping
-                            </a>
+                    <!-- Main Content -->
+                    <div class="col-lg-9">
+
+                        <!-- Page Header -->
+                        <div class="orders-header">
+                            <h1 class="orders-title">
+                                <div class="orders-icon">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                Your Orders
+                            </h1>
                         </div>
-                    </c:if>
 
-                    <c:if test="${not empty orders}">
-                        <c:forEach items="${orders}" var="order">
-                            <div class="order-card" data-status="${order.status.toLowerCase()}">
-                                <!-- Order Header -->
-                                <div class="order-header">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="fw-bold text-primary">Order: #${order.id}</span>
-                                            <span class="text-muted ms-2">
-                                                ${order.createdAt}
-                                            </span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-3">
+                        <!-- Filter Tabs -->
+                        <div class="filter-tabs">
+                            <div class="filter-tab active" onclick="filterOrders('all')">All</div>
+                            <div class="filter-tab" onclick="filterOrders('pending')">Pending</div>
+                            <div class="filter-tab" onclick="filterOrders('processing')">Processing</div>
+                            <div class="filter-tab" onclick="filterOrders('shipped')">Shipping</div>
+                            <div class="filter-tab" onclick="filterOrders('completed')">Delivered</div>
+                        </div>
+
+                            <c:if test="${empty orders}">
+                            <div class="empty-state">
+                                <i class="fas fa-shopping-bag"></i>
+                                <h4>No orders yet</h4>
+                                <p>You haven't placed any orders yet.</p>
+                                <button class="start-shopping-btn" onclick="window.location.href='${pageContext.request.contextPath}/products'">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Start Shopping
+                                </button>
+                            </div>
+                            </c:if>
+
+                            <c:if test="${not empty orders}">
+                            <c:forEach items="${orders}" var="order">
+                                <div class="order-card" data-status="${order.status.toLowerCase()}">
+                                    <!-- Order Header -->
+                                    <div class="order-header">
+                                        <div class="order-info">
+                                            <span class="order-number">Order: #${order.id}</span>
+                                            <span class="order-date">${order.createdAt}</span>
                                             <c:choose>
                                                 <c:when test="${order.status == 'COMPLETED'}">
-                                                    <span class="status-badge status-delivered">Delivered</span>
+                                                    <span class="order-status status-delivered">Delivered</span>
                                                 </c:when>
                                                 <c:when test="${order.status == 'SHIPPED'}">
-                                                    <span class="status-badge status-shipped">Shipping</span>
+                                                    <span class="order-status status-shipped">Shipping</span>
                                                 </c:when>
                                                 <c:when test="${order.status == 'PENDING'}">
-                                                    <span class="status-badge status-pending">Pending</span>
+                                                    <span class="order-status status-pending">Pending</span>
                                                 </c:when>
                                                 <c:when test="${order.status == 'CANCELED'}">
-                                                    <span class="status-badge status-canceled">Canceled</span>
+                                                    <span class="order-status status-canceled">Canceled</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="status-badge status-pending">${order.status}</span>
+                                                    <span class="order-status status-pending">${order.status}</span>
                                                 </c:otherwise>
                                             </c:choose>
-                                            <span class="fw-bold text-primary">$${order.totalAmount}</span>
+                                        </div>
+                                        <div class="order-actions">
+                                            <span class="order-total">$${order.totalAmount}</span>
                                             <a href="${pageContext.request.contextPath}/orders/detail?id=${order.id}" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-eye me-1"></i>Details
+                                               class="details-btn">
+                                                <i class="fas fa-eye"></i>
+                                                Details
                                             </a>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Order Items -->
-                                <div class="order-items">
-                                    <c:forEach items="${order.items}" var="item">
-                                        <div class="order-item">
-                                            <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=80&h=80&fit=crop&crop=center" 
-                                                 alt="${item.productName}" class="item-image">
-                                            <div class="item-details">
-                                                <div class="item-name">${item.productName}</div>
-                                                <div class="item-quantity">x${item.quantity}</div>
+                                    <!-- Order Items -->
+                                    <div class="order-items">
+                                        <c:forEach items="${order.items}" var="item">
+                                            <div class="order-item">
+                                                <c:choose>
+                                                    <c:when test="${item.productName.contains('Vans')}">
+                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Nike')}">
+                                                        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Adidas')}">
+                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Converse')}">
+                                                        <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Jordan')}">
+                                                        <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Puma')}">
+                                                        <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Reebok')}">
+                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('New Balance')}">
+                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <div class="item-details">
+                                                    <div class="item-name">${item.productName}</div>
+                                                    <div class="item-quantity">x${item.quantity}</div>
+                                                </div>
+                                                <div class="item-price">$${item.unitPrice}</div>
+                                                <c:if test="${order.status == 'COMPLETED'}">
+                                                    <button class="review-btn" onclick="reviewProduct('${item.productName}', '${item.productName}')">
+                                                        <i class="fas fa-star"></i>
+                                                        <span>Evaluate</span>
+                                                    </button>
+                                                </c:if>
                                             </div>
-                                            <div class="item-price">$${item.unitPrice}</div>
-                                            <c:if test="${order.status == 'COMPLETED'}">
-                                                <button class="review-btn" onclick="reviewProduct('${item.productName}', '${item.productName}')">
-                                                    <i class="fas fa-star"></i>
-                                                    <span>Review</span>
-                                                </button>
-                                            </c:if>
-                                        </div>
-                                    </c:forEach>
-                                </div>
+                                        </c:forEach>
+                                    </div>
 
-                                <!-- Delivery Information -->
-                                <div class="delivery-info">
-                                    <i class="fas fa-truck me-2"></i>
-                                    Delivery to: Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789
+                                    <!-- Delivery Information -->
+                                    <div class="delivery-info">
+                                        <i class="fas fa-truck"></i>
+                                        Delivery to: Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789
+                                    </div>
                                 </div>
-                            </div>
-                        </c:forEach>
-                    </c:if>
-                </div>
+                                        </c:forEach>
+                            </c:if>
+                        </div>
+                    </div>
             </div>
         </div>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -330,9 +513,9 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                 <button type="button" class="btn btn-warning" onclick="submitReview('${productName}')">Submit Review</button>
-                        </div>
-                    </div>
                 </div>
+            </div>
+        </div>
                 `;
 
                                                         document.body.appendChild(modal);
