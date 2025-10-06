@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class DBContext {
     private static final String DB_URL = "jdbc:sqlserver://127.0.0.1:1433;databaseName=NeoShoes;encrypt=false";
     private static final String DB_USER = "sa";
-    private static final String DB_PWD = "123";
+    private static final String DB_PWD = "123456";
 
     public DBContext() {
         try {

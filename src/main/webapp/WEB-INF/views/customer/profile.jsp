@@ -21,29 +21,7 @@
         .form-floating {
             position: relative;
             margin-bottom: 15px;
-        }
-
-        .form-floating.success input,
-        .form-floating.success select {
-            border-color: #28a745;
-        }
-
-        .form-floating.error input,
-        .form-floating.error select {
-            border-color: #dc3545;
-        }
-        /*
-                .form-floating small {
-                    color: #dc3545;
-                    position: absolute;
-                    bottom: -18px;
-                    left: 0;
-                    visibility: hidden;
-                }*/
-
-        .form-floating.error small {
-            visibility: visible;
-        }
+        }      
 
         .customer-sidebar {
             height: 326px;
@@ -205,6 +183,13 @@
             <c:remove var="flash" scope="session"/>
         </c:if>
 
+        <c:if test="${not empty sessionScope.flash_info}">
+            <script>
+                showNotification("${sessionScope.flash_info}", "info");
+            </script>
+            <c:remove var="flash_info" scope="session"/>
+        </c:if>
+
         <c:if test="${not empty sessionScope.flash_error}">
             <script>
                 showNotification("${sessionScope.flash_error}", "error");
@@ -222,17 +207,19 @@
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
-                                <form method="post" id="profileForm" action="${pageContext.request.contextPath}/profile">
+                                <form method="post" id="profileForm" 
+                                      action="${pageContext.request.contextPath}/profile" 
+                                      enctype="multipart/form-data">
                                     <input type="hidden" name="id" value="${customer.id}"/>
                                     <input type="hidden" name="action" value="updateProfile"/>
                                     <div class="row g-3">
                                         <div class="col-md-3 text-center">
-                                            <img src="${empty customer.avatar ? 'https://i.pinimg.com/originals/24/bd/d9/24bdd9ec59a9f8966722063fe7791183.jpg' : customer.avatar}"
-                                                 class="img-thumbnail rounded-circle mb-2" style="width:160px;height:160px;object-fit:cover"/>
-                                            <div class="form-floating">
-                                                <input name="avatar" id="avatar" class="form-control" placeholder="Avatar URL" value="${customer.avatar}"/>
-                                                <label for="avatar">Avatar URL</label>
-                                                <div class="invalid-feedback"></div>
+                                            <div class="avatar-upload d-flex flex-column align-items-center" id="avatarUpload">
+                                                <img src="${empty customer.avatar ? 'https://i.pinimg.com/originals/24/bd/d9/24bdd9ec59a9f8966722063fe7791183.jpg' : customer.avatar}" id="avatarPreview" 
+                                                     class="avatar-preview img-thumbnail rounded-circle mb-2 " 
+                                                     style="width:160px;height:160px;object-fit:cover" />
+                                                <span id="avatarText" class="text-muted">Drag and drop or click on avatar to select file</span>
+                                                <input type="file" name="avatar" id="avatarInput" accept="image/*" class="d-none">
                                             </div>
                                         </div>
                                         <div class="col-md-9">
@@ -448,7 +435,9 @@
                         </div>
                     </div>
                 </div>
+ </div>
 
+        </div>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
                 <script src="https://unpkg.com/lucide@latest"></script>
 

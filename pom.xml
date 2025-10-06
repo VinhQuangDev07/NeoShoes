@@ -28,18 +28,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency> <!-- JSTL -->
-            <groupId>jakarta.servlet.jsp.jstl</groupId>
-            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-            <version>2.0.0</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency> <!-- JSTL -->
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>2.0.0</version>
             <scope>runtime</scope>
         </dependency>
-        <dependency> <!-- Custom tags -->
+        <dependency> <!-- JSP -->
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
             <version>3.0.0</version>
@@ -63,8 +57,8 @@
         </dependency>
         <dependency> <!-- MailSender -->
             <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
         </dependency>
     </dependencies>
 

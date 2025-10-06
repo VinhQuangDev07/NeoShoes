@@ -8,9 +8,10 @@ import DAOs.AddressDAO;
 import DAOs.CustomerDAO;
 import Models.Address;
 import Models.Customer;
+import Utils.CloudinaryConfig;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +21,15 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jakarta.servlet.http.Part;
+import java.util.Objects;
 
 /**
  *
  * @author Le Huu Nghia - CE181052
  */
 @WebServlet(name = "ProfileServlet", urlPatterns = {"/profile"})
+@MultipartConfig
 public class ProfileServlet extends HttpServlet {
 
     private final CustomerDAO customerDAO = new CustomerDAO();
@@ -52,27 +56,27 @@ public class ProfileServlet extends HttpServlet {
 //            return;
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
-//        int customerId = Integer.parseInt(request.getParameter("id"));
-//        
-//        Customer customer = customerDAO.findById(customerId);
+
+        int customerId = Integer.parseInt(request.getParameter("id"));
+
+        Customer customer = customerDAO.findById(customerId);
+
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
-//
-//        if (customer != null) {
-//            request.setAttribute("customer", customer);
-//        }
-        int customerId = 2;
-        Customer customer = customerDAO.findById(customerId);
-        request.setAttribute("customer", customer);
+      
 
-        try {
-            addressList = addressDAO.getAllAddressByCustomerId(customerId);
-            request.setAttribute("addressList", addressList);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (customer != null) {
+            try {
+                addressList = addressDAO.getAllAddressByCustomerId(customerId);
+                request.setAttribute("addressList", addressList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            request.setAttribute("customer", customer);
         }
+
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
 
 //        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);
@@ -103,17 +107,35 @@ public class ProfileServlet extends HttpServlet {
         boolean success = false;
 
         if ("updateProfile".equals(action)) {
+
+            Customer currentCustomer = customerDAO.findById(customerId);
+
             // ====== Update profile ======
             String name = request.getParameter("name");
             String phone = request.getParameter("phone");
-            String avatar = request.getParameter("avatar");
+            Part avatarPart = request.getPart("avatar");
+            String avatarUrl = null;
             String gender = request.getParameter("gender");
 
-            success = customerDAO.updateProfile(customerId, name, phone, avatar, gender);
-            if (success) {
-                session.setAttribute("flash", "Profile updated successfully.");
+            boolean unchanged = false;
+            if (Objects.equals(name, currentCustomer.getName())
+                    & Objects.equals(phone, currentCustomer.getPhoneNumber())
+                    & (avatarPart.getSize() == 0 || avatarPart.getSubmittedFileName() == "")
+                    & Objects.equals(gender, currentCustomer.getGender())) {
+                unchanged = true;
+            } 
+
+            if (unchanged) {
+                session.setAttribute("flash_info", "No change in profile information.");
             } else {
-                session.setAttribute("flash_error", "Failed to update profile.");
+                avatarUrl = CloudinaryConfig.uploadSingleImage(avatarPart);
+                System.out.println("upload avatar to cloudinary");
+                success = customerDAO.updateProfile(customerId, name, phone, avatarUrl, gender);
+                if (success) {
+                    session.setAttribute("flash", "Profile updated successfully.");
+                } else {
+                    session.setAttribute("flash_error", "Failed to update profile.");
+                }
             }
 
         } else if ("changePassword".equals(action)) {
