@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <web-app version="4.0" 
          xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -8,14 +9,21 @@
     <display-name>NeoShoes - Shoe Store Management</display-name>
     
     <!-- Session timeout -->
+=======
+<web-app version="5.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
+>>>>>>> origin/main
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
     
     <!-- Welcome files -->
     <welcome-file-list>
+<<<<<<< HEAD
         <welcome-file>index.jsp</welcome-file>
         <welcome-file>index.html</welcome-file>
+=======
+        <welcome-file>orders</welcome-file>
+>>>>>>> origin/main
     </welcome-file-list>
     
 </web-app>

@@ -1,6 +1,6 @@
 package controller.Staff;
 
-import DAO.BrandDAO;
+import DAOs.BrandDAO;
 import Models.Brand;
 
 import jakarta.servlet.*;
