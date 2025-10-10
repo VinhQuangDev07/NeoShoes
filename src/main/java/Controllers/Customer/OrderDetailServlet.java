@@ -22,8 +22,7 @@ public class OrderDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("🔍 OrderDetailServlet.doGet() called");
-        
+
 //        HttpSession session = request.getSession(false);
 //        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
 //        
@@ -32,38 +31,55 @@ public class OrderDetailServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
-        
-        int customerId = 1;
+        int customerId = 2;
         try {
 //            customerId = (int) session.getAttribute("customerId");
-            System.out.println("✅ Customer ID from session: " + customerId);
+
         } catch (Exception e) {
             // If customerId is not an integer, use default value
-      
-            System.out.println("⚠️ Customer ID not integer, using default: " + customerId);
         }
-        
+
         int orderId = Integer.parseInt(request.getParameter("id"));
-        System.out.println("🔍 Requested Order ID: " + orderId);
-        
-        System.out.println("🔍 Calling orderDAO.findWithItems(" + orderId + ")");
+        System.out.println("🔍 OrderDetailServlet: Looking for Order ID: " + orderId);
         Order order = orderDAO.findWithItems(orderId);
+        System.out.println("🔍 OrderDetailServlet: Order found: " + (order != null ? "YES" : "NO"));
         
         if (order == null) {
-            System.out.println("❌ Order not found - returning 404");
+            System.out.println("❌ OrderDetailServlet: Order not found, sending 404");
             response.sendError(404);
             return;
         }
-        
-        System.out.println("📦 Order found: ID=" + order.getId() + ", Customer=" + order.getCustomerId() + 
-                         ", Total=$" + order.getTotalAmount() + ", Items=" + order.getItems().size());
-        
+
         // For demo purposes, allow access to any order
         // In production, you should check: order.getCustomerId() != customerId
         request.setAttribute("order", order);
-        System.out.println("🔍 Forwarding to order-detail.jsp");
         request.getRequestDispatcher("/WEB-INF/views/customer/order-detail.jsp").forward(request, response);
     }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String action = request.getParameter("action");
+        
+        if ("cancel".equals(action)) {
+            int orderId = Integer.parseInt(request.getParameter("orderId"));
+            System.out.println("🗑️ OrderDetailServlet: Cancelling Order ID: " + orderId);
+            
+            boolean success = orderDAO.deleteOrder(orderId);
+            
+            if (success) {
+                System.out.println("✅ OrderDetailServlet: Order cancelled successfully");
+                // Redirect to orders page with success message
+                response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
+            } else {
+                System.out.println("❌ OrderDetailServlet: Failed to cancel order");
+                // Redirect to orders page with error message
+                response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
+            }
+        } else {
+            // Unknown action
+            response.sendRedirect(request.getContextPath() + "/orders");
+        }
+    }
 }
-
-
