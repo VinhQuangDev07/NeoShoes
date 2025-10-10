@@ -3,39 +3,25 @@ package DAO;
 import DB.DBContext;
 import Models.Brand;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BrandDAO extends DBContext {
-    private static final String TBL = "[dbo].[Brand]"; // ⚠️ đúng tên bảng trong SQL
-    private Connection connection;
+public class BrandDAO {
+    private static final String TBL = "[dbo].[Brand]";
+    private DBContext dbContext;
 
-    public BrandDAO(Connection connection) {
-        this.connection = (connection != null) ? connection : super.getConnection();
-    }
-
-    public BrandDAO() { // cho phép new BrandDAO() không cần truyền conn
-        this.connection = super.getConnection();
-    }
-
-    // Đảm bảo luôn có Connection hợp lệ
-    private Connection getConn() throws SQLException {
-        if (this.connection == null || this.connection.isClosed()) {
-            this.connection = super.getConnection();
-        }
-        if (this.connection == null) {
-            throw new SQLException("DB connection is null. Check DBContext/AppContextListener.");
-        }
-        return this.connection;
+    public BrandDAO() {
+        this.dbContext = new DBContext();
     }
 
     public List<Brand> getAllBrands() throws SQLException {
         List<Brand> brands = new ArrayList<>();
         String sql = "SELECT BrandId, Name, Logo, ISNULL(IsDeleted,0) AS IsDeleted " +
                      "FROM " + TBL + " WHERE ISNULL(IsDeleted,0) = 0 ORDER BY Name";
-        try (Statement stmt = getConn().createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        
+        try (ResultSet rs = dbContext.execSelectQuery(sql)) {
             while (rs.next()) {
                 Brand b = new Brand();
                 b.setBrandId(rs.getInt("BrandId"));
@@ -51,17 +37,16 @@ public class BrandDAO extends DBContext {
     public Brand getBrandById(int id) throws SQLException {
         String sql = "SELECT BrandId, Name, Logo, ISNULL(IsDeleted,0) AS IsDeleted " +
                      "FROM " + TBL + " WHERE BrandId = ? AND ISNULL(IsDeleted,0) = 0";
-        try (PreparedStatement stmt = getConn().prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Brand b = new Brand();
-                    b.setBrandId(rs.getInt("BrandId"));
-                    b.setName(rs.getString("Name"));
-                    b.setLogo(rs.getString("Logo"));
-                    b.setDeleted(rs.getBoolean("IsDeleted"));
-                    return b;
-                }
+        
+        Object[] params = {id};
+        try (ResultSet rs = dbContext.execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Brand b = new Brand();
+                b.setBrandId(rs.getInt("BrandId"));
+                b.setName(rs.getString("Name"));
+                b.setLogo(rs.getString("Logo"));
+                b.setDeleted(rs.getBoolean("IsDeleted"));
+                return b;
             }
         }
         return null;
@@ -69,29 +54,30 @@ public class BrandDAO extends DBContext {
 
     public boolean addBrand(Brand brand) throws SQLException {
         String sql = "INSERT INTO " + TBL + " (Name, Logo, IsDeleted) VALUES (?, ?, 0)";
-        try (PreparedStatement stmt = getConn().prepareStatement(sql)) {
-            stmt.setString(1, brand.getName());
-            stmt.setString(2, brand.getLogo());
-            return stmt.executeUpdate() > 0;
-        }
+        Object[] params = {brand.getName(), brand.getLogo()};
+        
+        return dbContext.execQuery(sql, params) > 0;
+    }
+
+    public int addBrandReturnId(Brand brand) throws SQLException {
+        String sql = "INSERT INTO " + TBL + " (Name, Logo, IsDeleted) VALUES (?, ?, 0)";
+        Object[] params = {brand.getName(), brand.getLogo()};
+        
+        return dbContext.execQueryReturnId(sql, params);
     }
 
     public boolean updateBrand(Brand brand) throws SQLException {
         String sql = "UPDATE " + TBL + " SET Name = ?, Logo = ? WHERE BrandId = ? AND ISNULL(IsDeleted,0) = 0";
-        try (PreparedStatement stmt = getConn().prepareStatement(sql)) {
-            stmt.setString(1, brand.getName());
-            stmt.setString(2, brand.getLogo());
-            stmt.setInt(3, brand.getBrandId());
-            return stmt.executeUpdate() > 0;
-        }
+        Object[] params = {brand.getName(), brand.getLogo(), brand.getBrandId()};
+        
+        return dbContext.execQuery(sql, params) > 0;
     }
 
     // Soft delete
     public boolean deleteBrand(int id) throws SQLException {
         String sql = "UPDATE " + TBL + " SET IsDeleted = 1 WHERE BrandId = ?";
-        try (PreparedStatement stmt = getConn().prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        }
+        Object[] params = {id};
+        
+        return dbContext.execQuery(sql, params) > 0;
     }
 }
