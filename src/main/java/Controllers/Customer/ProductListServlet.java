@@ -14,6 +14,7 @@ import Models.Category;
 import Models.Product;
 import Models.Brand;
 import jakarta.servlet.RequestDispatcher;
+import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet(name="ProductListServlet", urlPatterns={"/products"})
@@ -82,7 +83,7 @@ public class ProductListServlet extends HttpServlet {
             
             // Lấy danh sách categories và brands
             List<Category> categories = categoryDAO.getAllActiveCategories();
-            List<Brand> brands = brandDAO.getAllActiveBrands();
+            List<Brand> brands = brandDAO.getAllBrands();
             request.setAttribute("categories", categories);
             request.setAttribute("brands", brands);
             
@@ -107,20 +108,20 @@ public class ProductListServlet extends HttpServlet {
             dispatcher.forward(request, response);
             
         } catch (Exception e) {
-            System.out.println("❌ Error in listAllProducts: " + e.getMessage());
+            System.out.println("Error in listAllProducts: " + e.getMessage());
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
         }
     }
     
     private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         
         int categoryId = Integer.parseInt(request.getParameter("categoryId"));
         
         // Lấy danh sách categories và brands
         List<Category> categories = categoryDAO.getAllActiveCategories();
-        List<Brand> brands = brandDAO.getAllActiveBrands();
+        List<Brand> brands = brandDAO.getAllBrands();
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
         
@@ -134,13 +135,13 @@ public class ProductListServlet extends HttpServlet {
     }
 
     private void listProductsByBrand(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         
         int brandId = Integer.parseInt(request.getParameter("brandId"));
         
         // Lấy danh sách categories và brands
         List<Category> categories = categoryDAO.getAllActiveCategories();
-        List<Brand> brands = brandDAO.getAllActiveBrands();
+        List<Brand> brands = brandDAO.getAllBrands();
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
         
@@ -154,14 +155,14 @@ public class ProductListServlet extends HttpServlet {
     }
 
     private void listProductsByCategoryAndBrand(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         
         int categoryId = Integer.parseInt(request.getParameter("categoryId"));
         int brandId = Integer.parseInt(request.getParameter("brandId"));
         
         // Lấy danh sách categories và brands
         List<Category> categories = categoryDAO.getAllActiveCategories();
-        List<Brand> brands = brandDAO.getAllActiveBrands();
+        List<Brand> brands = brandDAO.getAllBrands();
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
         
@@ -176,13 +177,13 @@ public class ProductListServlet extends HttpServlet {
     }
 
     private void searchProducts(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         
         String searchTerm = request.getParameter("searchTerm");
         
         // Lấy danh sách categories và brands
         List<Category> categories = categoryDAO.getAllActiveCategories();
-        List<Brand> brands = brandDAO.getAllActiveBrands();
+        List<Brand> brands = brandDAO.getAllBrands();
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
         
