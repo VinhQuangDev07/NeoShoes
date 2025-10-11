@@ -21,7 +21,7 @@
         .form-floating {
             position: relative;
             margin-bottom: 15px;
-        }      
+        }
 
         .customer-sidebar {
             height: 326px;
@@ -176,23 +176,26 @@
         }
     </style>
     <body class="bg-light">
+
+        <%--<jsp:include page="../common/notification.jsp"/>--%>
+
         <c:if test="${not empty sessionScope.flash}">
             <script>
-                showNotification("${sessionScope.flash}", "success");
+        showNotification("${sessionScope.flash}", "success");
             </script>
             <c:remove var="flash" scope="session"/>
         </c:if>
 
         <c:if test="${not empty sessionScope.flash_info}">
             <script>
-                showNotification("${sessionScope.flash_info}", "info");
+        showNotification("${sessionScope.flash_info}", "info");
             </script>
             <c:remove var="flash_info" scope="session"/>
         </c:if>
 
         <c:if test="${not empty sessionScope.flash_error}">
             <script>
-                showNotification("${sessionScope.flash_error}", "error");
+        showNotification("${sessionScope.flash_error}", "error");
             </script>
             <c:remove var="flash_error" scope="session"/>
         </c:if>
@@ -435,13 +438,13 @@
                         </div>
                     </div>
                 </div>
- </div>
+            </div>
 
         </div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-                <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
 
-                <script>
+        <script>
                                                             document.addEventListener("DOMContentLoaded", () => {
                                                                 const btnToggle = document.getElementById("togglePasswordForm");
                                                                 const passwordCard = document.getElementById("passwordCard");
@@ -454,28 +457,63 @@
                                                                         btnToggle.innerText = "Change Password";
                                                                     }
                                                                 });
+                                                            });
 
-                                                                // Toggle Add Address Form
-                                                                const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
-                                                                const addAddressCard = document.getElementById("addAddressCard");
+                                                            // avatar upload preview
+                                                            const avatarUpload = document.getElementById('avatarUpload');
+                                                            const avatarInput = document.getElementById('avatarInput');
+                                                            const avatarPreview = document.getElementById('avatarPreview');
 
-                                                                btnToggleAddAddress.addEventListener("click", () => {
-                                                                    addAddressCard.classList.toggle("d-none");
-                                                                    if (!addAddressCard.classList.contains("d-none")) {
-                                                                        btnToggleAddAddress.innerText = "Hide Form";
-                                                                        // Scroll to form
-                                                                        addAddressCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-                                                                    } else {
-                                                                        btnToggleAddAddress.innerText = "Add New Address";
-                                                                    }
-                                                                });
+                                                            avatarUpload.addEventListener('click', () => {
+                                                                avatarInput.click();
+                                                            });
+
+                                                            avatarInput.addEventListener('change', (e) => {
+                                                                if (e.target.files.length > 0) {
+                                                                    const file = e.target.files[0];
+                                                                    const reader = new FileReader();
+
+                                                                    reader.onload = (e) => {
+                                                                        avatarPreview.src = e.target.result;
+                                                                        avatarPreview.style.display = 'block';
+                                                                    };
+
+                                                                    reader.readAsDataURL(file);
+                                                                }
+                                                            });
+
+                                                            // Handle drag and drop for avatar
+                                                            avatarUpload.addEventListener('dragover', (e) => {
+                                                                e.preventDefault();
+                                                                avatarUpload.style.borderColor = '#0d6efd';
+                                                            });
+
+                                                            avatarUpload.addEventListener('dragleave', () => {
+                                                                avatarUpload.style.borderColor = '#dee2e6';
+                                                            });
+
+                                                            avatarUpload.addEventListener('drop', (e) => {
+                                                                e.preventDefault();
+                                                                avatarUpload.style.borderColor = '#dee2e6';
+
+                                                                if (e.dataTransfer.files.length > 0) {
+                                                                    avatarInput.files = e.dataTransfer.files;
+                                                                    const file = e.dataTransfer.files[0];
+                                                                    const reader = new FileReader();
+
+                                                                    reader.onload = (e) => {
+                                                                        avatarPreview.src = e.target.result;
+                                                                        avatarPreview.style.display = 'block';
+                                                                    };
+
+                                                                    reader.readAsDataURL(file);
+                                                                }
                                                             });
 
                                                             // PROFILE FORM
                                                             const profileForm = document.getElementById("profileForm");
                                                             const nameInput = document.getElementById("name");
                                                             const phoneInput = document.getElementById("phone");
-                                                            const avatarInput = document.getElementById("avatar");
                                                             const genderSelect = document.getElementById("gender");
 
                                                             profileForm.addEventListener("submit", e => {
@@ -490,7 +528,6 @@
 
                                                                 const nameValue = nameInput.value.trim();
                                                                 const phoneValue = phoneInput.value.trim();
-                                                                const avatarValue = avatarInput.value.trim();
                                                                 const genderValue = genderSelect.value;
 
                                                                 if (nameValue === "" || nameValue.length < 3) {
@@ -505,13 +542,6 @@
                                                                     valid = false;
                                                                 } else {
                                                                     setSuccessInput(phoneInput);
-                                                                }
-
-                                                                if (avatarValue !== "" && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(avatarValue)) {
-                                                                    setErrorInput(avatarInput, "Avatar must be a valid image URL.");
-                                                                    valid = false;
-                                                                } else {
-                                                                    setSuccessInput(avatarInput);
                                                                 }
 
                                                                 if (genderValue === "") {
@@ -599,7 +629,7 @@
                                                                     document.getElementById('profile').classList.add('active');
                                                                 }
                                                             });
-// Enable/Cancel/Delete Address Functions
+                                                            // Enable/Cancel/Delete Address Functions
                                                             function enableEdit(addressId) {
                                                                 document.getElementById('addressName-' + addressId).removeAttribute('readonly');
                                                                 document.getElementById('recipientName-' + addressId).removeAttribute('readonly');
@@ -653,6 +683,6 @@
                                                                     form.submit();
                                                                 }
                                                             }
-                </script>
-                </body>
-                </html>
+        </script>
+    </body>
+</html>
