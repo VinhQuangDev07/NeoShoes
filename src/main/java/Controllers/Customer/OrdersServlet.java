@@ -24,8 +24,7 @@ public class OrdersServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        System.out.println("🔍 OrdersServlet.doGet() called");
-        
+
 //        HttpSession session = request.getSession(false);
 //        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
 //        
@@ -34,31 +33,25 @@ public class OrdersServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
-        
-        int customerId = 1;
+        int customerId = 2;
         try {
 //            customerId = (int) session.getAttribute("customerId");
-            System.out.println("✅ Customer ID from session: " + customerId);
         } catch (Exception e) {
             // If customerId is not an integer, use default value
-            
-            System.out.println("⚠️ Customer ID not integer, using default: " + customerId);
         }
-        
-        System.out.println("🔍 Calling orderDAO.listByCustomer(" + customerId + ")");
         List<Order> orders = orderDAO.listByCustomer(customerId);
-        System.out.println("📊 Orders returned: " + (orders != null ? orders.size() : "null"));
+
+        // Check for success/error messages
+        String cancelled = request.getParameter("cancelled");
+        String error = request.getParameter("error");
         
-        if (orders != null && !orders.isEmpty()) {
-            for (Order order : orders) {
-                System.out.println("📦 Order: " + order.getId() + " - " + order.getStatus() + " - $" + order.getTotalAmount());
-            }
+        if ("true".equals(cancelled)) {
+            request.setAttribute("successMessage", "Order has been cancelled successfully!");
+        } else if ("cancel_failed".equals(error)) {
+            request.setAttribute("errorMessage", "Failed to cancel order. Please try again.");
         }
-        
+
         request.setAttribute("orders", orders);
-        System.out.println("🔍 Forwarding to orders.jsp");
         request.getRequestDispatcher("/WEB-INF/views/customer/orders.jsp").forward(request, response);
     }
 }
-
-

@@ -327,6 +327,22 @@
                             </h1>
                         </div>
 
+                        <!-- Success/Error Messages -->
+                        <c:if test="${not empty successMessage}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i>
+                                ${successMessage}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </c:if>
+                        <c:if test="${not empty errorMessage}">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                ${errorMessage}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </c:if>
+
                         <!-- Filter Tabs -->
                         <div class="filter-tabs">
                             <div class="filter-tab active" onclick="filterOrders('all')">All</div>
@@ -350,33 +366,17 @@
 
                             <c:if test="${not empty orders}">
                             <c:forEach items="${orders}" var="order">
-                                <div class="order-card" data-status="${order.status.toLowerCase()}">
+                                <div class="order-card" data-status="pending">
                                     <!-- Order Header -->
                                     <div class="order-header">
                                         <div class="order-info">
-                                            <span class="order-number">Order: #${order.id}</span>
-                                            <span class="order-date">${order.createdAt}</span>
-                                            <c:choose>
-                                                <c:when test="${order.status == 'COMPLETED'}">
-                                                    <span class="order-status status-delivered">Delivered</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'SHIPPED'}">
-                                                    <span class="order-status status-shipped">Shipping</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'PENDING'}">
-                                                    <span class="order-status status-pending">Pending</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'CANCELED'}">
-                                                    <span class="order-status status-canceled">Canceled</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="order-status status-pending">${order.status}</span>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            <span class="order-number">Order: #${order.orderId}</span>
+                                            <span class="order-date">${order.placedAt}</span>
+                                            <span class="order-status status-pending">Pending</span>
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$${order.totalAmount}</span>
-                                            <a href="${pageContext.request.contextPath}/orders/detail?id=${order.id}" 
+                                            <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
                                                class="details-btn">
                                                 <i class="fas fa-eye"></i>
                                                 Details
@@ -428,15 +428,10 @@
                                                 </c:choose>
                                                 <div class="item-details">
                                                     <div class="item-name">${item.productName}</div>
-                                                    <div class="item-quantity">x${item.quantity}</div>
+                                                    <div class="item-quantity">x${item.detailQuantity}</div>
                                                 </div>
-                                                <div class="item-price">$${item.unitPrice}</div>
-                                                <c:if test="${order.status == 'COMPLETED'}">
-                                                    <button class="review-btn" onclick="reviewProduct('${item.productName}', '${item.productName}')">
-                                                        <i class="fas fa-star"></i>
-                                                        <span>Evaluate</span>
-                                                    </button>
-                                                </c:if>
+                                                <div class="item-price">$${item.detailPrice}</div>
+                                                <!-- Review button temporarily disabled -->
                                             </div>
                                         </c:forEach>
                                     </div>
