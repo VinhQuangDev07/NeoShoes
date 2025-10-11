@@ -1,7 +1,5 @@
 package Models;
 
-import java.util.List;
-
 public class Product {
 
     private int productId;
@@ -22,8 +20,7 @@ public class Product {
     public Product() {
     }
 
-    public Product(int productId, int brandId, int categoryId, String name,
-            String description, String defaultImageUrl, String material) {
+    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName) {
         this.productId = productId;
         this.brandId = brandId;
         this.categoryId = categoryId;
@@ -31,6 +28,13 @@ public class Product {
         this.description = description;
         this.defaultImageUrl = defaultImageUrl;
         this.material = material;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.totalQuantity = totalQuantity;
+        this.availableColors = availableColors;
+        this.availableSizes = availableSizes;
+        this.brandName = brandName;
+        this.categoryName = categoryName;
     }
 
     public int getProductId() {
@@ -143,41 +147,5 @@ public class Product {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public boolean hasMultipleColors() {
-        return availableColors != null && availableColors.split(",").length > 1;
-    }
-
-    public boolean hasMultipleSizes() {
-        return availableSizes != null && availableSizes.split(",").length > 1;
-    }
-
-    public String getShortDescription() {
-        if (description != null && description.length() > 100) {
-            return description.substring(0, 100) + "...";
-        }
-        return description;
-    }
-    // Thêm vào class Product (sau các thuộc tính hiện có)
-    private List<ProductVariant> variants;
-
-    public List<ProductVariant> getVariants() {
-        return variants;
-    }
-
-    public void setVariants(List<ProductVariant> variants) {
-        this.variants = variants;
-    }
-
-    // Trong class Product, thêm:
-    private List<String> imageGallery;
-
-    public List<String> getImageGallery() {
-        return imageGallery;
-    }
-
-    public void setImageGallery(List<String> imageGallery) {
-        this.imageGallery = imageGallery;
     }
 }

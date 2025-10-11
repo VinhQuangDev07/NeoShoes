@@ -10,7 +10,7 @@ import java.security.MessageDigest;
  *
  * @author Le Huu Nghia - CE181052
  */
-public class Common {
+public class Utils {
 
     public static String hashPassword(String password) {
         try {
