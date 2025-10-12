@@ -375,27 +375,14 @@
                                 <div class="order-icon">
                                     <i class="fas fa-dollar-sign"></i>
                                 </div>
-                                <h4 class="mb-0">Order Detail #${order.id}</h4>
+                                <h4 class="mb-0">Order Detail #${order.orderId}</h4>
                             </div>
                             <div class="order-meta">
                                 <div class="order-date">
                                     <i class="fas fa-calendar"></i>
-                                    <span>${order.createdAt}</span>
+                                    <span>${order.placedAt}</span>
                                 </div>
-                                <c:choose>
-                                    <c:when test="${order.status == 'COMPLETED'}">
-                                        <span class="status-badge status-delivered">Delivered</span>
-                                    </c:when>
-                                    <c:when test="${order.status == 'SHIPPED'}">
-                                        <span class="status-badge status-shipped">Shipping</span>
-                                    </c:when>
-                                    <c:when test="${order.status == 'PENDING'}">
-                                        <span class="status-badge status-pending">Pending</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="status-badge status-pending">${order.status}</span>
-                                    </c:otherwise>
-                                </c:choose>
+                                <span class="status-badge status-pending">Pending</span>
                             </div>
                         </div>
 
@@ -410,17 +397,17 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Order Placed</div>
-                                            <div class="step-date">${order.createdAt}</div>
+                                            <div class="step-date">${order.placedAt}</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="progress-step">
-                                    <div class="step-circle ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'PENDING' ? 'current' : '')}">
+                                    <div class="step-circle current">
                                         <c:choose>
-                                            <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
+                                            <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
-                                            <c:when test="${order.status == 'PENDING'}">
+                                            <c:when test="${'PENDING' == 'PENDING'}">
                                                 <i class="fas fa-clock"></i>
                                             </c:when>
                                             <c:otherwise>
@@ -433,8 +420,8 @@
                                             <div>Shipping</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
-                                                        ${order.createdAt}
+                                                    <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
+                                                        ${order.placedAt}
                                                     </c:when>
                                                     <c:otherwise>
                                                         Pending
@@ -445,9 +432,9 @@
                                     </div>
                                 </div>
                                 <div class="progress-step">
-                                    <div class="step-circle ${order.status == 'COMPLETED' ? 'completed' : ''}">
+                                    <div class="step-circle ${'PENDING' == 'COMPLETED' ? 'completed' : ''}">
                                         <c:choose>
-                                            <c:when test="${order.status == 'COMPLETED'}">
+                                            <c:when test="${'PENDING' == 'COMPLETED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
                                             <c:otherwise>
@@ -460,8 +447,8 @@
                                             <div>Delivered</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${order.status == 'COMPLETED'}">
-                                                        ${order.createdAt}
+                                                    <c:when test="${'PENDING' == 'COMPLETED'}">
+                                                        ${order.placedAt}
                                                     </c:when>
                                                     <c:otherwise>
                                                         Not yet
@@ -480,7 +467,7 @@
                                 <h6>Order Amount Details</h6>
                                 <div class="summary-item">
                                     <span>Subtotal:</span>
-                                    <span>$${order.subtotalAmount}</span>
+                                    <span>$${order.totalAmount - order.shippingFee}</span>
                                 </div>
                                 <div class="summary-item">
                                     <span>Shipping fee:</span>
@@ -517,9 +504,9 @@
                                          alt="${item.productName}" class="product-image">
                                     <div class="product-info">
                                         <div class="product-name">${item.productName}</div>
-                                        <div class="product-quantity">x${item.quantity}</div>
+                                        <div class="product-quantity">x${item.detailQuantity}</div>
                                     </div>
-                                    <div class="product-price">$${item.unitPrice}</div>
+                                    <div class="product-price">$${item.detailPrice}</div>
                                 </div>
                             </c:forEach>
                         </div>
@@ -527,7 +514,7 @@
                         <!-- Footer -->
                         <div class="modal-footer">
                             <c:choose>
-                                <c:when test="${order.status == 'PENDING' || order.status == 'APPROVED'}">
+                                <c:when test="${'PENDING' == 'PENDING' || 'PENDING' == 'APPROVED'}">
                                     <button class="cancel-btn" onclick="showCancelModal()">
                                         <i class="fas fa-times"></i>
                                         Cancel Order
@@ -565,11 +552,11 @@
                     <div class="cancel-order-info">
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Order ID:</span>
-                            <span class="cancel-info-value">#${order.id}</span>
+                            <span class="cancel-info-value">#${order.orderId}</span>
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Order Status:</span>
-                            <span class="cancel-info-value">${order.status}</span>
+                            <span class="cancel-info-value">${'PENDING'}</span>
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Total Amount:</span>
@@ -603,14 +590,28 @@
             }
             
             function confirmCancelOrder() {
-                // Here you would typically make an AJAX call to cancel the order
-                // For now, we'll just show an alert and redirect
-                if (confirm('Order will be cancelled. Refund will be processed if payment was made.')) {
-                    // Simulate API call
-                    alert('Order #${order.id} has been cancelled successfully!');
-                    // Redirect back to orders page
-                    window.location.href = '${pageContext.request.contextPath}/orders';
-                }
+                // Create a form to submit POST request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/orders/detail';
+                
+                // Add action parameter
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'cancel';
+                form.appendChild(actionInput);
+                
+                // Add orderId parameter
+                const orderIdInput = document.createElement('input');
+                orderIdInput.type = 'hidden';
+                orderIdInput.name = 'orderId';
+                orderIdInput.value = '${order.orderId}';
+                form.appendChild(orderIdInput);
+                
+                // Submit the form
+                document.body.appendChild(form);
+                form.submit();
             }
             
             // Close modal when clicking outside

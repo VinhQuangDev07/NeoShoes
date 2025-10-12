@@ -11,27 +11,29 @@ import java.util.List;
 
 /**
  * Customer order aggregate root
+ * @author Chau Gia Huy - CE190386
  */
 public class Order {
-    private int id;
+
+    private int orderId;
     private int customerId;
-    private String status; // PENDING, PAID, SHIPPED, COMPLETED, CANCELED
-    private BigDecimal subtotalAmount;
-    private BigDecimal discountAmount;
+    private int addressId;
+    private int paymentMethodId;
+    private int paymentStatusId;
+    private Integer voucherId; // nullable
+    private BigDecimal totalAmount;
     private BigDecimal shippingFee;
-    private BigDecimal totalAmount; // subtotal - discount + shipping
-    private String voucherCode;
-    private LocalDateTime createdAt;
+    private LocalDateTime placedAt;
     private LocalDateTime updatedAt;
 
-    private List<OrderItem> items = new ArrayList<>();
+    private List<OrderDetail> items = new ArrayList<>();
 
-    public int getId() {
-        return id;
+    public int getOrderId() {
+        return orderId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
     public int getCustomerId() {
@@ -42,28 +44,36 @@ public class Order {
         this.customerId = customerId;
     }
 
-    public String getStatus() {
-        return status;
+    public int getAddressId() {
+        return addressId;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setAddressId(int addressId) {
+        this.addressId = addressId;
     }
 
-    public BigDecimal getSubtotalAmount() {
-        return subtotalAmount;
+    public int getPaymentMethodId() {
+        return paymentMethodId;
     }
 
-    public void setSubtotalAmount(BigDecimal subtotalAmount) {
-        this.subtotalAmount = subtotalAmount;
+    public void setPaymentMethodId(int paymentMethodId) {
+        this.paymentMethodId = paymentMethodId;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
+    public int getPaymentStatusId() {
+        return paymentStatusId;
     }
 
-    public void setDiscountAmount(BigDecimal discountAmount) {
-        this.discountAmount = discountAmount;
+    public void setPaymentStatusId(int paymentStatusId) {
+        this.paymentStatusId = paymentStatusId;
+    }
+
+    public Integer getVoucherId() {
+        return voucherId;
+    }
+
+    public void setVoucherId(Integer voucherId) {
+        this.voucherId = voucherId;
     }
 
     public BigDecimal getShippingFee() {
@@ -82,20 +92,12 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
-    public String getVoucherCode() {
-        return voucherCode;
+    public LocalDateTime getPlacedAt() {
+        return placedAt;
     }
 
-    public void setVoucherCode(String voucherCode) {
-        this.voucherCode = voucherCode;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setPlacedAt(LocalDateTime placedAt) {
+        this.placedAt = placedAt;
     }
 
     public LocalDateTime getUpdatedAt() {
@@ -106,13 +108,11 @@ public class Order {
         this.updatedAt = updatedAt;
     }
 
-    public List<OrderItem> getItems() {
+    public List<OrderDetail> getItems() {
         return items;
     }
 
-    public void setItems(List<OrderItem> items) {
+    public void setItems(List<OrderDetail> items) {
         this.items = items;
     }
 }
-
-
