@@ -5,14 +5,12 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
-import Models.Customer;
 import Models.Order;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,20 +23,8 @@ public class OrdersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
-//        
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            System.out.println("❌ No session or customerId - redirecting to login");
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
+        // Hardcode customerId = 2 for testing (no login functionality yet)
         int customerId = 2;
-        try {
-//            customerId = (int) session.getAttribute("customerId");
-        } catch (Exception e) {
-            // If customerId is not an integer, use default value
-        }
         List<Order> orders = orderDAO.listByCustomer(customerId);
 
         // Check for success/error messages

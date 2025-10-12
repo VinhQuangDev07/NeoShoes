@@ -57,8 +57,8 @@ public class ProfileServlet extends HttpServlet {
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
 
-//        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 2;
+        int customerId = Integer.parseInt(request.getParameter("id"));
+//        int customerId = 2;
 
         Customer customer = customerDAO.findById(customerId);
 
@@ -157,7 +157,7 @@ public class ProfileServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/profile?id=2");
+        response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
     }
 
     /**

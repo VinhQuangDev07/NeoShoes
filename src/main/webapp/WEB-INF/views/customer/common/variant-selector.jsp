@@ -76,10 +76,6 @@
             </div>
 
 
-            <!-- Add to Cart -->
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-dark" id="addToCartBtn" disabled>Add to Cart</button>
-            </div>
         </form>
 
         <!-- JSON danh sách variant -->
@@ -212,12 +208,10 @@
 
     function updateQuantityInfo() {
         const quantityText = document.getElementById('quantityAvailableText');
-        const addToCartBtn = document.getElementById('addToCartBtn');
         const qtyInput = document.getElementById('quantityInput');
         const variantField = document.getElementById('variantIdField');
 
         quantityText.textContent = '';
-        addToCartBtn.disabled = true;
         qtyInput.disabled = true;
         variantField.value = '';
 
@@ -233,7 +227,6 @@
             if (available > 0) {
                 qtyInput.max = available;
                 qtyInput.disabled = false;
-                addToCartBtn.disabled = false;
                 quantityText.textContent = 'Quantity Available: ' + available;
             } else {
                 quantityText.textContent = 'Out of stock';

@@ -85,7 +85,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC "
+                + "ORDER BY p.ProductId ASC "
                 + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = this.getConnection()) {
@@ -146,7 +146,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC "
+                + "ORDER BY p.ProductId ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = this.getConnection()) {
@@ -235,7 +235,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -290,7 +290,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -521,7 +521,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -575,7 +575,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {

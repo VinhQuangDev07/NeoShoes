@@ -11,7 +11,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Arial', sans-serif; background-color: #f8f9fa; line-height: 1.6; color: #333; }
 
-  /* Header: gradient -> đen */
+  /* Header: gradient -> black */
   .header {
     background: #000;
     color: #fff;
@@ -61,7 +61,7 @@
   }
   .products-title { font-size: 1.8rem; color: #333; font-weight: 600; }
 
-  /* View all: gradient -> đen */
+  /* View all: gradient -> black */
   .view-all-btn {
     background: #000; color: #fff;
     padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 500;
@@ -69,7 +69,7 @@
   }
   .view-all-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.4); color: #fff; }
 
-  /* Grid: 4 cột trên desktop */
+  /* Grid: 4 columns on desktop */
   .products-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -83,7 +83,7 @@
   }
   .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
 
-  /* Ảnh sản phẩm không bị cắt */
+  /* Product images without cropping */
   .product-media {
     width: 100%; aspect-ratio: 4 / 3; background: #fff;
     display: flex; align-items: center; justify-content: center;
@@ -95,12 +95,12 @@
   .product-name { font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; color: #333; line-height: 1.3; }
   .product-brand { color: #000; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
 
-  /* Color swatches: GIỮ MÀU GỐC, chỉ style viền & bóng */
+  /* Color swatches: KEEP ORIGINAL COLOR, only style border & shadow */
   .color-previews { display: flex; gap: 5px; margin: 10px 0; flex-wrap: wrap; }
   .color-dot {
     width: 20px; height: 20px; border-radius: 50%;
     border: 2px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,0.3);
-    display: inline-block;            /* không set background ở đây -> dùng inline style từ server */
+    display: inline-block;            /* do not set background here -> use inline style from server */
   }
   .color-more { font-size: 0.8rem; color: #666; margin-left: 5px; align-self: center; }
 
@@ -113,7 +113,7 @@
   }
   .view-details-btn:hover { background: #000; color: #fff; }
 
-  /* Mobile view-all button: đen */
+  /* Mobile view-all button: black */
   .view-all-mobile { display: none; text-align: center; margin-top: 2rem; }
   .view-all-btn-mobile {
     background: #000; color: #fff; padding: 12px 30px; border-radius: 25px;
@@ -126,7 +126,7 @@
     background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 
-  /* Responsive: giảm cột khi màn nhỏ, giữ 4 cột trên desktop */
+  /* Responsive: reduce columns on small screens, keep 4 columns on desktop */
   @media (max-width: 1024px) {
     .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
@@ -154,8 +154,8 @@
             <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
             <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
                 <input type="hidden" name="action" value="search">
-                <input type="text" name="searchTerm" placeholder="Tìm kiếm sản phẩm..." value="${param.searchTerm}" class="search-input">
-                <button type="submit" class="search-button">Tìm kiếm</button>
+                <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
+                <button type="submit" class="search-button">Search</button>
             </form>
         </div>
     </header>
@@ -163,11 +163,11 @@
     <!-- Categories -->
     <section class="categories">
         <div class="categories-container">
-            <h3 class="categories-title">Danh mục sản phẩm</h3>
+            <h3 class="categories-title">Product Categories</h3>
             <div class="categories-list">
                 <a href="${pageContext.request.contextPath}/home" class="category-chip ${empty param.selectedCategory ? 'active' : ''}">
                     <img class="category-thumb" src="https://via.placeholder.com/56?text=All" alt="All">
-                    <span>Tất cả</span>
+                    <span>All</span>
                 </a>
                 <c:forEach var="category" items="${categories}">
                     <a href="${pageContext.request.contextPath}/home?action=category&categoryId=${category.categoryId}"
@@ -189,7 +189,7 @@
             <h2 class="products-title">
                 <c:choose>
                     <c:when test="${not empty param.searchTerm}">
-                        Kết quả tìm kiếm cho "${param.searchTerm}"
+                        Search results for "${param.searchTerm}"
                     </c:when>
                     <c:when test="${not empty param.selectedCategory}">
                         <c:forEach var="category" items="${categories}">
@@ -198,12 +198,12 @@
                             </c:if>
                         </c:forEach>
                     </c:when>
-                    <c:otherwise>Sản Phẩm Nổi Bật</c:otherwise>
+                    <c:otherwise>Featured Products</c:otherwise>
                 </c:choose>
             </h2>
             <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
-                <!-- Đúng route: /products -->
-                <a href="${pageContext.request.contextPath}/products" class="view-all-btn">Xem Tất Cả →</a>
+                <!-- Correct route: /products -->
+                <a href="${pageContext.request.contextPath}/products" class="view-all-btn">View All →</a>
             </c:if>
         </div>
 
@@ -240,7 +240,7 @@
                                     </c:otherwise>
                                 </c:choose>
 
-                                        <a href="product-detail?id=${product.productId}" class="view-details-btn">Xem Chi Tiết</a>
+                                        <a href="product-detail?id=${product.productId}" class="view-details-btn">View Details</a>
                             </div>
                         </div>
                     </c:forEach>
@@ -248,7 +248,7 @@
 
                 <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
                     <div class="view-all-mobile">
-                        <a href="${pageContext.request.contextPath}/products" class="view-all-btn-mobile">Xem Tất Cả Sản Phẩm</a>
+                        <a href="${pageContext.request.contextPath}/products" class="view-all-btn-mobile">View All Products</a>
                     </div>
                 </c:if>
             </c:when>
@@ -256,10 +256,10 @@
                 <div class="no-products">
                     <c:choose>
                         <c:when test="${not empty param.searchTerm}">
-                            <p>Không tìm thấy sản phẩm nào phù hợp với "${param.searchTerm}"</p>
+                            <p>No products found matching "${param.searchTerm}"</p>
                         </c:when>
                         <c:otherwise>
-                            <p>Hiện chưa có sản phẩm nổi bật</p>
+                            <p>No featured products available</p>
                         </c:otherwise>
                     </c:choose>
                 </div>
