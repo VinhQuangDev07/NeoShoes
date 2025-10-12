@@ -176,9 +176,6 @@
         }
     </style>
     <body class="bg-light">
-
-        <%--<jsp:include page="../common/notification.jsp"/>--%>
-
         <c:if test="${not empty sessionScope.flash}">
             <script>
                 showNotification("${sessionScope.flash}", "success");
@@ -457,57 +454,21 @@
                                                                         btnToggle.innerText = "Change Password";
                                                                     }
                                                                 });
-                                                            });
 
-                                                            // avatar upload preview
-                                                            const avatarUpload = document.getElementById('avatarUpload');
-                                                            const avatarInput = document.getElementById('avatarInput');
-                                                            const avatarPreview = document.getElementById('avatarPreview');
+                                                                // Toggle Add Address Form
+                                                                const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
+                                                                const addAddressCard = document.getElementById("addAddressCard");
 
-                                                            avatarUpload.addEventListener('click', () => {
-                                                                avatarInput.click();
-                                                            });
-
-                                                            avatarInput.addEventListener('change', (e) => {
-                                                                if (e.target.files.length > 0) {
-                                                                    const file = e.target.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            });
-
-                                                            // Handle drag and drop for avatar
-                                                            avatarUpload.addEventListener('dragover', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#0d6efd';
-                                                            });
-
-                                                            avatarUpload.addEventListener('dragleave', () => {
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-                                                            });
-
-                                                            avatarUpload.addEventListener('drop', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-
-                                                                if (e.dataTransfer.files.length > 0) {
-                                                                    avatarInput.files = e.dataTransfer.files;
-                                                                    const file = e.dataTransfer.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
+                                                                btnToggleAddAddress.addEventListener("click", () => {
+                                                                    addAddressCard.classList.toggle("d-none");
+                                                                    if (!addAddressCard.classList.contains("d-none")) {
+                                                                        btnToggleAddAddress.innerText = "Hide Form";
+                                                                        // Scroll to form
+                                                                        addAddressCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                                                                    } else {
+                                                                        btnToggleAddAddress.innerText = "Add New Address";
+                                                                    }
+                                                                });
                                                             });
 
                                                             // PROFILE FORM
@@ -629,7 +590,7 @@
                                                                     document.getElementById('profile').classList.add('active');
                                                                 }
                                                             });
-                                                            // Enable/Cancel/Delete Address Functions
+// Enable/Cancel/Delete Address Functions
                                                             function enableEdit(addressId) {
                                                                 document.getElementById('addressName-' + addressId).removeAttribute('readonly');
                                                                 document.getElementById('recipientName-' + addressId).removeAttribute('readonly');

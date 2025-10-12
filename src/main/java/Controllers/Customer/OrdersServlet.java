@@ -33,7 +33,8 @@ public class OrdersServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
-        int customerId = 2;
+//        int customerId = 2;
+        int customerId = Integer.parseInt(request.getParameter("id"));
         try {
 //            customerId = (int) session.getAttribute("customerId");
         } catch (Exception e) {
