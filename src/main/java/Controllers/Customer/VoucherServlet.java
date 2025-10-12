@@ -13,6 +13,7 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @WebServlet(name = "VoucherServlet", urlPatterns = {"/voucher"})
@@ -28,11 +29,11 @@ public class VoucherServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Tạm thời sử dụng customerId mặc định để test
         // Khi tích hợp đăng nhập sau này, sẽ thay bằng customerId từ session
         Integer customerId = getCustomerIdFromSessionOrDefault(request);
-        
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -68,10 +69,10 @@ public class VoucherServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Tạm thời sử dụng customerId mặc định để test
         Integer customerId = getCustomerIdFromSessionOrDefault(request);
-        
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -95,13 +96,13 @@ public class VoucherServlet extends HttpServlet {
     }
 
     /**
-     * Lấy customerId từ session hoặc sử dụng giá trị mặc định
-     * Khi tích hợp đăng nhập, chỉ cần sửa method này
+     * Lấy customerId từ session hoặc sử dụng giá trị mặc định Khi tích hợp đăng
+     * nhập, chỉ cần sửa method này
      */
     private Integer getCustomerIdFromSessionOrDefault(HttpServletRequest request) {
         HttpSession session = request.getSession();
         Integer customerId = (Integer) session.getAttribute("customerId");
-        
+
         // Nếu chưa có session (chưa đăng nhập), sử dụng customerId mặc định
         // Đây là tạm thời, khi tích hợp đăng nhập sẽ bỏ phần này
         if (customerId == null) {
@@ -116,11 +117,11 @@ public class VoucherServlet extends HttpServlet {
             } else {
                 customerId = 1; // Giá trị mặc định để test
             }
-            
+
             // Lưu vào session để các request sau sử dụng
             session.setAttribute("customerId", customerId);
         }
-        
+
         return customerId;
     }
 
@@ -130,39 +131,43 @@ public class VoucherServlet extends HttpServlet {
         List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForCustomer(customerId);
         List<Voucher> usedVouchers = voucherDAO.getUsedVouchersForCustomer(customerId);
 
-        request.setAttribute("availableVouchers", availableVouchers);
-        request.setAttribute("usedVouchers", usedVouchers);
-        request.setAttribute("customerId", customerId); // Truyền customerId để hiển thị
+        // ✅ Không để null đẩy sang JSP
+        request.setAttribute("availableVouchers",
+                availableVouchers != null ? availableVouchers : Collections.emptyList());
+        request.setAttribute("usedVouchers",
+                usedVouchers != null ? usedVouchers : Collections.emptyList());
+        request.setAttribute("customerId", customerId);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("WEB-INF/views/customer/voucher-list.jsp");
-        dispatcher.forward(request, response);
+        // ✅ Forward bằng đường dẫn tuyệt đối
+        request.getRequestDispatcher("/WEB-INF/views/customer/voucher-list.jsp")
+                .forward(request, response);
     }
 
     private void listAvailableVouchers(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
 
         List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForCustomer(customerId);
-        request.setAttribute("availableVouchers", availableVouchers);
+        request.setAttribute("availableVouchers",
+                availableVouchers != null ? availableVouchers : Collections.emptyList());
         request.setAttribute("customerId", customerId);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/voucher-available.jsp");
-        dispatcher.forward(request, response);
+        request.getRequestDispatcher("/views/voucher-available.jsp").forward(request, response);
     }
 
     private void listUsedVouchers(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
 
         List<Voucher> usedVouchers = voucherDAO.getUsedVouchersForCustomer(customerId);
-        request.setAttribute("usedVouchers", usedVouchers);
+        request.setAttribute("usedVouchers",
+                usedVouchers != null ? usedVouchers : Collections.emptyList());
         request.setAttribute("customerId", customerId);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/voucher-used.jsp");
-        dispatcher.forward(request, response);
+        request.getRequestDispatcher("/views/voucher-used.jsp").forward(request, response);
     }
 
     private void showApplyVoucherForm(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
-        
+
         request.setAttribute("customerId", customerId);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/apply-voucher.jsp");
         dispatcher.forward(request, response);
@@ -170,7 +175,7 @@ public class VoucherServlet extends HttpServlet {
 
     private void showCheckVoucherForm(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
-        
+
         request.setAttribute("customerId", customerId);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/check-voucher.jsp");
         dispatcher.forward(request, response);
@@ -178,16 +183,16 @@ public class VoucherServlet extends HttpServlet {
 
     private void applyVoucher(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
-        
+
         String voucherCode = request.getParameter("voucherCode");
         String orderTotalParam = request.getParameter("orderTotal");
-        
+
         try {
             double orderTotal = orderTotalParam != null ? Double.parseDouble(orderTotalParam) : 0;
-            
+
             // Kiểm tra voucher
             Voucher voucher = voucherDAO.getVoucherByCode(voucherCode, customerId);
-            
+
             if (voucher == null) {
                 request.setAttribute("errorMessage", "Voucher code không tồn tại!");
             } else if (!voucher.isActive()) {
@@ -195,26 +200,26 @@ public class VoucherServlet extends HttpServlet {
             } else if (voucher.isExpired()) {
                 request.setAttribute("errorMessage", "Voucher đã hết hạn!");
             } else if (voucher.getMinValue() != null && orderTotal < voucher.getMinValue().doubleValue()) {
-                request.setAttribute("errorMessage", 
-                    "Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue());
+                request.setAttribute("errorMessage",
+                        "Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue());
             } else if (!voucherDAO.isVoucherUsable(voucher.getVoucherId(), customerId)) {
                 request.setAttribute("errorMessage", "Voucher không thể sử dụng!");
             } else {
                 // Tính toán discount
                 double discount = calculateDiscount(voucher, orderTotal);
                 double finalAmount = orderTotal - discount;
-                
+
                 request.setAttribute("successMessage", "Áp dụng voucher thành công!");
                 request.setAttribute("voucher", voucher);
                 request.setAttribute("discount", discount);
                 request.setAttribute("finalAmount", finalAmount);
                 request.setAttribute("originalAmount", orderTotal);
             }
-            
+
         } catch (NumberFormatException e) {
             request.setAttribute("errorMessage", "Số tiền đơn hàng không hợp lệ!");
         }
-        
+
         request.setAttribute("customerId", customerId);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/apply-voucher.jsp");
         dispatcher.forward(request, response);
@@ -222,12 +227,12 @@ public class VoucherServlet extends HttpServlet {
 
     private void checkVoucher(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
-        
+
         String voucherCode = request.getParameter("voucherCode");
-        
+
         // Kiểm tra voucher
         Voucher voucher = voucherDAO.getVoucherByCode(voucherCode, customerId);
-        
+
         if (voucher != null && voucher.canUseVoucher()) {
             request.setAttribute("voucherInfo", voucher);
             request.setAttribute("message", "Voucher có thể sử dụng!");
@@ -236,21 +241,20 @@ public class VoucherServlet extends HttpServlet {
             request.setAttribute("message", "Voucher không thể sử dụng!");
             request.setAttribute("messageType", "error");
         }
-        
+
         request.setAttribute("customerId", customerId);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/check-voucher.jsp");
         dispatcher.forward(request, response);
     }
 
     private void getVoucherCount(HttpServletRequest request, HttpServletResponse response, int customerId)
-            throws ServletException, IOException {
+            throws IOException {
 
         List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForCustomer(customerId);
+        int count = (availableVouchers == null) ? 0 : availableVouchers.size();
 
-        response.setContentType("application/json");
-        PrintWriter out = response.getWriter();
-        out.print("{\"count\": " + availableVouchers.size() + "}");
-        out.flush();
+        response.setContentType("application/json; charset=UTF-8");
+        response.getWriter().write("{\"count\":" + count + "}");
     }
 
     private double calculateDiscount(Voucher voucher, double orderTotal) {
