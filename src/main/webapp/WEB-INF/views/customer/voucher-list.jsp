@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -167,7 +169,7 @@
             }
 
             .voucher-ribbon {
-                background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                background: #000000;
                 color: white;
                 padding: 15px 20px;
                 position: relative;
@@ -371,249 +373,250 @@
     </head>
     <body>
         <div class="voucher-container">
-            <!-- Header -->
-            <div class="voucher-header">
-                <h1><i class="fas fa-tags"></i> Kho Voucher Của Tôi</h1>
-                <p>Khám phá các ưu đãi và giảm giá đặc biệt dành riêng cho bạn</p>
-            </div>
+    <!-- Header -->
+    <div class="voucher-header">
+        <h1><i class="fas fa-tags"></i> My Voucher Wallet</h1>
+        <p>Explore special offers and discounts made just for you</p>
+    </div>
 
-            <!-- Stats -->
-            <div class="voucher-stats">
-                <div class="stat-card available">
-                    <div class="number">${availableVouchers.size()}</div>
-                    <div class="label">Voucher Khả Dụng</div>
-                </div>
-                <div class="stat-card used">
-                    <div class="number">${usedVouchers.size()}</div>
-                    <div class="label">Voucher Đã Dùng</div>
-                </div>
-                <div class="stat-card total">
-                    <div class="number">${availableVouchers.size() + usedVouchers.size()}</div>
-                    <div class="label">Tổng Số Voucher</div>
-                </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="voucher-tabs">
-                <button class="tab-btn active" onclick="switchTab('available')">
-                    <i class="fas fa-gift"></i> Voucher Khả Dụng
-                    <span class="badge">${availableVouchers.size()}</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('used')">
-                    <i class="fas fa-history"></i> Voucher Đã Dùng
-                    <span class="badge">${usedVouchers.size()}</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('all')">
-                    <i class="fas fa-list"></i> Tất Cả Voucher
-                    <span class="badge">${availableVouchers.size() + usedVouchers.size()}</span>
-                </button>
-            </div>
-
-            <!-- Available Vouchers Tab -->
-            <div id="available-tab" class="tab-content active">
-                <c:if test="${empty availableVouchers}">
-                    <div class="empty-state">
-                        <i class="fas fa-gift"></i>
-                        <h3>Chưa có voucher khả dụng</h3>
-                        <p>Hãy tham gia các chương trình khuyến mãi để nhận voucher bạn nhé!</p>
-                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href = '${pageContext.request.contextPath}/products'">
-                            <i class="fas fa-shopping-bag"></i> Mua Sắm Ngay
-                        </button>
-                    </div>
-                </c:if>
-
-                <div class="voucher-grid">
-                    <c:forEach var="voucher" items="${availableVouchers}">
-                        <div class="voucher-card">
-                            <div class="voucher-ribbon">
-                                <div class="voucher-code">${voucher.voucherCode}</div>
-                                <div>ƯU ĐÃI ĐẶC BIỆT</div>
-                            </div>
-                            <div class="voucher-body">
-                                <div class="voucher-value ${voucher.type == 'PERCENTAGE' ? 'percentage' : 'fixed'}">
-                                    <c:choose>
-                                        <c:when test="${voucher.type == 'PERCENTAGE'}">
-                                            ${voucher.value}% OFF
-                                        </c:when>
-                                        <c:otherwise>
-                                            <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-
-                                <div class="voucher-description">
-                                    ${voucher.voucherDescription}
-                                </div>
-
-                                <div class="voucher-details">
-                                    <div class="voucher-detail">
-                                        <span class="label"><i class="far fa-calendar"></i> HSD:</span>
-                                        <span class="value"><fmt:formatDate value="${voucher.endDate}" pattern="dd/MM/yyyy"/></span>
-                                    </div>
-                                    <c:if test="${voucher.minValue != null}">
-                                        <div class="voucher-detail">
-                                            <span class="label"><i class="fas fa-shopping-cart"></i> Đơn tối thiểu:</span>
-                                            <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
-                                        </div>
-                                    </c:if>
-                                    <c:if test="${voucher.userUsageLimit != null}">
-                                        <div class="voucher-detail">
-                                            <span class="label"><i class="fas fa-redo"></i> Số lần sử dụng:</span>
-                                            <span class="value">${voucher.usageCount}/${voucher.userUsageLimit}</span>
-                                        </div>
-                                    </c:if>
-                                </div>
-
-                                <div class="voucher-actions">
-                                    <button class="btn btn-primary" onclick="applyVoucher('${voucher.voucherCode}')">
-                                        <i class="fas fa-check"></i> Sử Dụng Ngay
-                                    </button>
-                                    <button class="btn btn-outline" onclick="copyVoucherCode('${voucher.voucherCode}')">
-                                        <i class="fas fa-copy"></i> Sao Chép
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-            </div>
-
-            <!-- Used Vouchers Tab -->
-            <div id="used-tab" class="tab-content">
-                <c:if test="${empty usedVouchers}">
-                    <div class="empty-state">
-                        <i class="fas fa-history"></i>
-                        <h3>Chưa có voucher đã sử dụng</h3>
-                        <p>Các voucher bạn đã sử dụng sẽ xuất hiện tại đây</p>
-                    </div>
-                </c:if>
-
-                <div class="voucher-grid">
-                    <c:forEach var="voucher" items="${usedVouchers}">
-                        <div class="voucher-card used">
-                            <div class="voucher-ribbon" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
-                                <div class="voucher-code">${voucher.voucherCode}</div>
-                                <div>ĐÃ SỬ DỤNG</div>
-                            </div>
-                            <div class="voucher-body">
-                                <div class="voucher-value" style="color: #95a5a6;">
-                                    <c:choose>
-                                        <c:when test="${voucher.type == 'PERCENTAGE'}">
-                                            ${voucher.value}% OFF
-                                        </c:when>
-                                        <c:otherwise>
-                                            <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-
-                                <div class="voucher-description" style="color: #95a5a6;">
-                                    ${voucher.voucherDescription}
-                                </div>
-
-                                <div class="voucher-details" style="background: #ecf0f1;">
-                                    <div class="voucher-detail">
-                                        <span class="label"><i class="fas fa-redo"></i> Đã sử dụng:</span>
-                                        <span class="value">${voucher.usageCount} lần</span>
-                                    </div>
-                                    <div class="voucher-detail">
-                                        <span class="label"><i class="far fa-calendar"></i> HSD:</span>
-                                        <span class="value"><fmt:formatDate value="${voucher.endDate}" pattern="dd/MM/yyyy"/></span>
-                                    </div>
-                                </div>
-
-                                <div class="voucher-actions">
-                                    <button class="btn btn-outline" disabled style="cursor: not-allowed;">
-                                        <i class="fas fa-check"></i> Đã Sử Dụng
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-            </div>
-
-            <!-- All Vouchers Tab -->
-            <div id="all-tab" class="tab-content">
-                <c:if test="${empty availableVouchers && empty usedVouchers}">
-                    <div class="empty-state">
-                        <i class="fas fa-tags"></i>
-                        <h3>Chưa có voucher nào</h3>
-                        <p>Hãy tham gia các chương trình khuyến mãi để nhận voucher bạn nhé!</p>
-                    </div>
-                </c:if>
-
-                <div class="voucher-grid">
-                    <c:forEach var="voucher" items="${availableVouchers}">
-                        <div class="voucher-card">
-                            <!-- Same as available tab -->
-                            <div class="voucher-ribbon">
-                                <div class="voucher-code">${voucher.voucherCode}</div>
-                                <div>ƯU ĐÃI ĐẶC BIỆT</div>
-                            </div>
-                            <div class="voucher-body">
-                                <div class="voucher-value ${voucher.type == 'PERCENTAGE' ? 'percentage' : 'fixed'}">
-                                    <c:choose>
-                                        <c:when test="${voucher.type == 'PERCENTAGE'}">
-                                            ${voucher.value}% OFF
-                                        </c:when>
-                                        <c:otherwise>
-                                            <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <div class="voucher-description">${voucher.voucherDescription}</div>
-                                <div class="voucher-details">
-                                    <div class="voucher-detail">
-                                        <span class="label"><i class="far fa-calendar"></i> HSD:</span>
-                                        <span class="value"><fmt:formatDate value="${voucher.endDate}" pattern="dd/MM/yyyy"/></span>
-                                    </div>
-                                    <c:if test="${voucher.minValue != null}">
-                                        <div class="voucher-detail">
-                                            <span class="label"><i class="fas fa-shopping-cart"></i> Đơn tối thiểu:</span>
-                                            <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
-                                        </div>
-                                    </c:if>
-                                </div>
-                                <div class="voucher-actions">
-                                    <button class="btn btn-primary" onclick="applyVoucher('${voucher.voucherCode}')">
-                                        <i class="fas fa-check"></i> Sử Dụng Ngay
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-
-                    <c:forEach var="voucher" items="${usedVouchers}">
-                        <div class="voucher-card used">
-                            <!-- Same as used tab -->
-                            <div class="voucher-ribbon" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
-                                <div class="voucher-code">${voucher.voucherCode}</div>
-                                <div>ĐÃ SỬ DỤNG</div>
-                            </div>
-                            <div class="voucher-body">
-                                <div class="voucher-value" style="color: #95a5a6;">
-                                    <c:choose>
-                                        <c:when test="${voucher.type == 'PERCENTAGE'}">
-                                            ${voucher.value}% OFF
-                                        </c:when>
-                                        <c:otherwise>
-                                            <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <div class="voucher-description" style="color: #95a5a6;">${voucher.voucherDescription}</div>
-                                <div class="voucher-actions">
-                                    <button class="btn btn-outline" disabled style="cursor: not-allowed;">
-                                        <i class="fas fa-check"></i> Đã Sử Dụng
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-            </div>
+    <!-- Stats -->
+    <div class="voucher-stats">
+        <div class="stat-card available">
+            <div class="number">${fn:length(availableVouchers)}</div>
+            <div class="label">Available Vouchers</div>
         </div>
+        <div class="stat-card used">
+            <div class="number">${fn:length(usedVouchers)}</div>
+            <div class="label">Used Vouchers</div>
+        </div>
+        <div class="stat-card total">
+            <div class="number">${fn:length(availableVouchers) + fn:length(usedVouchers)}</div>
+            <div class="label">Total Vouchers</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="voucher-tabs">
+        <button class="tab-btn active" onclick="switchTab('available')">
+            <i class="fas fa-gift"></i> Available
+            <span class="badge">${fn:length(availableVouchers)}</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('used')">
+            <i class="fas fa-history"></i> Used
+            <span class="badge">${fn:length(usedVouchers)}</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('all')">
+            <i class="fas fa-list"></i> All
+            <span class="badge">${fn:length(availableVouchers) + fn:length(usedVouchers)}</span>
+        </button>
+    </div>
+
+    <!-- Available Vouchers Tab -->
+    <div id="available-tab" class="tab-content active">
+        <c:if test="${empty availableVouchers}">
+            <div class="empty-state">
+                <i class="fas fa-gift"></i>
+                <h3>No available vouchers yet</h3>
+                <p>Join promotions to earn vouchers!</p>
+                <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href = '${pageContext.request.contextPath}/products'">
+                    <i class="fas fa-shopping-bag"></i> Shop Now
+                </button>
+            </div>
+        </c:if>
+
+        <div class="voucher-grid">
+            <c:forEach var="voucher" items="${availableVouchers}">
+                <div class="voucher-card">
+                    <div class="voucher-ribbon">
+                        <div class="voucher-code">${voucher.voucherCode}</div>
+                        <div>SPECIAL OFFER</div>
+                    </div>
+                    <div class="voucher-body">
+                        <div class="voucher-value ${voucher.type == 'PERCENTAGE' ? 'percentage' : 'fixed'}">
+                            <c:choose>
+                                <c:when test="${voucher.type == 'PERCENTAGE'}">
+                                    ${voucher.value}% OFF
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <div class="voucher-description">
+                            ${voucher.voucherDescription}
+                        </div>
+
+                        <div class="voucher-details">
+                            <div class="voucher-detail">
+                                <span class="label"><i class="far fa-calendar"></i> Expiration:</span>
+                                <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
+                            </div>
+                            <c:if test="${voucher.minValue != null}">
+                                <div class="voucher-detail">
+                                    <span class="label"><i class="fas fa-shopping-cart"></i> Minimum order:</span>
+                                    <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
+                                </div>
+                            </c:if>
+                            <c:if test="${voucher.userUsageLimit != null}">
+                                <div class="voucher-detail">
+                                    <span class="label"><i class="fas fa-redo"></i> Usage:</span>
+                                    <span class="value">${voucher.usageCount}/${voucher.userUsageLimit}</span>
+                                </div>
+                            </c:if>
+                        </div>
+
+                        <div class="voucher-actions">
+                            <button class="btn btn-primary" onclick="applyVoucher('${voucher.voucherCode}')">
+                                <i class="fas fa-check"></i> Use Now
+                            </button>
+                            <button class="btn btn-outline" onclick="copyVoucherCode('${voucher.voucherCode}')">
+                                <i class="fas fa-copy"></i> Copy Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+
+    <!-- Used Vouchers Tab -->
+    <div id="used-tab" class="tab-content">
+        <c:if test="${empty usedVouchers}">
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h3>No used vouchers yet</h3>
+                <p>Vouchers you’ve used will appear here</p>
+            </div>
+        </c:if>
+
+        <div class="voucher-grid">
+            <c:forEach var="voucher" items="${usedVouchers}">
+                <div class="voucher-card used">
+                    <div class="voucher-ribbon" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
+                        <div class="voucher-code">${voucher.voucherCode}</div>
+                        <div>USED</div>
+                    </div>
+                    <div class="voucher-body">
+                        <div class="voucher-value" style="color: #95a5a6;">
+                            <c:choose>
+                                <c:when test="${voucher.type == 'PERCENTAGE'}">
+                                    ${voucher.value}% OFF
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <div class="voucher-description" style="color: #95a5a6;">
+                            ${voucher.voucherDescription}
+                        </div>
+
+                        <div class="voucher-details" style="background: #ecf0f1;">
+                            <div class="voucher-detail">
+                                <span class="label"><i class="fas fa-redo"></i> Used:</span>
+                                <span class="value">${voucher.usageCount} time(s)</span>
+                            </div>
+                            <div class="voucher-detail">
+                                <span class="label"><i class="far fa-calendar"></i> Expiration:</span>
+                                <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
+                            </div>
+                        </div>
+
+                        <div class="voucher-actions">
+                            <button class="btn btn-outline" disabled style="cursor: not-allowed;">
+                                <i class="fas fa-check"></i> Used
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+
+    <!-- All Vouchers Tab -->
+    <div id="all-tab" class="tab-content">
+        <c:if test="${empty availableVouchers && empty usedVouchers}">
+            <div class="empty-state">
+                <i class="fas fa-tags"></i>
+                <h3>No vouchers yet</h3>
+                <p>Join promotions to earn vouchers!</p>
+            </div>
+        </c:if>
+
+        <div class="voucher-grid">
+            <c:forEach var="voucher" items="${availableVouchers}">
+                <div class="voucher-card">
+                    <!-- Same as available tab -->
+                    <div class="voucher-ribbon">
+                        <div class="voucher-code">${voucher.voucherCode}</div>
+                        <div>SPECIAL OFFER</div>
+                    </div>
+                    <div class="voucher-body">
+                        <div class="voucher-value ${voucher.type == 'PERCENTAGE' ? 'percentage' : 'fixed'}">
+                            <c:choose>
+                                <c:when test="${voucher.type == 'PERCENTAGE'}">
+                                    ${voucher.value}% OFF
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <div class="voucher-description">${voucher.voucherDescription}</div>
+                        <div class="voucher-details">
+                            <div class="voucher-detail">
+                                <span class="label"><i class="far fa-calendar"></i> Expiration:</span>
+                                <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
+                            </div>
+                            <c:if test="${voucher.minValue != null}">
+                                <div class="voucher-detail">
+                                    <span class="label"><i class="fas fa-shopping-cart"></i> Minimum order:</span>
+                                    <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
+                                </div>
+                            </c:if>
+                        </div>
+                        <div class="voucher-actions">
+                            <button class="btn btn-primary" onclick="applyVoucher('${voucher.voucherCode}')">
+                                <i class="fas fa-check"></i> Use Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
+
+            <c:forEach var="voucher" items="${usedVouchers}">
+                <div class="voucher-card used">
+                    <!-- Same as used tab -->
+                    <div class="voucher-ribbon" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
+                        <div class="voucher-code">${voucher.voucherCode}</div>
+                        <div>USED</div>
+                    </div>
+                    <div class="voucher-body">
+                        <div class="voucher-value" style="color: #95a5a6;">
+                            <c:choose>
+                                <c:when test="${voucher.type == 'PERCENTAGE'}">
+                                    ${voucher.value}% OFF
+                                </c:when>
+                                <c:otherwise>
+                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <div class="voucher-description" style="color: #95a5a6;">${voucher.voucherDescription}</div>
+                        <div class="voucher-actions">
+                            <button class="btn btn-outline" disabled style="cursor: not-allowed;">
+                                <i class="fas fa-check"></i> Used
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+</div>
+
 
         <script>
             function switchTab(tabName) {
