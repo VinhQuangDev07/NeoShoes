@@ -6,7 +6,6 @@ package DAOs;
 
 import Models.Order;
 import Models.OrderDetail;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,7 +27,7 @@ public class OrderDAO extends DB.DBContext {
     public List<Order> listByCustomer(int customerId) {
         String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, " +
                      "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt " +
-                     "FROM dbo.[Order] o " +
+                     "FROM [Order] o " +
                      "WHERE o.CustomerId = ? " +
                      "ORDER BY o.PlacedAt DESC";
         
@@ -55,7 +54,7 @@ public class OrderDAO extends DB.DBContext {
     public Order findWithItems(int orderId) {
         String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, " +
                      "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt " +
-                     "FROM dbo.[Order] o " +
+                     "FROM [Order] o " +
                      "WHERE o.OrderId = ?";
         
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -135,7 +134,7 @@ public class OrderDAO extends DB.DBContext {
      * Update order status
      */
     public boolean updateOrderStatus(int orderId, String status) {
-        String sql = "UPDATE dbo.[Order] SET UpdatedAt = ? WHERE OrderId = ?";
+        String sql = "UPDATE [Order] SET UpdatedAt = ? WHERE OrderId = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
             ps.setInt(2, orderId);
@@ -157,21 +156,21 @@ public class OrderDAO extends DB.DBContext {
             
             try {
                 // Delete OrderStatusHistory first (foreign key constraint)
-                String deleteStatusHistorySql = "DELETE FROM dbo.OrderStatusHistory WHERE OrderId = ?";
+                String deleteStatusHistorySql = "DELETE FROM OrderStatusHistory WHERE OrderId = ?";
                 try (PreparedStatement ps = con.prepareStatement(deleteStatusHistorySql)) {
                     ps.setInt(1, orderId);
                     ps.executeUpdate();
                 }
                 
                 // Delete OrderDetail
-                String deleteOrderDetailSql = "DELETE FROM dbo.OrderDetail WHERE OrderId = ?";
+                String deleteOrderDetailSql = "DELETE FROM OrderDetail WHERE OrderId = ?";
                 try (PreparedStatement ps = con.prepareStatement(deleteOrderDetailSql)) {
                     ps.setInt(1, orderId);
                     ps.executeUpdate();
                 }
                 
                 // Delete Order
-                String deleteOrderSql = "DELETE FROM dbo.[Order] WHERE OrderId = ?";
+                String deleteOrderSql = "DELETE FROM [Order] WHERE OrderId = ?";
                 try (PreparedStatement ps = con.prepareStatement(deleteOrderSql)) {
                     ps.setInt(1, orderId);
                     int rowsAffected = ps.executeUpdate();

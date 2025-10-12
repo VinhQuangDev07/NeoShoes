@@ -11,7 +11,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebServlet(name = "OrderDetailServlet", urlPatterns = {"/orders/detail"})
@@ -23,29 +22,16 @@ public class OrderDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
-//        
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            System.out.println("❌ No session or customerId - redirecting to login");
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
+        // TODO: Implement session-based authentication when login is ready
+        // Hardcode customerId = 2 for testing (no login functionality yet)
+        // TODO: Use this for access control when login is implemented
+        @SuppressWarnings("unused")
         int customerId = 2;
-        try {
-//            customerId = (int) session.getAttribute("customerId");
-
-        } catch (Exception e) {
-            // If customerId is not an integer, use default value
-        }
 
         int orderId = Integer.parseInt(request.getParameter("id"));
-        System.out.println("🔍 OrderDetailServlet: Looking for Order ID: " + orderId);
         Order order = orderDAO.findWithItems(orderId);
-        System.out.println("🔍 OrderDetailServlet: Order found: " + (order != null ? "YES" : "NO"));
         
         if (order == null) {
-            System.out.println("❌ OrderDetailServlet: Order not found, sending 404");
             response.sendError(404);
             return;
         }
@@ -64,16 +50,13 @@ public class OrderDetailServlet extends HttpServlet {
         
         if ("cancel".equals(action)) {
             int orderId = Integer.parseInt(request.getParameter("orderId"));
-            System.out.println("🗑️ OrderDetailServlet: Cancelling Order ID: " + orderId);
             
             boolean success = orderDAO.deleteOrder(orderId);
             
             if (success) {
-                System.out.println("✅ OrderDetailServlet: Order cancelled successfully");
                 // Redirect to orders page with success message
                 response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
             } else {
-                System.out.println("❌ OrderDetailServlet: Failed to cancel order");
                 // Redirect to orders page with error message
                 response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
             }

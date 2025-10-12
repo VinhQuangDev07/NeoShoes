@@ -157,7 +157,7 @@ public class ProfileServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/profile?id=2");
+        response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
     }
 
     /**

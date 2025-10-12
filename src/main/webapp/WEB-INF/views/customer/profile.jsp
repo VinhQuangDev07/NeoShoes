@@ -372,6 +372,7 @@
                                     <form method="post" action="${pageContext.request.contextPath}/address" id="addressForm-${addr.addressId}">
                                         <input type="hidden" name="addressAction" value="updateAddress"/>
                                         <input type="hidden" name="addressId" value="${addr.addressId}"/>
+                                        <input type="hidden" name="customerId" value="${customer.id}" />
 
                                         <div class="mb-2">
                                             <div class="form-floating">
@@ -638,8 +639,14 @@
                                                                     idInput.name = 'addressId';
                                                                     idInput.value = addressId;
 
+                                                                    const customeridInput = document.createElement('input');
+                                                                    idInput.type = 'hidden';
+                                                                    idInput.name = 'customerId';
+                                                                    idInput.value = customerId;
+
                                                                     form.appendChild(actionInput);
                                                                     form.appendChild(idInput);
+                                                                    form.appendChild(customeridInput);
                                                                     document.body.appendChild(form);
                                                                     form.submit();
                                                                 }
