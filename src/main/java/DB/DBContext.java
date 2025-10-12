@@ -26,7 +26,7 @@ public class DBContext {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "❌ Driver not found", ex);
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Driver not found", ex);
         }
     }
 

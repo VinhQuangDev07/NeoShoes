@@ -209,13 +209,13 @@
                 <strong>Current Role:</strong> <code>${userRole}</code> &nbsp;|&nbsp;
                 <a href="<c:url value='/managebrands'><c:param name='role' value='admin'/></c:url>">Set as Admin</a>
                 <a href="<c:url value='/managebrands'><c:param name='role' value='staff'/></c:url>">Set as Staff</a>
-                </div>
+            </div>
 
-                <!-- Nút Add chỉ hiển thị khi có quyền -->
-            <c:if test="${canEdit}">
+            <!-- Nút Add chỉ hiển thị khi có quyền SỬA ĐỔI -->
+            <c:if test="${canModify}">
                 <div class="toolbar">
                     <a class="btn-add" href="<c:url value='/managebrands/add'><c:param name='role' value='${userRole}'/></c:url>">+ Add New Brand</a>
-                    </div>
+                </div>
             </c:if>
 
             <div class="table-card">
@@ -224,16 +224,18 @@
                         <col class="col-id" />
                         <col class="col-name" />
                         <col class="col-logo" />
-                        <c:if test="${canEdit}"><col class="col-actions" /></c:if>
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Logo</th>
-                                <c:if test="${canEdit}">
+                        <c:if test="${canModify}">
+                            <col class="col-actions" />
+                        </c:if>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Logo</th>
+                            <c:if test="${canModify}">
                                 <th>Actions</th>
-                                </c:if>
+                            </c:if>
                         </tr>
                     </thead>
                     <tbody>
@@ -248,7 +250,7 @@
                                         </span>
                                     </c:if>
                                 </td>
-                                <c:if test="${canEdit}">
+                                <c:if test="${canModify}">
                                     <td>
                                         <div class="actions">
                                             <a class="btn btn-edit"
