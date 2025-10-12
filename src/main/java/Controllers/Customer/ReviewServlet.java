@@ -71,21 +71,15 @@ public class ReviewServlet extends HttpServlet {
             
             if (rating != null) {
                 // Get filtered reviews by rating
-                System.out.println("🔍 ReviewServlet: Getting filtered reviews for productId: " + productId + ", rating: " + rating);
                 reviews = reviewDAO.getReviewsByFilter(productId, rating, null);
-                System.out.println("🔍 ReviewServlet: Found " + reviews.size() + " filtered reviews");
             } else {
                 // Get all reviews for the product
-                System.out.println("🔍 ReviewServlet: Getting all reviews for productId: " + productId);
                 reviews = reviewDAO.getReviewsByProduct(productId);
-                System.out.println("🔍 ReviewServlet: Found " + reviews.size() + " reviews");
             }
             
             // Apply time filter if specified
             if (timeParam != null && !timeParam.trim().isEmpty() && !"all".equals(timeParam)) {
-                System.out.println("🔍 ReviewServlet: Applying time filter: " + timeParam);
                 reviews = filterReviewsByTime(reviews, timeParam);
-                System.out.println("🔍 ReviewServlet: After time filter: " + reviews.size() + " reviews");
             }
             
             // Set filter attributes for JSP

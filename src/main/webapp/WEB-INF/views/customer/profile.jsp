@@ -21,7 +21,7 @@
         .form-floating {
             position: relative;
             margin-bottom: 15px;
-        }      
+        }
 
         .customer-sidebar {
             height: 326px;
@@ -372,6 +372,7 @@
                                     <form method="post" action="${pageContext.request.contextPath}/address" id="addressForm-${addr.addressId}">
                                         <input type="hidden" name="addressAction" value="updateAddress"/>
                                         <input type="hidden" name="addressId" value="${addr.addressId}"/>
+                                        <input type="hidden" name="customerId" value="${customer.id}" />
 
                                         <div class="mb-2">
                                             <div class="form-floating">
@@ -435,13 +436,13 @@
                         </div>
                     </div>
                 </div>
- </div>
+            </div>
 
         </div>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-                <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
 
-                <script>
+        <script>
                                                             document.addEventListener("DOMContentLoaded", () => {
                                                                 const btnToggle = document.getElementById("togglePasswordForm");
                                                                 const passwordCard = document.getElementById("passwordCard");
@@ -475,7 +476,6 @@
                                                             const profileForm = document.getElementById("profileForm");
                                                             const nameInput = document.getElementById("name");
                                                             const phoneInput = document.getElementById("phone");
-                                                            const avatarInput = document.getElementById("avatar");
                                                             const genderSelect = document.getElementById("gender");
 
                                                             profileForm.addEventListener("submit", e => {
@@ -490,7 +490,6 @@
 
                                                                 const nameValue = nameInput.value.trim();
                                                                 const phoneValue = phoneInput.value.trim();
-                                                                const avatarValue = avatarInput.value.trim();
                                                                 const genderValue = genderSelect.value;
 
                                                                 if (nameValue === "" || nameValue.length < 3) {
@@ -505,13 +504,6 @@
                                                                     valid = false;
                                                                 } else {
                                                                     setSuccessInput(phoneInput);
-                                                                }
-
-                                                                if (avatarValue !== "" && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i.test(avatarValue)) {
-                                                                    setErrorInput(avatarInput, "Avatar must be a valid image URL.");
-                                                                    valid = false;
-                                                                } else {
-                                                                    setSuccessInput(avatarInput);
                                                                 }
 
                                                                 if (genderValue === "") {
@@ -647,12 +639,18 @@
                                                                     idInput.name = 'addressId';
                                                                     idInput.value = addressId;
 
+                                                                    const customeridInput = document.createElement('input');
+                                                                    idInput.type = 'hidden';
+                                                                    idInput.name = 'customerId';
+                                                                    idInput.value = customerId;
+
                                                                     form.appendChild(actionInput);
                                                                     form.appendChild(idInput);
+                                                                    form.appendChild(customeridInput);
                                                                     document.body.appendChild(form);
                                                                     form.submit();
                                                                 }
                                                             }
-                </script>
-                </body>
-                </html>
+        </script>
+    </body>
+</html>

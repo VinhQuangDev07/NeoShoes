@@ -13,7 +13,7 @@ import DAOs.ProductDAO;
 import Models.Category;
 import Models.Product;
 
-@WebServlet(name = "HomeServlet", urlPatterns = {"/home", "/"})
+@WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
 public class HomeServlet extends HttpServlet {
     
     private CategoryDAO categoryDAO;

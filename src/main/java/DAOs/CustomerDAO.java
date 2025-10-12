@@ -5,7 +5,7 @@
 package DAOs;
 
 import Models.Customer;
-import Utils.Common;
+import Utils.Utils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -101,7 +101,7 @@ public class CustomerDAO extends DB.DBContext{
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String oldHash = rs.getString(1);
-                    if (!Common.verifyPassword(currentPlain, oldHash)) {
+                    if (!Utils.verifyPassword(currentPlain, oldHash)) {
                         return false;
                     }
                 } else {
@@ -109,7 +109,7 @@ public class CustomerDAO extends DB.DBContext{
                 }
             }
             try (PreparedStatement up = con.prepareStatement(updSql)) {
-                up.setString(1, Common.hashPassword(newPlain));
+                up.setString(1, Utils.hashPassword(newPlain));
                 up.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
                 up.setInt(3, id);
                 return up.executeUpdate() > 0;
