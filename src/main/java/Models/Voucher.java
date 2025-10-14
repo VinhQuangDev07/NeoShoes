@@ -2,8 +2,11 @@ package Models;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.time.ZoneId;
 
 public class Voucher {
+
     private int voucherId;
     private String voucherCode;
     private String type;
@@ -22,11 +25,12 @@ public class Voucher {
     private Integer usageCount;
 
     // Constructors
-    public Voucher() {}
+    public Voucher() {
+    }
 
-    public Voucher(int voucherId, String voucherCode, String type, BigDecimal value, 
-                  String voucherDescription, LocalDateTime startDate, LocalDateTime endDate,
-                  boolean isActive) {
+    public Voucher(int voucherId, String voucherCode, String type, BigDecimal value,
+            String voucherDescription, LocalDateTime startDate, LocalDateTime endDate,
+            boolean isActive) {
         this.voucherId = voucherId;
         this.voucherCode = voucherCode;
         this.type = type;
@@ -38,53 +42,141 @@ public class Voucher {
     }
 
     // Getters and Setters
-    public int getVoucherId() { return voucherId; }
-    public void setVoucherId(int voucherId) { this.voucherId = voucherId; }
+    public int getVoucherId() {
+        return voucherId;
+    }
 
-    public String getVoucherCode() { return voucherCode; }
-    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
+    public void setVoucherId(int voucherId) {
+        this.voucherId = voucherId;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getVoucherCode() {
+        return voucherCode;
+    }
 
-    public BigDecimal getValue() { return value; }
-    public void setValue(BigDecimal value) { this.value = value; }
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
+    }
 
-    public BigDecimal getMaxValue() { return maxValue; }
-    public void setMaxValue(BigDecimal maxValue) { this.maxValue = maxValue; }
+    public String getType() {
+        return type;
+    }
 
-    public BigDecimal getMinValue() { return minValue; }
-    public void setMinValue(BigDecimal minValue) { this.minValue = minValue; }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-    public String getVoucherDescription() { return voucherDescription; }
-    public void setVoucherDescription(String voucherDescription) { this.voucherDescription = voucherDescription; }
+    public BigDecimal getValue() {
+        return value;
+    }
 
-    public LocalDateTime getStartDate() { return startDate; }
-    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
 
-    public LocalDateTime getEndDate() { return endDate; }
-    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+    public BigDecimal getMaxValue() {
+        return maxValue;
+    }
 
-    public Integer getTotalUsageLimit() { return totalUsageLimit; }
-    public void setTotalUsageLimit(Integer totalUsageLimit) { this.totalUsageLimit = totalUsageLimit; }
+    public void setMaxValue(BigDecimal maxValue) {
+        this.maxValue = maxValue;
+    }
 
-    public Integer getUserUsageLimit() { return userUsageLimit; }
-    public void setUserUsageLimit(Integer userUsageLimit) { this.userUsageLimit = userUsageLimit; }
+    public BigDecimal getMinValue() {
+        return minValue;
+    }
 
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public void setMinValue(BigDecimal minValue) {
+        this.minValue = minValue;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getVoucherDescription() {
+        return voucherDescription;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setVoucherDescription(String voucherDescription) {
+        this.voucherDescription = voucherDescription;
+    }
 
-    public boolean isDeleted() { return isDeleted; }
-    public void setDeleted(boolean deleted) { isDeleted = deleted; }
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
 
-    public Integer getUsageCount() { return usageCount; }
-    public void setUsageCount(Integer usageCount) { this.usageCount = usageCount; }
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDateTime getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+
+    public Integer getTotalUsageLimit() {
+        return totalUsageLimit;
+    }
+
+    public void setTotalUsageLimit(Integer totalUsageLimit) {
+        this.totalUsageLimit = totalUsageLimit;
+    }
+
+    public Integer getUserUsageLimit() {
+        return userUsageLimit;
+    }
+
+    public void setUserUsageLimit(Integer userUsageLimit) {
+        this.userUsageLimit = userUsageLimit;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public Integer getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(Integer usageCount) {
+        this.usageCount = usageCount;
+    }
+
+    public Date getStartDateAsDate() {
+        return startDate == null ? null : Date.from(startDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public Date getEndDateAsDate() {
+        return endDate == null ? null : Date.from(endDate.atZone(ZoneId.systemDefault()).toInstant());
+    }
 
     // Helper methods
     public String getDisplayValue() {
@@ -98,17 +190,16 @@ public class Voucher {
     public boolean isExpired() {
         return endDate != null && endDate.isBefore(LocalDateTime.now());
     }
-    
 
     public boolean canUseVoucher() {
         if (!isActive || isDeleted || isExpired()) {
             return false;
         }
-        
+
         if (userUsageLimit != null && usageCount != null && usageCount >= userUsageLimit) {
             return false;
         }
-        
+
         return true;
     }
 }
