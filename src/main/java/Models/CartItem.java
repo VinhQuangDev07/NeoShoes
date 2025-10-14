@@ -67,6 +67,15 @@ public class CartItem {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    @Override
+    public String toString() {
+        return "CartItem{" + "cartItemId=" + cartItemId 
+                + ", customerId=" + customerId 
+                + ", variant=" + variant 
+                + ", quantity=" + quantity 
+                + ", createdAt=" + createdAt + '}';
+    }
     
     
     

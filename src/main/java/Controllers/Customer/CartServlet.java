@@ -28,8 +28,17 @@ import java.util.Map;
 @WebServlet(name = "CartServlet", urlPatterns = {"/cart"})
 public class CartServlet extends HttpServlet {
 
-    CartDAO cartDAO = new CartDAO();
-    ProductVariantDAO variantDAO = new ProductVariantDAO();
+    private CartDAO cartDAO;
+    private ProductVariantDAO variantDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        cartDAO = new CartDAO();
+        variantDAO = new ProductVariantDAO();
+    }
+    
+    
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -64,7 +73,7 @@ public class CartServlet extends HttpServlet {
         Map<Integer, List<String>> sizesByProduct = new HashMap<>();
 
         for (CartItem item : cartItems) {
-            int productId = item.getVariant().getProductId();
+            int productId = item.getVariant().getProduct().getProductId();
 
             if (!variantsByProduct.containsKey(productId)) {
                 List<ProductVariant> variants = variantDAO.getByProductId(productId);
@@ -81,8 +90,13 @@ public class CartServlet extends HttpServlet {
                         sizes.add(v.getSize());
                     }
                 }
+                
+                
                 colorsByProduct.put(productId, colors);
                 sizesByProduct.put(productId, sizes);
+                
+                System.out.println(colorsByProduct.toString());
+                System.out.println(sizesByProduct.toString());
             }
         }
         
