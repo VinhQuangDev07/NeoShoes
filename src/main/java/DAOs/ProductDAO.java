@@ -85,7 +85,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC "
+                + "ORDER BY p.ProductId ASC "
                 + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = this.getConnection()) {
@@ -146,7 +146,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC "
+                + "ORDER BY p.ProductId ASC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = this.getConnection()) {
@@ -235,7 +235,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -290,7 +290,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -521,7 +521,7 @@ public class ProductDAO extends DBContext {
                 + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
                 + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
                 + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
+                + "ORDER BY p.ProductId ASC";
 
         try (Connection conn = this.getConnection()) {
             if (conn == null) {
@@ -542,62 +542,130 @@ public class ProductDAO extends DBContext {
         }
         return products;
     }
-
-    /* ---------- 8) Products by category and brand ---------- */
-    public List<Product> getProductsByCategoryAndBrand(int categoryId, int brandId) {
-        List<Product> products = new ArrayList<>();
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE p.CategoryId = ? AND p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId DESC";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getProductsByCategoryAndBrand");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, categoryId);
-                ps.setInt(2, brandId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getProductsByCategoryAndBrand: " + e.getMessage());
-            e.printStackTrace();
-        }
+   /* ---------- Latest products (dựa trên thời gian tạo) ---------- */
+public List<Product> getLatestProducts(int limit) {
+    List<Product> products = new ArrayList<>();
+    
+    if (limit <= 0) {
+        System.err.println("❌ Limit phải lớn hơn 0");
         return products;
     }
 
+    String query
+        = "SELECT TOP (?) "  // SỬ DỤNG TOP THAY VÌ OFFSET/FETCH
+        + " p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+        + " p.Description, p.DefaultImageUrl, p.Material, "
+        + " b.Name AS BrandName, c.Name AS CategoryName, "
+        + " MIN(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) AS MinPrice, "
+        + " MAX(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) AS MaxPrice, "
+        + " SUM(CASE WHEN pv.IsDeleted = 0 AND pv.QuantityAvailable > 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
+        + " Colors.AvailableColors, Sizes.AvailableSizes, "
+        + " p.CreatedAt AS ProductCreatedAt "
+        + "FROM Product p "
+        + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
+        + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
+        + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
+        + "OUTER APPLY ( "
+        + " SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
+        + " FROM ProductVariant pv2 "
+        + " WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 AND pv2.Price > 0 "
+        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
+        + ") Colors "
+        + "OUTER APPLY ( "
+        + " SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
+        + " FROM ProductVariant pv3 "
+        + " WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 AND pv3.Price > 0 "
+        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
+        + ") Sizes "
+        + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
+        + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+        + " p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
+        + " Colors.AvailableColors, Sizes.AvailableSizes, p.CreatedAt "
+        + "HAVING MIN(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) IS NOT NULL "
+        + "ORDER BY p.CreatedAt DESC";  // SẮP XẾP THEO THỜI GIAN TẠO MỚI NHẤT
+
+    try (Connection conn = this.getConnection()) {
+        if (conn == null) {
+            System.err.println("❌ Không thể kết nối database trong getLatestProducts");
+            return products;
+        }
+        
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, limit);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Lỗi SQL trong getLatestProducts: " + e.getMessage());
+        e.printStackTrace();
+    }
+    
+    System.out.println("✅ Lấy được " + products.size() + " sản phẩm mới nhất");
+    return products;
+}
+
+    /* ---------- 8) Products by category and brand ---------- */
+    public List<Product> getProductsByCategoryAndBrand(int categoryId, int brandId) {
+    List<Product> products = new ArrayList<>();
+
+    String query
+        = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+        + " p.Description, p.DefaultImageUrl, p.Material, "
+        + " b.Name AS BrandName, c.Name AS CategoryName, "
+        + " MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
+        + " MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
+        + " SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
+        + " Colors.AvailableColors, Sizes.AvailableSizes "
+        + "FROM Product p "
+        + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
+        + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
+        + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
+        + "OUTER APPLY ( "
+        + " SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
+        + " FROM ProductVariant pv2 "
+        + " WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
+        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
+        + ") Colors "
+        + "OUTER APPLY ( "
+        + " SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
+        + " FROM ProductVariant pv3 "
+        + " WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
+        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
+        + ") Sizes "
+        + "WHERE p.CategoryId = ? AND p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 " // QUAN TRỌNG: cả categoryId và brandId
+        + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+        + " p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
+        + " Colors.AvailableColors, Sizes.AvailableSizes "
+        + "ORDER BY p.ProductId ASC";
+
+    try (Connection conn = this.getConnection()) {
+        if (conn == null) {
+            System.err.println("❌ Không thể kết nối database trong getProductsByCategoryAndBrand");
+            return products;
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, categoryId);
+            ps.setInt(2, brandId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Lỗi SQL trong getProductsByCategoryAndBrand: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    System.out.println("✅ Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
+    return products;
+}
     /**
      * Get product by ID
      *
@@ -607,7 +675,7 @@ public class ProductDAO extends DBContext {
     public Product getById(int productId) {
         // Validation input
         if (productId <= 0) {
-            System.err.println("❌ ProductId phải lớn hơn 0");
+            System.err.println("ProductId phải lớn hơn 0");
             return null;
         }
         
@@ -626,10 +694,13 @@ public class ProductDAO extends DBContext {
                 return product;
             }
         } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getById: " + e.getMessage());
+            System.err.println("Lỗi SQL trong getById: " + e.getMessage());
             e.printStackTrace();
         }
 
         return null;
     }
+    
+    
+    
 }

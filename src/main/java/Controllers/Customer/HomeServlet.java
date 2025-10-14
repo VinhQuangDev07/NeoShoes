@@ -1,5 +1,6 @@
 package Controllers.Customer;
 
+import DAOs.BrandDAO;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.RequestDispatcher;
@@ -10,10 +11,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
+import Models.Brand;
 import Models.Category;
 import Models.Product;
 
-@WebServlet(name = "HomeServlet", urlPatterns = {"/home", "/"})
+@WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
 public class HomeServlet extends HttpServlet {
     
     private CategoryDAO categoryDAO;
@@ -55,30 +57,29 @@ public class HomeServlet extends HttpServlet {
         }
     } 
     
-    private void listProducts(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        
-        try {
-            // Lấy danh sách categories
-            List<Category> categories = categoryDAO.getAllActiveCategories();
-            request.setAttribute("categories", categories);
-            
-            // Lấy danh sách sản phẩm nổi bật (8 sản phẩm)
-            List<Product> featuredProducts = productDAO.getFeaturedProducts(8);
-            request.setAttribute("products", featuredProducts);
-            
-            System.out.println("✅ Featured products loaded: " + featuredProducts.size());
-            
-            // Forward đến trang home
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/home.jsp");
-            dispatcher.forward(request, response);
-            
-        } catch (Exception e) {
-            System.out.println("❌ Error in listProducts: " + e.getMessage());
-            e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
-        }
+    private void listProducts(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
+    try {
+        // Lấy danh sách brands thay vì categories
+        BrandDAO brandDAO = new BrandDAO();
+        List<Brand> brands = brandDAO.getAllBrands();
+        request.setAttribute("brands", brands);
+
+        // Lấy danh sách sản phẩm mới nhất (8 sản phẩm) dựa trên thời gian update
+        List<Product> latestProducts = productDAO.getLatestProducts(8);
+        request.setAttribute("products", latestProducts);
+
+        System.out.println("✅ Latest products loaded: " + latestProducts.size());
+
+        // Forward đến trang home
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/home.jsp");
+        dispatcher.forward(request, response);
+    } catch (Exception e) {
+        System.out.println("❌ Error in listProducts: " + e.getMessage());
+        e.printStackTrace();
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
     }
+}
 
     private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
