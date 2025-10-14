@@ -32,7 +32,7 @@ import java.util.Objects;
 @MultipartConfig
 public class ProfileServlet extends HttpServlet {
 
-    private final CustomerDAO customerDAO = new CustomerDAO();
+    private CustomerDAO customerDAO = new CustomerDAO();
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -56,8 +56,10 @@ public class ProfileServlet extends HttpServlet {
 //            return;
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
-//        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 2;
+
+        int customerId = Integer.parseInt(request.getParameter("id"));
+//        int customerId = 2;
+
         Customer customer = customerDAO.findById(customerId);
 
         request.setAttribute("customer", customer);
@@ -156,7 +158,7 @@ public class ProfileServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/profile?id=2");
+        response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
     }
 
     /**
