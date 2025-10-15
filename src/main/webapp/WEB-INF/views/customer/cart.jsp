@@ -13,8 +13,13 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
         <style>
+            input[type=number]::-webkit-inner-spin-button,
+            input[type=number]::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
             body.modal-open {
-                overflow: hidden;
+                /*overflow: hidden;*/
                 width: 100%;
             }
             .checkbox-black:checked {
@@ -80,6 +85,12 @@
                 background: #f8f9fa;
             }
 
+            .option-btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                text-decoration: line-through;
+            }
+
             .option-btn.selected {
                 border-color: #000;
                 background: #000;
@@ -97,10 +108,15 @@
                 background:#333;
                 color:white;
             }
+            .btn-confirm:disabled {
+                background-color: #6c757d !important;
+                cursor: not-allowed;
+            }
         </style>
     </head>
 
     <body>
+        <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <main class="container my-5">
@@ -123,7 +139,6 @@
                 <div class="col-lg-8">
                     <c:forEach var="item" items="${cartItems}">
                         <c:set var="productId" value="${item.variant.product.productId}" />
-                        <!-- Cart item -->
                         <div class="card shadow-sm mb-3">
                             <div class="row g-0 align-items-center p-1">
                                 <!-- Checkbox -->
@@ -159,7 +174,7 @@
                                                     <div class="variant-modal" id="variantModal-${productId}">
                                                         <div class="variant-backdrop"></div>
                                                         <div class="variant-content">
-                                                            <h6 class="mb-3 fw-bold">Select variant</h6>
+                                                            <h6 class="mb-3 fw-bold">Select variant for Product ${productId}</h6>
 
                                                             <!-- Color -->
                                                             <div class="mb-3">
@@ -172,7 +187,7 @@
                                                                         </button>
                                                                     </c:forEach>
                                                                     <c:if test="${empty colorsByProduct[productId]}">
-                                                                        <p style="color:red;">No colors for product ${productId}</p>
+                                                                        < p style ="color:red;">No colors for product ${productId}</p>
                                                                     </c:if>
                                                                 </div>
                                                             </div>
@@ -190,12 +205,33 @@
                                                                 </div>
                                                             </div>
 
+                                                            <script>
+                                                                var variants_${productId} = [
+                                                                <c:forEach items="${variantsByProduct[productId]}" var="v" varStatus="loop">
+                                                                {
+                                                                variantId: ${v.productVariantId},
+                                                                        color: '${v.color}',
+                                                                        size: '${v.size}',
+                                                                        quantityAvailable: ${v.quantityAvailable}
+                                                                }${!loop.last ? ',' : ''}
+                                                                </c:forEach>
+                                                                ];
+                                                            </script>
+
                                                             <!-- Buttons -->
                                                             <div class="text-end mt-3">
-                                                                <button class="btn btn-confirm confirmBtn" data-product-id="${productId}">
+                                                                <button class="btn btn-confirm confirmBtn" 
+                                                                        data-product-id="${productId}"
+                                                                        data-cartitem-id="${item.cartItemId}">
                                                                     Confirm
                                                                 </button>
                                                             </div>
+                                                            <form id="updateVariantForm-${item.cartItemId}" method="post" action="${pageContext.request.contextPath}/cart" style="display:none;">
+                                                                <input type="hidden" name="action" value="updateVariant">
+                                                                <input type="hidden" name="cartItemId" id="hiddenCartItemId-${item.cartItemId}">
+                                                                <input type="hidden" name="productVariantId" id="hiddenVariantId-${item.cartItemId}">
+                                                            </form>
+
                                                         </div>
                                                     </div>
 
@@ -215,10 +251,11 @@
                                             <!-- Right -->
                                             <div class="col-md-6 text-md-end mt-3 mt-md-0">
                                                 <p class="mb-1">
-                                                    Price: <span class="fw-bold text-primary">$${item.variant.price}</span>
+                                                    Price: <span class="fw-bold text-primary" id="itemPrice-${item.cartItemId}">
+                                                        $${item.variant.price}</span>
                                                 </p>
                                                 <p class="mb-0">
-                                                    Total: <span class="fw-bold fs-5 text-danger">
+                                                    Total: <span class="fw-bold fs-5 text-danger" id="itemTotal-${item.cartItemId}">
                                                         $${item.variant.price * item.quantity}
                                                     </span>
                                                 </p>
@@ -228,7 +265,7 @@
                                         <!-- Quantity -->
                                         <div class="d-flex align-items-center">
                                             <label class="me-2 fw-semibold">Quantity:</label>
-                                            <div class="input-group" style="width:120px;">
+                                            <div class="input-group" style="width:150px;">
                                                 <button type="button"
                                                         class="btn btn-outline-secondary decreaseQuantityBtn"
                                                         data-cartitem-id="${item.cartItemId}"
@@ -306,7 +343,55 @@
                                                             if (value > maxQty)
                                                                 value = maxQty;
 
+                                                            if (value > maxQty) {
+                                                                showNotification("Not enough stock available!", "error");
+                                                                value = maxQty;
+                                                            }
+
                                                             input.value = value;
+
+                                                            // Gửi AJAX đến servlet để cập nhật DB mà không reload
+                                                            fetch(`${window.location.origin}${pageContext.request.contextPath}/cart`, {
+                                                                method: "POST",
+                                                                headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                                                                body: new URLSearchParams({
+                                                                    action: "updateQuantity",
+                                                                    cartItemId: cartItemId,
+                                                                    quantity: value
+                                                                })
+                                                            })
+                                                                    .then(res => {
+                                                                        if (!res.ok)
+                                                                            return res.text().then(t => {
+                                                                                throw new Error(t);
+                                                                            });
+                                                                        return res.json();
+                                                                    })
+                                                                    .then(data => {
+                                                                        console.log("Quantity updated successfully:", data);
+                                                                        showNotification("Quantity updated!", "success");
+
+                                                                        // Cập nhật subtotal cho item
+                                                                        const priceEl = document.getElementById('itemPrice-' + cartItemId);
+                                                                        const totalEl = document.getElementById('itemTotal-' + cartItemId);
+
+                                                                        if (priceEl && totalEl) {
+                                                                            const price = parseFloat(priceEl.textContent.replace('$', '').trim());
+                                                                            const newTotal = price * value;
+                                                                            totalEl.textContent = '$' + newTotal.toFixed(2);
+                                                                        }
+
+                                                                        // Cập nhật tổng tạm tính
+                                                                        if (typeof window.updateSummary === "function") {
+                                                                            window.updateSummary();
+                                                                        }
+                                                                    })
+                                                                    .catch(err => {
+                                                                        console.error(" Update failed:", err);
+                                                                        showNotification("Update failed!", "error");
+                                                                        // Nếu lỗi, khôi phục giá trị cũ
+                                                                        input.value = parseInt(input.defaultValue || 1);
+                                                                    });
                                                         }
 
                                                         function openDeleteModal(cartItemId) {
@@ -323,17 +408,17 @@
                 const countEl = document.getElementById('selectedItemCount');
                 const totalEl = document.getElementById('selectedTotalPrice');
 
-                // Hàm cập nhật tổng
-                function updateSummary() {
+                // Cho phép updateSummary được gọi từ bên ngoài
+                window.updateSummary = function () {
+
                     let totalItems = 0;
                     let totalPrice = 0;
 
                     checkboxes.forEach(chk => {
                         if (chk.checked) {
-                            // tìm cart item container
                             const card = chk.closest('.card');
                             const qtyInput = card.querySelector('.qty-input');
-                            const priceEl = card.querySelector('.text-primary'); // $${item.variant.price}
+                            const priceEl = card.querySelector('.text-primary');
 
                             if (!qtyInput || !priceEl)
                                 return;
@@ -350,111 +435,181 @@
                     totalEl.textContent = '$' + totalPrice.toFixed(2);
                 }
 
-                // Khi checkbox thay đổi
                 checkboxes.forEach(chk => {
                     chk.addEventListener('change', updateSummary);
                 });
 
-                // Khi số lượng thay đổi, cập nhật lại nếu item đang được chọn
                 const qtyInputs = document.querySelectorAll('.qty-input');
                 qtyInputs.forEach(inp => {
                     inp.addEventListener('input', updateSummary);
                 });
 
-                // Khởi tạo ban đầu
                 updateSummary();
 
-                // Lấy tất cả các nút "Select Variant" trên trang
-                const selectVariantBtns = document.querySelectorAll('.selectVariantBtn');
+                // ✅ Đóng tất cả modal (helper function)
+                function closeAllModals() {
+                    document.querySelectorAll('.variant-modal').forEach(m => {
+                        m.classList.remove('show');
+                    });
+                    document.body.classList.remove('modal-open');
+                }
 
-                selectVariantBtns.forEach(btn => {
-                    const productId = btn.dataset.productId; // lấy id sản phẩm
-                    const modal = document.getElementById(`variantModal-${productId}`);
-                    const backdrop = modal.querySelector('.variant-backdrop');
-                    const variantContent = modal.querySelector('.variant-content');
-                    const confirmBtn = modal.querySelector('.confirmBtn');
-                    const colorOptions = modal.querySelectorAll('.color-option');
-                    const sizeOptions = modal.querySelectorAll('.size-option');
-                    const selectedBadge = document.getElementById(`selectedVariant-${productId}`); // nếu bạn có badge hiển thị variant đã chọn
+                // ✅ ESC key handler - CHỈ ĐĂNG KÝ 1 LẦN
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeAllModals();
+                    }
+                });
+
+                // ✅ XỬ LÝ MODAL VARIANT - FIX HOÀN TOÀN
+                document.querySelectorAll('.selectVariantBtn').forEach(btn => {
+                    let productId = btn.dataset.productId; // ✅ dùng let để tạo scope riêng
+                    let modal = document.getElementById('variantModal-' + productId);
+                    let backdrop = modal.querySelector('.variant-backdrop');
+                    let variantContent = modal.querySelector('.variant-content');
+                    let confirmBtn = modal.querySelector('.confirmBtn');
+                    let colorOptions = modal.querySelectorAll('.color-option');
+                    let sizeOptions = modal.querySelectorAll('.size-option');
+                    let variants = window['variants_' + productId] || [];
+
+                    const btnSelectVariant = document.querySelector('.selectVariantBtn[data-product-id="' + productId + '"]');
 
                     let selectedColor = null;
                     let selectedSize = null;
 
-                    // Hàm định vị modal (nếu bạn muốn đặt modal gần nút)
-                    function positionModal() {
-                        const btnRect = btn.getBoundingClientRect();
-                        variantContent.style.top = (btnRect.bottom + 8) + 'px';
-                        variantContent.style.left = btnRect.left + 'px';
-
-                        variantContent.style.position = 'fixed';
-                    }
-
-                    // Mở modal
+                    // ✅ MỞ MODAL - Đóng tất cả modal khác trước
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
 
-                        colorOptions.forEach(c => c.classList.remove('selected'));
-                        sizeOptions.forEach(s => s.classList.remove('selected'));
+                        // Đóng tất cả modal khác trước
+                        closeAllModals();
+
+                        // Reset selections
                         selectedColor = null;
                         selectedSize = null;
+                        confirmBtn.disabled = true;
+                        colorOptions.forEach(c => c.classList.remove('selected'));
+                        sizeOptions.forEach(s => s.classList.remove('selected'));
 
-                        positionModal();
+
+                        // Cập nhật option khả dụng
+                        disableUnavailableOptions();
+
+                        // Mở modal này
                         modal.classList.add('show');
                         document.body.classList.add('modal-open');
                     });
 
-                    // Đóng modal khi click backdrop
+                    // ✅ ĐÓNG MODAL khi click backdrop
                     backdrop.addEventListener('click', () => {
                         modal.classList.remove('show');
                         document.body.classList.remove('modal-open');
                     });
 
-                    // Ngăn modal đóng khi click bên trong
+                    // 🧩 Disable các option không khả dụng
+                    function disableUnavailableOptions() {
+                        colorOptions.forEach(btn => {
+                            const color = btn.dataset.value;
+                            const available = variants.some(v => v.color === color && v.quantityAvailable > 0);
+                            btn.disabled = !available;
+                            btn.classList.toggle('text-muted', !available);
+                        });
+
+                        sizeOptions.forEach(btn => {
+                            const size = btn.dataset.value;
+                            const available = variants.some(v => v.size === size && v.quantityAvailable > 0);
+                            btn.disabled = !available;
+                            btn.classList.toggle('text-muted', !available);
+                        });
+                    }
+
+                    // 🧩 Khi chọn 1 option (color / size)
+                    function selectOption(type, value, element) {
+                        if (element.disabled)
+                            return;
+
+                        // Bỏ chọn các nút khác cùng nhóm
+                        modal.querySelectorAll('.' + type + '-option').forEach(btn => btn.classList.remove('selected'));
+                        element.classList.add('selected');
+
+                        if (type === 'color')
+                            selectedColor = value;
+                        if (type === 'size')
+                            selectedSize = value;
+
+                        filterOptions();
+                        updateConfirmButtonState();
+                    }
+
+                    // 🧩 Lọc các tùy chọn còn khả dụng theo lựa chọn hiện tại
+                    function filterOptions() {
+                        if (selectedColor) {
+                            sizeOptions.forEach(btn => {
+                                const hasVariant = variants.some(v =>
+                                    v.color === selectedColor && v.size === btn.dataset.value && v.quantityAvailable > 0
+                                );
+                                btn.disabled = !hasVariant;
+                                btn.classList.toggle('text-muted', !hasVariant);
+                            });
+                        }
+
+                        if (selectedSize) {
+                            colorOptions.forEach(btn => {
+                                const hasVariant = variants.some(v =>
+                                    v.size === selectedSize && v.color === btn.dataset.value && v.quantityAvailable > 0
+                                );
+                                btn.disabled = !hasVariant;
+                                btn.classList.toggle('text-muted', !hasVariant);
+                            });
+                        }
+                    }
+
+                    // Ngăn modal đóng khi click bên trong content
                     variantContent.addEventListener('click', (e) => e.stopPropagation());
 
-                    // Chọn color
+                    function updateConfirmButtonState() {
+                        confirmBtn.disabled = !(selectedColor && selectedSize);
+                    }
+
+                    // ✅ CHỌN COLOR
                     colorOptions.forEach(cBtn => {
                         cBtn.addEventListener('click', () => {
-                            colorOptions.forEach(b => b.classList.remove('selected'));
-                            cBtn.classList.add('selected');
-                            selectedColor = cBtn.dataset.value;
+                            selectOption('color', cBtn.dataset.value, cBtn);
                         });
                     });
 
-                    // Chọn size
+                    // ✅ CHỌN SIZE
                     sizeOptions.forEach(sBtn => {
                         sBtn.addEventListener('click', () => {
-                            sizeOptions.forEach(b => b.classList.remove('selected'));
-                            sBtn.classList.add('selected');
-                            selectedSize = sBtn.dataset.value;
+                            selectOption('size', sBtn.dataset.value, sBtn);
                         });
                     });
 
-                    // Xác nhận chọn variant
+                    // ✅ XÁC NHẬN VARIANT
                     confirmBtn.addEventListener('click', () => {
                         if (!selectedColor || !selectedSize) {
-                            alert("Please select both color and size!");
+                            console.warn('Color or size not selected');
                             return;
                         }
 
-                        // Nếu có badge hiển thị variant đã chọn
-                        if (selectedBadge) {
-                            selectedBadge.textContent = `Color: ${selectedColor}, Size: ${selectedSize}`;
+                        const matchedVariant = variants.find(v =>
+                            v.color === selectedColor && v.size === selectedSize
+                        );
+
+                        if (!matchedVariant) {
+                            alert("Variant not available!");
+                            return;
                         }
 
-                        // Sau này có thể gọi AJAX update CartItem ở đây
-                        console.log(`Product ${productId}: ${selectedColor} - ${selectedSize}`);
+                        // Lấy cartItemId từ nút Confirm
+                        const cartItemId = confirmBtn.dataset.cartitemId;
 
-                        modal.classList.remove('show');
-                        document.body.classList.remove('modal-open');
-                    });
+                        // Điền vào form ẩn
+                        document.getElementById('hiddenCartItemId-' + cartItemId).value = cartItemId;
+                        document.getElementById('hiddenVariantId-' + cartItemId).value = matchedVariant.variantId;
 
-                    // Đóng modal khi nhấn ESC
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape' && modal.classList.contains('show')) {
-                            modal.classList.remove('show');
-                            document.body.classList.remove('modal-open');
-                        }
+                        // Submit form
+                        document.getElementById('updateVariantForm-' + cartItemId).submit();
                     });
                 });
             });
@@ -481,6 +636,6 @@
                 </div>
             </div>
         </div>
-
+        <jsp:include page="common/footer.jsp"/>
     </body>
 </html>

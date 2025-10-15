@@ -11,6 +11,11 @@
     </head>
 
     <style>
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -228,7 +233,7 @@
             justify-content: flex-end;
             margin-bottom: 2rem;
         }
-        
+
         .add-to-cart-btn {
             background-color: #000 !important;
             border-color: #000 !important;
@@ -238,13 +243,13 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .add-to-cart-btn:hover {
             background-color: #333 !important;
             border-color: #333 !important;
             color: white !important;
         }
-        
+
         .view-reviews-btn {
             background-color: #000 !important;
             border-color: #000 !important;
@@ -255,7 +260,7 @@
             transition: all 0.3s ease;
             font-size: 0.875rem;
         }
-        
+
         .view-reviews-btn:hover {
             background-color: #333 !important;
             border-color: #333 !important;
@@ -527,7 +532,7 @@
                                     </c:choose>
                                 </a>
                             </div>
-                            
+
                             <c:choose>
                                 <c:when test="${totalReviews > 0}">
                                     <!-- Rating Summary -->
@@ -611,7 +616,7 @@
                                     </div>
                                 </c:otherwise>
                             </c:choose>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -641,5 +646,6 @@
                                                      firstSize.classList.add('selected');
                                              });
         </script>
+        <jsp:include page="common/footer.jsp"/>
     </body>
 </html>
