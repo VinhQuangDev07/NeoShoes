@@ -115,7 +115,26 @@
         }
     </style>
     <body class="bg-light">
-        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+        <c:if test="${not empty sessionScope.flash}">
+            <script>
+                showNotification("${sessionScope.flash}", "success");
+            </script>
+            <c:remove var="flash" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_info}">
+            <script>
+                showNotification("${sessionScope.flash_info}", "info");
+            </script>
+            <c:remove var="flash_info" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_error}">
+            <script>
+                showNotification("${sessionScope.flash_error}", "error");
+            </script>
+            <c:remove var="flash_error" scope="session"/>
+        </c:if>
 
         <div class="d-flex justify-content-center">
             <div class="container">

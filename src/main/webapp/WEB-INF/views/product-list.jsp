@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>NeoShoes - Tất Cả Sản Phẩm</title>
+        <title>NeoShoes - All Products</title>
         <style>
             * {
                 margin: 0;
@@ -19,12 +19,13 @@
             }
 
             /* Header */
-            .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 1rem 0;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            .header{
+                background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+                color:#fff;
+                padding:1rem 0;
+                box-shadow:0 2px 10px rgba(0,0,0,.25);
             }
+
             .header-container {
                 max-width: 1200px;
                 margin: 0 auto;
@@ -39,41 +40,74 @@
                 text-decoration: none;
                 color: white;
             }
-            .search-form {
-                display: flex;
-                gap: 10px;
-                flex: 0 1 400px;
+            /* container của form – căn cho đẹp */
+            .search-form{
+                display:flex;
+                gap:10px;
+                flex:0 1 560px; /* rộng hơn một chút */
+                justify-content:flex-end;
             }
-            .search-input {
-                flex: 1;
-                padding: 10px 15px;
-                border: none;
-                border-radius: 25px;
-                font-size: 1rem;
-                outline: none;
+
+            /* INPUT hiện đại trên nền đen */
+            /* Search input — light theme on black header */
+            .header .search-input{
+                flex:1;
+                padding:12px 16px;
+                border-radius:999px;
+                background:#ffffff;              /* NỀN TRẮNG */
+                color:#111827;                   /* chữ đen */
+                border:1px solid #e5e7eb;        /* viền xám nhạt */
+                outline:none;
+                font-size:15px;
+                box-shadow:0 2px 8px rgba(0,0,0,.06); /* nhẹ nhàng */
+                transition:border-color .2s, box-shadow .2s;
             }
-            .search-button {
-                background: #ff6b6b;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 25px;
-                cursor: pointer;
-                font-size: 1rem;
-                transition: background 0.3s;
+            .header .search-input::placeholder{
+                color:#9aa0a6;
+            }  /* placeholder xám */
+            .header .search-input:focus{
+                border-color:#22c55e;                         /* xanh lá khi focus */
+                box-shadow:0 0 0 4px rgba(34,197,94,.20);
             }
-            .search-button:hover {
-                background: #ff5252;
+
+            /* BUTTON xanh lá hiện đại */
+            .search-button{
+                background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); /* xanh lá */
+                color:#fff;
+                border:none;
+                padding:12px 22px;
+                border-radius:999px;
+                cursor:pointer;
+                font-size:15px;
+                font-weight:700;
+                letter-spacing:.2px;
+                transition:transform .18s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
+                box-shadow:0 10px 24px rgba(22,163,74,.28);
             }
+            .search-button:hover{
+                transform:translateY(-1px);
+                box-shadow:0 14px 28px rgba(22,163,74,.35);
+                filter:saturate(1.05);
+            }
+            .search-button:active{
+                transform:translateY(0);
+                box-shadow:0 8px 18px rgba(22,163,74,.25);
+            }
+            .search-button:focus-visible{
+                outline:3px solid rgba(34,197,94,.35);
+                outline-offset:2px;
+            }
+
 
             /* Layout */
             .main-container {
                 max-width: 1200px;
-                margin: 2rem auto;
+                margin: 28px auto;
                 padding: 0 20px;
                 display: grid;
-                grid-template-columns: 250px 1fr;
-                gap: 2rem;
+                grid-template-columns: 280px 1fr;
+                gap: 24px;
+                align-items: start;
             }
 
             /* Sidebar with categories */
@@ -83,6 +117,10 @@
                 border-radius: 10px;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 height: fit-content;
+                position: sticky;
+                top: 20px;
+                display: flex;
+                flex-direction: column;
             }
             .sidebar-title {
                 font-size: 1.2rem;
@@ -144,14 +182,13 @@
                 font-size: 1rem;
             }
 
-            /* Updated: Grid with 3 columns */
+            /* Grid */
             .products-grid {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 1.5rem;
                 margin-bottom: 2rem;
             }
-
             .product-card {
                 background: white;
                 border-radius: 15px;
@@ -164,7 +201,6 @@
                 box-shadow: 0 10px 28px rgba(0,0,0,0.12);
             }
 
-            /* Ảnh sản phẩm */
             .product-media {
                 width: 100%;
                 aspect-ratio: 4 / 3;
@@ -307,13 +343,12 @@
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
 
-            /* Responsive adjustments */
+            /* Responsive */
             @media (max-width: 1100px) {
                 .products-grid {
                     grid-template-columns: repeat(2, 1fr);
                 }
             }
-
             @media (max-width: 968px) {
                 .main-container {
                     grid-template-columns: 1fr;
@@ -329,7 +364,6 @@
                     grid-template-columns: repeat(2, 1fr);
                 }
             }
-
             @media (max-width: 768px) {
                 .header-container {
                     flex-direction: column;
@@ -351,7 +385,6 @@
                     gap: 1rem;
                 }
             }
-
             @media (max-width: 580px) {
                 .products-grid {
                     grid-template-columns: 1fr;
@@ -362,16 +395,7 @@
                 }
             }
 
-            /* Optional: Add some spacing for brand section */
-            .sidebar-title {
-                font-size: 1.2rem;
-                margin-bottom: 1rem;
-                color: #333;
-                padding-bottom: 0.5rem;
-                border-bottom: 2px solid #667eea;
-            }
-
-            /* Brand thumbnails can be slightly different if needed */
+            /* Brand thumbnails */
             .brand-thumb {
                 width: 26px;
                 height: 26px;
@@ -380,15 +404,83 @@
                 background: #f0f0f0;
                 border: 1px solid rgba(0,0,0,.06);
             }
-            .clear-filters-btn {
-                transition: all 0.3s ease;
+
+            /* --- Buttons (base) --- */
+            .btn{
+                --btn-bg:#fff;
+                --btn-fg:#e11d48;
+                --btn-bd:#fecaca;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                gap:8px;
+                padding:10px 14px;
+                border-radius:12px;
+                border:1px solid var(--btn-bd);
+                color:var(--btn-fg);
+                background:var(--btn-bg);
+                text-decoration:none;
+                font-weight:700;
+                letter-spacing:.2px;
+                transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+                box-shadow:0 4px 14px rgba(0,0,0,.06);
+            }
+            .btn:hover{
+                transform:translateY(-1px);
+                box-shadow:0 10px 22px rgba(0,0,0,.10);
+            }
+            .btn:active{
+                transform:translateY(0);
+                box-shadow:0 6px 14px rgba(0,0,0,.08);
+            }
+            .btn:focus-visible{
+                outline:3px solid rgba(59,130,246,.35);
+                outline-offset:2px;
             }
 
-            .clear-filters-btn:hover {
-                background: #ff5252 !important;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+            /* size + block */
+            .btn-lg{
+                padding:12px 16px;
+                border-radius:14px;
+                font-size:15px;
             }
+            .btn-block{
+                display:flex;
+                width:100%;
+            }
+            .btn-ic{
+                flex:0 0 auto;
+            }
+
+            /* Variant A: Soft Danger (khuyến nghị) */
+            .btn-danger-soft{
+                --btn-bg:#fff1f2;   /* rất nhẹ */
+                --btn-fg:#be123c;   /* đỏ hoa hồng */
+                --btn-bd:#fecdd3;   /* viền nhạt */
+            }
+            .btn-danger-soft:hover{
+                --btn-bg:#ffe4e6;
+            }
+
+            /* (Tuỳ chọn) Variant B: Gradient nổi bật
+            .btn-danger-grad{
+              --btn-bg:linear-gradient(135deg, #ff6b6b 0%, #f43f5e 100%);
+              --btn-fg:#fff; --btn-bd:transparent;
+              color:#fff; border:0; box-shadow:0 10px 22px rgba(244,63,94,.25);
+            }
+            .btn-danger-grad:hover{ box-shadow:0 14px 26px rgba(244,63,94,.32); }
+            */
+
+            /* (Tuỳ chọn) Variant C: Outline tối giản
+            .btn-danger-outline{ --btn-bg:#fff; --btn-fg:#dc2626; --btn-bd:#fca5a5; }
+            .btn-danger-outline:hover{ --btn-bg:#fff5f5; border-color:#f87171; }
+            */
+
+            /* Push footer button to the bottom of the sidebar card */
+            .sidebar-footer {
+                margin-top: auto;
+            }
+
         </style>
     </head>
     <body>
@@ -396,35 +488,47 @@
         <header class="header">
             <div class="header-container">
                 <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <!-- Route đúng: /products -->
                 <form action="${pageContext.request.contextPath}/products" method="get" class="search-form">
                     <input type="hidden" name="action" value="search">
-                    <input type="text" name="searchTerm" placeholder="Tìm kiếm sản phẩm..." value="${param.searchTerm}" class="search-input">
-                    <button type="submit" class="search-button">Tìm kiếm</button>
+                    <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
+                    <button type="submit" class="search-button">Search</button>
                 </form>
             </div>
         </header>
 
         <!-- Main Content -->
         <div class="main-container">
-
             <!-- Sidebar -->
             <aside class="sidebar">
-                <h3 class="sidebar-title">Danh Mục</h3>
+                <h3 class="sidebar-title">Categories</h3>
                 <ul class="categories-list">
                     <li class="category-item">
-                        <a href="${pageContext.request.contextPath}/products"
-                           class="category-link ${empty param.selectedCategory and empty param.selectedBrand ? 'active' : ''}">
-                            <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
-                            <span>Tất Cả Sản Phẩm</span>
-                        </a>
+                        <c:choose>
+                            <c:when test="${not empty param.brandId}">
+                                <!-- When a brand is selected, 'All' goes back to the brand page -->
+                                <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${param.brandId}"
+                                   class="category-link ${empty param.selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                    <span>All Categories</span>
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- When no brand is selected, 'All' goes to all products -->
+                                <a href="${pageContext.request.contextPath}/products"
+                                   class="category-link ${empty param.selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                    <span>All Products</span>
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
                     </li>
+
                     <c:forEach var="category" items="${categories}">
                         <li class="category-item">
                             <c:choose>
-                                <c:when test="${not empty param.selectedBrand}">
-                                    <!-- Nếu đã chọn brand, tạo link kết hợp với category -->
-                                    <a href="${pageContext.request.contextPath}/products?action=category-brand&categoryId=${category.categoryId}&brandId=${param.selectedBrand}"
+                                <c:when test="${not empty param.brandId}">
+                                    <!-- Always pass brandId when clicking category on a brand page -->
+                                    <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
                                        class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
                                              src="${empty category.image ? 'https://via.placeholder.com/52?text=Cat' : category.image}"
@@ -434,7 +538,7 @@
                                     </a>
                                 </c:when>
                                 <c:otherwise>
-                                    <!-- Nếu chưa chọn brand, tạo link category bình thường -->
+                                    <!-- Normal category link when no brand is selected -->
                                     <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}"
                                        class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
@@ -449,50 +553,17 @@
                     </c:forEach>
                 </ul>
 
-                <!-- Thêm phần lọc theo brand -->
-                <h3 class="sidebar-title" style="margin-top: 2rem;">Thương Hiệu</h3>
-                <ul class="categories-list">
-                    <c:forEach var="brand" items="${brands}">
-                        <li class="category-item">
-                            <c:choose>
-                                <c:when test="${not empty param.selectedCategory}">
-                                    <!-- Nếu đã chọn category, tạo link kết hợp với brand -->
-                                    <a href="${pageContext.request.contextPath}/products?action=category-brand&categoryId=${param.selectedCategory}&brandId=${brand.brandId}"
-                                       class="category-link ${param.selectedBrand == brand.brandId ? 'active' : ''}">
-                                        <img class="category-thumb"
-                                             src="${empty brand.logo ? 'https://via.placeholder.com/52?text=Brand' : brand.logo}"
-                                             alt="${brand.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Brand'">
-                                        <span>${brand.name}</span>
-                                    </a>
-                                </c:when>
-                                <c:otherwise>
-                                    <!-- Nếu chưa chọn category, tạo link brand bình thường -->
-                                    <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${brand.brandId}"
-                                       class="category-link ${param.selectedBrand == brand.brandId ? 'active' : ''}">
-                                        <img class="category-thumb"
-                                             src="${empty brand.logo ? 'https://via.placeholder.com/52?text=Brand' : brand.logo}"
-                                             alt="${brand.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Brand'">
-                                        <span>${brand.name}</span>
-                                    </a>
-                                </c:otherwise>
-                            </c:choose>
-                        </li>
-                    </c:forEach>
-                </ul>
-
-                <!-- Nút xóa bộ lọc khi có cả category và brand -->
-                <c:if test="${not empty param.selectedCategory and not empty param.selectedBrand}">
-                    <div style="margin-top: 1.5rem; text-align: center;">
-                        <a href="${pageContext.request.contextPath}/products" 
-                           class="clear-filters-btn"
-                           style="display: inline-block; padding: 10px 16px; background: #ff6b6b; color: white;
-                           text-decoration: none; border-radius: 5px; font-size: 0.9rem; font-weight: 500;">
-                            ✕ Xóa Bộ Lọc
+                <!-- Clear brand filter -->
+                <c:if test="${not empty param.brandId}">
+                    <div class="sidebar-footer">
+                        <a href="${pageContext.request.contextPath}/products"
+                           class="btn btn-success-soft btn-lg btn-block no-ic">
+                            Clear Brand Filter
                         </a>
+
                     </div>
                 </c:if>
+
             </aside>
 
             <!-- Products Section -->
@@ -502,13 +573,13 @@
                         <h2 class="products-title">
                             <c:choose>
                                 <c:when test="${not empty param.searchTerm}">
-                                    Kết quả tìm kiếm cho "${param.searchTerm}"
+                                    Search results for "${param.searchTerm}"
                                 </c:when>
-                                <c:when test="${not empty param.selectedCategory and not empty param.selectedBrand}">
+                                <c:when test="${not empty param.selectedCategory and not empty param.brandId}">
                                     <c:forEach var="category" items="${categories}">
                                         <c:if test="${category.categoryId == param.selectedCategory}">
                                             <c:forEach var="brand" items="${brands}">
-                                                <c:if test="${brand.brandId == param.selectedBrand}">
+                                                <c:if test="${brand.brandId == param.brandId}">
                                                     ${category.name} - ${brand.name}
                                                 </c:if>
                                             </c:forEach>
@@ -522,25 +593,25 @@
                                         </c:if>
                                     </c:forEach>
                                 </c:when>
-                                <c:when test="${not empty param.selectedBrand}">
+                                <c:when test="${not empty param.brandId}">
                                     <c:forEach var="brand" items="${brands}">
-                                        <c:if test="${brand.brandId == param.selectedBrand}">
+                                        <c:if test="${brand.brandId == param.brandId}">
                                             ${brand.name}
                                         </c:if>
                                     </c:forEach>
                                 </c:when>
-                                <c:otherwise>Tất Cả Sản Phẩm</c:otherwise>
+                                <c:otherwise>All Products</c:otherwise>
                             </c:choose>
                         </h2>
                         <p class="products-count">
                             <c:choose>
                                 <c:when test="${not empty products}">
-                                    ${fn:length(products)} sản phẩm
+                                    ${fn:length(products)} products
                                 </c:when>
-                                <c:otherwise>0 sản phẩm</c:otherwise>
+                                <c:otherwise>0 products</c:otherwise>
                             </c:choose>
-                            <c:if test="${not empty param.selectedCategory and not empty param.selectedBrand}">
-                                <span style="color: #667eea; margin-left: 10px;">(Đang lọc kết hợp)</span>
+                            <c:if test="${not empty param.selectedCategory and not empty param.brandId}">
+                                <span style="color: #667eea; margin-left: 10px;">(Combined filter)</span>
                             </c:if>
                         </p>
                     </div>
@@ -579,7 +650,7 @@
                                             </c:otherwise>
                                         </c:choose>
 
-                                        <a href="product-detail?id=${product.productId}" class="view-details-btn">Xem Chi Tiết</a>
+                                        <a href="product-detail?id=${product.productId}" class="view-details-btn">View Details</a>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -588,28 +659,26 @@
                         <!-- Pagination -->
                         <c:if test="${not empty totalPages && totalPages > 1}">
                             <div class="pagination">
-                                <div class="page-info">Trang ${currentPage} / ${totalPages}</div>
+                                <div class="page-info">Page ${currentPage} / ${totalPages}</div>
                                 <div class="page-numbers">
                                     <c:if test="${currentPage > 1}">
-                                        <a href="?page=${currentPage - 1}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
-                                           class="page-link">← Trước</a>
+                                        <a href="?page=${currentPage - 1}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.brandId}'>&brandId=${param.brandId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
+                                           class="page-link">← Prev</a>
                                     </c:if>
-
                                     <c:forEach begin="1" end="${totalPages}" var="i">
                                         <c:choose>
                                             <c:when test="${i == currentPage}">
                                                 <span class="page-number active">${i}</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <a href="?page=${i}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
+                                                <a href="?page=${i}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.brandId}'>&brandId=${param.brandId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
                                                    class="page-number">${i}</a>
                                             </c:otherwise>
                                         </c:choose>
                                     </c:forEach>
-
                                     <c:if test="${currentPage < totalPages}">
-                                        <a href="?page=${currentPage + 1}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
-                                           class="page-link">Sau →</a>
+                                        <a href="?page=${currentPage + 1}<c:if test='${not empty param.action}'>&action=${param.action}</c:if><c:if test='${not empty param.categoryId}'>&categoryId=${param.categoryId}</c:if><c:if test='${not empty param.brandId}'>&brandId=${param.brandId}</c:if><c:if test='${not empty param.searchTerm}'>&searchTerm=${param.searchTerm}</c:if>"
+                                           class="page-link">Next →</a>
                                     </c:if>
                                 </div>
                             </div>
@@ -619,10 +688,38 @@
                         <div class="no-products">
                             <c:choose>
                                 <c:when test="${not empty param.searchTerm}">
-                                    <p>Không tìm thấy sản phẩm nào phù hợp với "${param.searchTerm}"</p>
+                                    <p>No products found matching "${param.searchTerm}"</p>
+                                </c:when>
+                                <c:when test="${not empty param.selectedCategory and not empty param.brandId}">
+                                    <c:forEach var="category" items="${categories}">
+                                        <c:if test="${category.categoryId == param.selectedCategory}">
+                                            <c:forEach var="brand" items="${brands}">
+                                                <c:if test="${brand.brandId == param.brandId}">
+                                                    <p>No products for brand <strong>${brand.name}</strong> in category <strong>${category.name}</strong></p>
+                                                    <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                                        Please choose another category or <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${param.brandId}" style="color: #667eea;">see all products of ${brand.name}</a>
+                                                    </p>
+                                                </c:if>
+                                            </c:forEach>
+                                        </c:if>
+                                    </c:forEach>
+                                </c:when>
+                                <c:when test="${not empty param.selectedCategory}">
+                                    <c:forEach var="category" items="${categories}">
+                                        <c:if test="${category.categoryId == param.selectedCategory}">
+                                            <p>No products in category "${category.name}"</p>
+                                        </c:if>
+                                    </c:forEach>
+                                </c:when>
+                                <c:when test="${not empty param.brandId}">
+                                    <c:forEach var="brand" items="${brands}">
+                                        <c:if test="${brand.brandId == param.brandId}">
+                                            <p>No products for brand "${brand.name}"</p>
+                                        </c:if>
+                                    </c:forEach>
                                 </c:when>
                                 <c:otherwise>
-                                    <p>Không có sản phẩm nào</p>
+                                    <p>No products available</p>
                                 </c:otherwise>
                             </c:choose>
                         </div>
