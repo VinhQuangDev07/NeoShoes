@@ -7,8 +7,10 @@ package Controllers.Customer;
 
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
+import DAOs.ReviewDAO;
 import Models.Product;
 import Models.ProductVariant;
+import Models.Review;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,12 +29,14 @@ public class ProductDetailServlet extends HttpServlet {
    
     private ProductDAO productDAO;
     private ProductVariantDAO variantDAO;
+    private ReviewDAO reviewDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         productDAO = new ProductDAO();
         variantDAO = new ProductVariantDAO();
+        reviewDAO = new ReviewDAO();
     }
 
 
@@ -73,11 +77,34 @@ public class ProductDetailServlet extends HttpServlet {
                 }
             }
             
+            // Load reviews for the product
+            List<Review> reviews = reviewDAO.getReviewsByProduct(productId);
+            
+            // Calculate review statistics
+            int totalReviews = reviews.size();
+            double averageRating = 0.0;
+            int[] ratingCounts = new int[6]; // 0-5 stars
+            
+            if (totalReviews > 0) {
+                int totalStars = 0;
+                for (Review review : reviews) {
+                    int star = review.getStar();
+                    totalStars += star;
+                    ratingCounts[star]++;
+                }
+                averageRating = (double) totalStars / totalReviews;
+            }
+            
             // Set attributes for JSP
             request.setAttribute("product", product);
             request.setAttribute("variants", variants);
             request.setAttribute("colors", colors);
             request.setAttribute("sizes", sizes);
+            request.setAttribute("reviews", reviews);
+            request.setAttribute("totalReviews", totalReviews);
+            request.setAttribute("averageRating", averageRating);
+            request.setAttribute("formattedRating", formatRating(averageRating));
+            request.setAttribute("ratingCounts", ratingCounts);
 
             // Forward to JSP
             request.getRequestDispatcher("/WEB-INF/views/customer/product-detail.jsp").forward(request, response);
@@ -104,13 +131,21 @@ public class ProductDetailServlet extends HttpServlet {
         doGet(request, response);
     }
 
+    /**
+     * Format average rating to 1 decimal place
+     */
+    private String formatRating(double rating) {
+        return String.format("%.1f", rating);
+    }
+    
+
     /** 
      * Returns a short description of the servlet.
      * @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Product Detail Servlet with Reviews";
+    }
 
 }
