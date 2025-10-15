@@ -23,8 +23,21 @@ public class OrdersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Hardcode customerId = 2 for testing (no login functionality yet)
-        int customerId = 2;
+//        HttpSession session = request.getSession(false);
+//        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
+//        
+//        if (session == null || session.getAttribute("customerId") == null) {
+//            System.out.println("❌ No session or customerId - redirecting to login");
+//            response.sendRedirect(request.getContextPath() + "/login");
+//            return;
+//        }
+//        int customerId = 2;
+        int customerId = Integer.parseInt(request.getParameter("id"));
+        try {
+//            customerId = (int) session.getAttribute("customerId");
+        } catch (Exception e) {
+            // If customerId is not an integer, use default value
+        }
         List<Order> orders = orderDAO.listByCustomer(customerId);
 
         // Check for success/error messages

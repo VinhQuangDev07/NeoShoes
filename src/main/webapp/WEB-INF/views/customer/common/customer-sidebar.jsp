@@ -54,123 +54,220 @@
 </div>
 
 <style>
-.customer-sidebar{
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.08);
-  padding: 12px 0;
-  background: #fff;
-  /* c? ??nh chi?u r?ng ?? không b? co giãn gây l?ch */
-  width: 260px;
-  box-sizing: border-box;
-}
+    /* Sidebar Styles */
+    .customer-sidebar {
+        background: white;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+        height: 326px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-top: 48px;
+        margin-right: 12px;
+    }
 
-.nav-menu{ display:flex; flex-direction:column; gap:6px; }
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .customer-sidebar {
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
 
-.nav-link-item{
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px 12px 20px; /* padding trái ?n ??nh */
-  text-decoration: none;
-  color: #333;
-  border: 1px solid #f0f2f5;   /* khung nh? cho ??u nhau */
-  border-radius: 10px;
-  background: #fff;
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
-  /* b? border-left tr?c ti?p ?? không làm xô l?ch */
-}
+        .profile-info-card {
+            padding: 1.5rem;
+        }
 
-/* v?ch active/hover không chi?m layout */
-.nav-link-item::before{
-  content:"";
-  position:absolute;
-  left:6px;
-  top:8px;
-  bottom:8px;
-  width:3px;
-  border-radius: 3px;
-  background: transparent;
-  transition: background .2s ease;
-}
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+        }
+    }
 
-.nav-link-item:hover{
-  background:#f8f9fa;
-  border-color:#e9eef5;
-  color:#0d6efd;
-}
-.nav-link-item:hover::before{ background:#0d6efd; }
+    .profile-section {
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-align: center;
+        position: relative;
+    }
 
-.nav-link-item.active{
-  background:#e9f2ff;
-  border-color:#cfe5ff;
-  color:#0d6efd;
-}
-.nav-link-item.active::before{ background:#0d6efd; }
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border: 3px solid #d1d5db;
+        border-radius: 50%;
+        object-fit: cover;
+    }
 
-.nav-icon-wrapper{
-  flex: 0 0 36px;         /* c? ??nh ?? icon không làm l?ch text */
-  height:36px;
-  display:flex; align-items:center; justify-content:center;
-}
-.nav-icon{ font-size:18px; color:inherit; }
+    .profile-name {
+        color: #1f2937;
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 0.25rem;
+    }
 
-.nav-text-wrapper{ flex:1; min-width:0; }  /* tránh ??y icon l?ch khi text dài */
+    .profile-subtitle {
+        color: #6b7280;
+        font-size: 0.75rem;
+    }
 
-.nav-title{
-  font-weight:600; font-size:16px; line-height:1.2; margin:0 0 2px 0;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.nav-description{
-  font-size:12px; color:#6c757d; opacity:.9; margin:0;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
+    .profile-divider {
+        position: absolute;
+        bottom: 0;
+        left: 1.5rem;
+        right: 1.5rem;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+        transition: transform 0.5s ease;
+        transform-origin: center;
+    }
 
-/* badge voucher luôn dính v? bên ph?i, không làm l?ch hàng */
-.voucher-badge{
-  margin-left:auto;
-  background:#e74c3c; color:#fff; border-radius:50%;
-  width:20px; height:20px; font-size:12px;
-  display:flex; align-items:center; justify-content:center;
-}
+    .profile-section:hover .profile-divider {
+        transform: scaleX(1.1);
+    }
+
+    /* Sidebar */
+    .nav-menu {
+        padding: 1.5rem 0;
+    }
+
+    .nav-link-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-link-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: #4b5563;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-link-item:hover {
+        color: #000000;
+        background-color: #eff6ff;
+        transform: scale(1.05);
+    }
+
+    .nav-link-item:hover::before {
+        transform: translateX(0);
+    }
+
+    .nav-link-item.active {
+        color: #000000;
+        background-color: #eff6ff;
+    }
+
+    .nav-link-item.active::before {
+        transform: translateX(0);
+        background: #000000;
+    }
+
+    .nav-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .nav-link-item:hover .nav-icon-wrapper {
+        background-color: #eff6ff;
+    }
+
+    .nav-icon {
+        width: 20px;
+        height: 20px;
+        color: currentColor;
+    }
+
+    .nav-text-wrapper {
+        flex: 1;
+    }
+
+    .nav-title {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 0.125rem;
+    }
+
+    .nav-description {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .nav-link-item:hover .nav-description {
+        color: #1f2937;
+    }
+
+    /* badge voucher luôn dính v? bên ph?i, không làm l?ch hàng */
+    .voucher-badge{
+        margin-left:auto;
+        background:#e74c3c;
+        color:#fff;
+        border-radius:50%;
+        width:20px;
+        height:20px;
+        font-size:12px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // path + query hi?n t?i
-  const href = window.location.pathname + window.location.search;
-
-  // clear active
-  document.querySelectorAll('.nav-link-item').forEach(a => a.classList.remove('active'));
-
-  // set active theo id c? th?
-  if (href.includes('/voucher')) {
+    document.addEventListener('DOMContentLoaded', () => {
+    // path + query hi?n t?i
+    const href = window.location.pathname + window.location.search;
+    // clear active
+    document.querySelectorAll('.nav-link-item').forEach(a => a.classList.remove('active'));
+    // set active theo id c? th?
+    if (href.includes('/voucher')) {
     document.getElementById('voucher')?.classList.add('active');
-  } else if (href.includes('/orders')) {
+    } else if (href.includes('/orders')) {
     document.getElementById('order')?.classList.add('active');
-  } else if (href.includes('/profile')) {
+    } else if (href.includes('/profile')) {
     document.getElementById('profile')?.classList.add('active');
-  }
+    }
 
-  // fallback theo data-page (không nhân ?ôi class)
-  document.querySelectorAll('.nav-link-item').forEach(item => {
+    // fallback theo data-page (không nhân ?ôi class)
+    document.querySelectorAll('.nav-link-item').forEach(item => {
     const key = item.getAttribute('data-page');
     if (key && href.includes(key)) item.classList.add('active');
-  });
-});
-
+    });
+    });
 // (tu? ch?n) hi?n s? voucher
-async function loadVoucherCount() {
-  try {
+    async function loadVoucherCount() {
+    try {
     const res = await fetch('${pageContext.request.contextPath}/voucher?action=count');
     const data = await res.json();
     if (data?.count > 0) {
-      const badge = document.createElement('span');
-      badge.className = 'voucher-badge';
-      badge.textContent = data.count;
-      document.getElementById('voucher')?.appendChild(badge);
+    const badge = document.createElement('span');
+    badge.className = 'voucher-badge';
+    badge.textContent = data.count;
+    document.getElementById('voucher')?.appendChild(badge);
     }
-  } catch(e){ console.error('Error loading voucher count:', e); }
-}
+    } catch (e){ console.error('Error loading voucher count:', e); }
+    }
 // loadVoucherCount();
 </script>
