@@ -1,6 +1,6 @@
 
 
-<div class="customer-sidebar bg-white">
+<div class="customer-sidebar bg-white mt-2">
     <div class="d-flex flex-column">
 
         <!-- Navigation Menu -->
@@ -62,7 +62,6 @@
         height: 326px;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
-        margin-top: 48px;
         margin-right: 12px;
     }
 

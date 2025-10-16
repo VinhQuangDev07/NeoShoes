@@ -11,6 +11,7 @@
     <head>
         <title>My Profile</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
     </head> 
     <style>
@@ -42,7 +43,7 @@
         .btn:hover {
             transform: translateY(-1px);
         }
-        
+
         /* Profile Page Styles */
         .profile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -115,26 +116,8 @@
         }
     </style>
     <body class="bg-light">
-        <c:if test="${not empty sessionScope.flash}">
-            <script>
-                showNotification("${sessionScope.flash}", "success");
-            </script>
-            <c:remove var="flash" scope="session"/>
-        </c:if>
-
-        <c:if test="${not empty sessionScope.flash_info}">
-            <script>
-                showNotification("${sessionScope.flash_info}", "info");
-            </script>
-            <c:remove var="flash_info" scope="session"/>
-        </c:if>
-
-        <c:if test="${not empty sessionScope.flash_error}">
-            <script>
-                showNotification("${sessionScope.flash_error}", "error");
-            </script>
-            <c:remove var="flash_error" scope="session"/>
-        </c:if>
+        <jsp:include page="common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <div class="d-flex justify-content-center">
             <div class="container">
@@ -142,7 +125,7 @@
                     <!-- Sidebar -->
                     <jsp:include page="common/customer-sidebar.jsp"/>
                     <!-- Main Content -->
-                    <div id="main-content" class="main-content-wrapper mt-5 mb-5">
+                    <div id="main-content" class="main-content-wrapper mt-2 mb-5">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
@@ -409,6 +392,57 @@
                                                                         btnToggleAddAddress.innerText = "Add New Address";
                                                                     }
                                                                 });
+                                                            });
+
+                                                            // avatar upload preview
+                                                            const avatarUpload = document.getElementById('avatarUpload');
+                                                            const avatarInput = document.getElementById('avatarInput');
+                                                            const avatarPreview = document.getElementById('avatarPreview');
+
+                                                            avatarUpload.addEventListener('click', () => {
+                                                                avatarInput.click();
+                                                            });
+
+                                                            avatarInput.addEventListener('change', (e) => {
+                                                                if (e.target.files.length > 0) {
+                                                                    const file = e.target.files[0];
+                                                                    const reader = new FileReader();
+
+                                                                    reader.onload = (e) => {
+                                                                        avatarPreview.src = e.target.result;
+                                                                        avatarPreview.style.display = 'block';
+                                                                    };
+
+                                                                    reader.readAsDataURL(file);
+                                                                }
+                                                            });
+
+                                                            // Handle drag and drop for avatar
+                                                            avatarUpload.addEventListener('dragover', (e) => {
+                                                                e.preventDefault();
+                                                                avatarUpload.style.borderColor = '#0d6efd';
+                                                            });
+
+                                                            avatarUpload.addEventListener('dragleave', () => {
+                                                                avatarUpload.style.borderColor = '#dee2e6';
+                                                            });
+
+                                                            avatarUpload.addEventListener('drop', (e) => {
+                                                                e.preventDefault();
+                                                                avatarUpload.style.borderColor = '#dee2e6';
+
+                                                                if (e.dataTransfer.files.length > 0) {
+                                                                    avatarInput.files = e.dataTransfer.files;
+                                                                    const file = e.dataTransfer.files[0];
+                                                                    const reader = new FileReader();
+
+                                                                    reader.onload = (e) => {
+                                                                        avatarPreview.src = e.target.result;
+                                                                        avatarPreview.style.display = 'block';
+                                                                    };
+
+                                                                    reader.readAsDataURL(file);
+                                                                }
                                                             });
 
                                                             // PROFILE FORM

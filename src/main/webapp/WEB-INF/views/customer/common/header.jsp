@@ -23,7 +23,7 @@
                 <input type="text" 
                        name="keyword" 
                        placeholder="Search shoes..." 
-                       class="form-control rounded-pill pe-5" 
+                       class="form-control-header rounded-pill pe-5" 
                        value="${param.keyword != null ? param.keyword : ''}"
                        autocomplete="off"
                        style="background-color: #1e293b; color: white; border: 1px solid #475569;">
@@ -121,14 +121,14 @@
         transform: scale(1.05);
     }
     
-    .form-control:focus {
+    .form-control-header:focus {
         background-color: #1e293b;
         color: white;
         border-color: #fbbf24;
         box-shadow: 0 0 0 0.2rem rgba(251, 191, 36, 0.25);
     }
     
-    .form-control::placeholder {
+    .form-control-header::placeholder {
         color: #bfdbfe;
     }
 </style>
