@@ -5,28 +5,30 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
+import DAOs.CustomerDAO;
 import Models.Order;
+import Models.Customer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 @WebServlet(name = "OrderDetailServlet", urlPatterns = {"/orders/detail"})
 public class OrderDetailServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // TODO: Implement session-based authentication when login is ready
-        // Hardcode customerId = 2 for testing (no login functionality yet)
-        // TODO: Use this for access control when login is implemented
-        @SuppressWarnings("unused")
+        // For now, using hardcoded customer ID. In production, get from session
         int customerId = 2;
+        Customer customer = customerDAO.findById(customerId);
 
         int orderId = Integer.parseInt(request.getParameter("id"));
         Order order = orderDAO.findWithItems(orderId);
@@ -39,6 +41,7 @@ public class OrderDetailServlet extends HttpServlet {
         // For demo purposes, allow access to any order
         // In production, you should check: order.getCustomerId() != customerId
         request.setAttribute("order", order);
+        request.setAttribute("customer", customer);
         request.getRequestDispatcher("/WEB-INF/views/customer/order-detail.jsp").forward(request, response);
     }
     

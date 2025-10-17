@@ -57,8 +57,8 @@ public class ProfileServlet extends HttpServlet {
 //        }
 //        int customerId = (int) session.getAttribute("customerId");
 
-        int customerId = Integer.parseInt(request.getParameter("id"));
-//        int customerId = 2;
+//        int customerId = Integer.parseInt(request.getParameter("id"));
+        int customerId = 2;
 
         Customer customer = customerDAO.findById(customerId);
 
@@ -154,6 +154,22 @@ public class ProfileServlet extends HttpServlet {
                 } else {
                     session.setAttribute("flash_error", "Current password is incorrect.");
                 }
+            }
+        } else if ("deleteAddress".equals(action)) {
+            // ====== Delete address ======
+            try {
+                String addressIdStr = request.getParameter("addressId");
+                if (addressIdStr != null && !addressIdStr.trim().isEmpty()) {
+                    int addressId = Integer.parseInt(addressIdStr);
+                    AddressDAO addressDAO = new AddressDAO();
+                    addressDAO.delete(addressId);
+                    session.setAttribute("flash", "Address deleted successfully.");
+                } else {
+                    session.setAttribute("flash_error", "Invalid address ID.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                session.setAttribute("flash_error", "Failed to delete address.");
             }
         }
 
