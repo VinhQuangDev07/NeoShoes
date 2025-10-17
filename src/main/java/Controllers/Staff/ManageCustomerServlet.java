@@ -6,6 +6,7 @@ package Controllers.Staff;
 
 import DAOs.CustomerDAO;
 import Models.Customer;
+import Models.Staff;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -14,6 +15,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,7 +47,24 @@ public class ManageCustomerServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-        session.setAttribute("role", "admin");
+
+        // Tạo staff mẫu (Admin)
+        Staff staff = new Staff();
+        staff.setStaffId(1);
+        staff.setRole(true); // true = Admin
+        staff.setEmail("admin@neoshoes.com");
+        staff.setPasswordHash("hashed_password_here");
+        staff.setName("Nguyễn Văn Admin");
+        staff.setPhoneNumber("0912345678");
+        staff.setAvatar("https://i.pinimg.com/originals/24/bd/d9/24bdd9ec59a9f8966722063fe7791183.jpg");
+        staff.setGender("Male");
+        staff.setCreatedAt(LocalDateTime.now().minusMonths(6));
+        staff.setUpdatedAt(LocalDateTime.now());
+        staff.setIsDeleted(false);
+
+        // Set vào session
+        session.setAttribute("staff", staff);
+        session.setAttribute("role", "admin"); // hoặc "staff"
 
         // Check if user is logged in and has staff or admin role
 //        String role = (String) session.getAttribute("role");
@@ -52,14 +72,41 @@ public class ManageCustomerServlet extends HttpServlet {
 //            response.sendRedirect("login");
 //            return;
 //        }
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+        
+        int recordsPerPage = 10;
         List<Customer> customers;
 
         // Get all customers
         customers = customerDAO.getAllCustomers();
+        
+        int totalRecords = customers.size();
+        
+        // Calculate start and end positions
+        int startIndex = (currentPage - 1) * recordsPerPage;
+        int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+        
+        // 5. Lấy dữ liệu cho trang hiện tại
+        List<Customer> pageData;
+        if (startIndex < totalRecords) {
+            pageData = customers.subList(startIndex, endIndex);
+        } else {
+            pageData = new ArrayList<>();
+        }
 
         // Set attributes
-        request.setAttribute("customers", customers);
-        request.setAttribute("totalCustomers", customers.size());
+        request.setAttribute("customers", pageData);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("recordsPerPage", recordsPerPage);
+        request.setAttribute("baseUrl", request.getRequestURI()); 
 
         // Forward to JSP
         request.getRequestDispatcher("/WEB-INF/views/staff/manage-customer.jsp").forward(request, response);

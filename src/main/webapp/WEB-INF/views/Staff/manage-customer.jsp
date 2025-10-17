@@ -184,10 +184,10 @@
     </head>
     <body>
         <!-- Header -->
-        <%--<jsp:include page="dashboard-header.jsp" />--%>
+        <jsp:include page="common/staff-header.jsp"/>
 
         <!-- Sidebar -->
-        <%--<jsp:include page="staff-sidebar.jsp" />--%>
+        <jsp:include page="common/staff-sidebar.jsp"/>
 
         <!-- Main Content -->
         <div id="main-content">
@@ -203,7 +203,7 @@
                             <p class="text-muted mb-0 mt-1">Manage and view all customers</p>
                         </div>
                         <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                            <span class="badge bg-primary fs-6">Total: ${totalCustomers} customers</span>
+                            <span class="badge bg-primary fs-6">Total: ${totalRecords} customers</span>
                         </div>
                     </div>
                 </div>
@@ -305,6 +305,7 @@
                         </div>
                     </div>
                 </div>
+                <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
             </div>
         </div>
 

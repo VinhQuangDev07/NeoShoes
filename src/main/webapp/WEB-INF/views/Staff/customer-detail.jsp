@@ -205,10 +205,10 @@
 </head>
 <body>
     <!-- Header -->
-    <%--<jsp:include page="dashboard-header.jsp" />--%>
-    
-    <!-- Sidebar -->
-    <%--<jsp:include page="staff-sidebar.jsp" />--%>
+        <jsp:include page="common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="common/staff-sidebar.jsp"/>
     
     <!-- Main Content -->
     <div id="main-content">
