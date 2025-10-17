@@ -5,34 +5,34 @@
 package Models;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 /**
  *
  * @author Nguyen Huynh Thien An - CE190979
  */
-public class ReturnRequestDetails {
+public class ReturnRequestDetail {
 
     private int returnRequestDetailId;
     private int returnRequestId;
     private int productVariantId;
     private int quantity;
-    private Date createAt;
-    private Date updateAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private BigDecimal amount;
     private String note;
-    private Date refundDate;
+    private LocalDateTime refundDate;
 
-    public ReturnRequestDetails() {
+    public ReturnRequestDetail() {
     }
 
-    public ReturnRequestDetails(int returnRequestDetailId, int returnRequestId, int productVariantId, int quantity, Date createAt, Date updateAt, BigDecimal amount, String note, Date refundDate) {
+    public ReturnRequestDetail(int returnRequestDetailId, int returnRequestId, int productVariantId, int quantity, LocalDateTime createdAt, LocalDateTime updatedAt, BigDecimal amount, String note, LocalDateTime refundDate) {
         this.returnRequestDetailId = returnRequestDetailId;
         this.returnRequestId = returnRequestId;
         this.productVariantId = productVariantId;
         this.quantity = quantity;
-        this.createAt = createAt;
-        this.updateAt = updateAt;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.amount = amount;
         this.note = note;
         this.refundDate = refundDate;
@@ -70,20 +70,20 @@ public class ReturnRequestDetails {
         this.quantity = quantity;
     }
 
-    public Date getCreateAt() {
-        return createAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public Date getUpdateAt() {
-        return updateAt;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdateAt(Date updateAt) {
-        this.updateAt = updateAt;
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public BigDecimal getAmount() {
@@ -102,12 +102,12 @@ public class ReturnRequestDetails {
         this.note = note;
     }
 
-    public Date getRefundDate() {
+    public LocalDateTime getRefundDate() {
         return refundDate;
     }
 
-    public void setRefundDate(Date refundDate) {
+    public void setRefundDate(LocalDateTime refundDate) {
         this.refundDate = refundDate;
     }
-    
+
 }

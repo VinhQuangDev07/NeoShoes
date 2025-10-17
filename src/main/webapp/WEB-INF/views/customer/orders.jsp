@@ -98,6 +98,7 @@
                 display: flex;
                 align-items: center;
                 gap: 15px;
+                flex-wrap: wrap;
             }
             .order-number {
                 font-weight: 600;
@@ -113,20 +114,25 @@
                 border-radius: 20px;
                 font-size: 12px;
                 font-weight: 600;
+                text-transform: capitalize;
             }
-            .status-delivered {
+            .status-APPROVED, .status-delivered {
                 background: #d4edda;
                 color: #155724;
             }
-            .status-pending {
+            .status-PENDING {
                 background: #fff3cd;
                 color: #856404;
             }
-            .status-shipped {
+            .status-processing {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+            .status-shipped, .status-shipping {
                 background: #cce7ff;
                 color: #004085;
             }
-            .status-canceled {
+            .status-canceled, .status-cancelled {
                 background: #f8d7da;
                 color: #721c24;
             }
@@ -153,9 +159,11 @@
                 display: flex;
                 align-items: center;
                 gap: 6px;
+                text-decoration: none;
             }
             .details-btn:hover {
                 background: #0056b3;
+                color: white;
             }
             .order-items {
                 padding: 20px;
@@ -185,6 +193,11 @@
                 margin-bottom: 4px;
                 color: #333;
             }
+            .item-variant {
+                color: #999;
+                font-size: 13px;
+                margin-bottom: 2px;
+            }
             .item-quantity {
                 color: #666;
                 font-size: 14px;
@@ -194,29 +207,6 @@
                 color: #333;
                 margin-right: 15px;
             }
-            .review-btn {
-                background: #ffc107;
-                border: 1px solid #ffc107;
-                color: #000;
-                padding: 8px 16px;
-                border-radius: 6px;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .review-btn:hover {
-                background: #e0a800;
-                border-color: #d39e00;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-            }
-            .review-btn i {
-                font-size: 14px;
-            }
             .delivery-info {
                 background: #f8f9fa;
                 padding: 15px 20px;
@@ -224,8 +214,11 @@
                 font-size: 14px;
                 color: #666;
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
                 gap: 8px;
+            }
+            .delivery-info i {
+                margin-top: 2px;
             }
             .empty-state {
                 text-align: center;
@@ -263,47 +256,16 @@
             .start-shopping-btn:hover {
                 background: #0056b3;
             }
-            .user-profile-section {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                padding: 20px;
-                margin-bottom: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 12px;
-            }
-            .user-avatar {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 3px solid #007bff;
-                box-shadow: 0 2px 8px rgba(0,123,255,0.3);
-            }
-            .user-info h5 {
-                margin: 0;
-                color: #333;
-                font-weight: 600;
-                font-size: 16px;
-            }
-            .user-info p {
-                margin: 0;
-                color: #666;
-                font-size: 14px;
-            }
         </style>
     </head>
     <body>
         <div class="orders-container">
             <div class="container">
-            <div class="row">
+                <div class="row">
                     <!-- Sidebar -->
                     <div class="col-lg-3">
-                        
-                <jsp:include page="common/customer-sidebar.jsp"/>
+
+                        <jsp:include page="common/customer-sidebar.jsp"/>
                     </div>
 
                     <!-- Main Content -->
@@ -344,27 +306,28 @@
                             <div class="filter-tab" onclick="filterOrders('completed')">Delivered</div>
                         </div>
 
-                            <c:if test="${empty orders}">
+                        <c:if test="${empty orders}">
                             <div class="empty-state">
                                 <i class="fas fa-shopping-bag"></i>
                                 <h4>No orders yet</h4>
                                 <p>You haven't placed any orders yet.</p>
-                                <button class="start-shopping-btn" onclick="window.location.href='${pageContext.request.contextPath}/products'">
+                                <button class="start-shopping-btn" onclick="window.location.href = '${pageContext.request.contextPath}/products'">
                                     <i class="fas fa-shopping-cart"></i>
                                     Start Shopping
                                 </button>
                             </div>
-                            </c:if>
+                        </c:if>
 
-                            <c:if test="${not empty orders}">
+                        <c:if test="${not empty orders}">
                             <c:forEach items="${orders}" var="order">
-                                <div class="order-card" data-status="pending">
+                                <div class="order-card" data-status="${order.status}">
                                     <!-- Order Header -->
                                     <div class="order-header">
                                         <div class="order-info">
                                             <span class="order-number">Order: #${order.orderId}</span>
                                             <span class="order-date">${order.placedAt}</span>
-                                            <span class="order-status status-pending">Pending</span>
+                                            <span class="order-status status-${order.status}">${order.status}
+                                            </span>
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$${order.totalAmount}</span>
@@ -434,10 +397,10 @@
                                         Delivery to: Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789
                                     </div>
                                 </div>
-                                        </c:forEach>
-                            </c:if>
-                        </div>
+                            </c:forEach>
+                        </c:if>
                     </div>
+                </div>
             </div>
         </div>
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -446,34 +409,34 @@
         <!-- Custom JS -->
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
         <script>
-                                                    // Filter orders by status
-                                                    function filterOrders(status) {
-                                                        // Update active tab
-                                                        document.querySelectorAll('.filter-tab').forEach(tab => {
-                                                            tab.classList.remove('active');
-                                                        });
-                                                        event.target.classList.add('active');
+                                    // Filter orders by status
+                                    function filterOrders(status) {
+                                        // Update active tab
+                                        document.querySelectorAll('.filter-tab').forEach(tab => {
+                                            tab.classList.remove('active');
+                                        });
+                                        event.target.classList.add('active');
 
-                                                        // Show/hide orders based on status
-                                                        const orderCards = document.querySelectorAll('.order-card');
-                                                        orderCards.forEach(card => {
-                                                            const orderStatus = card.getAttribute('data-status');
-                                                            console.log('Filtering:', status, 'Order status:', orderStatus); // Debug log
+                                        // Show/hide orders based on status
+                                        const orderCards = document.querySelectorAll('.order-card');
+                                        orderCards.forEach(card => {
+                                            const orderStatus = card.getAttribute('data-status');
+                                            console.log('Filtering:', status, 'Order status:', orderStatus); // Debug log
 
-                                                            if (status === 'all' || orderStatus === status) {
-                                                                card.style.display = 'block';
-                                                            } else {
-                                                                card.style.display = 'none';
-                                                            }
-                                                        });
-                                                    }
+                                            if (status === 'all' || orderStatus === status) {
+                                                card.style.display = 'block';
+                                            } else {
+                                                card.style.display = 'none';
+                                            }
+                                        });
+                                    }
 
-                                                    // Review product function
-                                                    function reviewProduct(productName, productId) {
-                                                        // Create review modal
-                                                        const modal = document.createElement('div');
-                                                        modal.className = 'modal fade';
-                                                        modal.innerHTML = `
+                                    // Review product function
+                                    function reviewProduct(productName, productId) {
+                                        // Create review modal
+                                        const modal = document.createElement('div');
+                                        modal.className = 'modal fade';
+                                        modal.innerHTML = `
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -505,100 +468,100 @@
         </div>
                 `;
 
-                                                        document.body.appendChild(modal);
-                                                        const bsModal = new bootstrap.Modal(modal);
-                                                        bsModal.show();
+                                        document.body.appendChild(modal);
+                                        const bsModal = new bootstrap.Modal(modal);
+                                        bsModal.show();
 
-                                                        // Rating functionality
-                                                        const stars = modal.querySelectorAll('.rating i');
-                                                        let selectedRating = 0;
+                                        // Rating functionality
+                                        const stars = modal.querySelectorAll('.rating i');
+                                        let selectedRating = 0;
 
-                                                        stars.forEach((star, index) => {
-                                                            star.addEventListener('click', () => {
-                                                                selectedRating = index + 1;
-                                                                stars.forEach((s, i) => {
-                                                                    s.style.color = i < selectedRating ? '#ffc107' : '#ddd';
-                                                                });
-                                                            });
-                                                        });
+                                        stars.forEach((star, index) => {
+                                            star.addEventListener('click', () => {
+                                                selectedRating = index + 1;
+                                                stars.forEach((s, i) => {
+                                                    s.style.color = i < selectedRating ? '#ffc107' : '#ddd';
+                                                });
+                                            });
+                                        });
 
-                                                        // Clean up modal when hidden
-                                                        modal.addEventListener('hidden.bs.modal', () => {
-                                                            document.body.removeChild(modal);
-                                                        });
-                                                    }
+                                        // Clean up modal when hidden
+                                        modal.addEventListener('hidden.bs.modal', () => {
+                                            document.body.removeChild(modal);
+                                        });
+                                    }
 
-                                                    // Submit review function
-                                                    function submitReview(productName) {
-                                                        const reviewText = document.getElementById('reviewText').value;
-                                                        if (reviewText.trim() === '') {
-                                                            alert('Please write a review before submitting.');
-                                                            return;
-                                                        }
+                                    // Submit review function
+                                    function submitReview(productName) {
+                                        const reviewText = document.getElementById('reviewText').value;
+                                        if (reviewText.trim() === '') {
+                                            alert('Please write a review before submitting.');
+                                            return;
+                                        }
 
-                                                        // Simulate API call
-                                                        setTimeout(() => {
-                                                            alert('Thank you for your review of ' + productName + '!');
-                                                            // Close modal
-                                                            const modal = document.querySelector('.modal.show');
-                                                            if (modal) {
-                                                                const bsModal = bootstrap.Modal.getInstance(modal);
-                                                                bsModal.hide();
-                                                            }
-                                                        }, 500);
-                                                    }
+                                        // Simulate API call
+                                        setTimeout(() => {
+                                            alert('Thank you for your review of ' + productName + '!');
+                                            // Close modal
+                                            const modal = document.querySelector('.modal.show');
+                                            if (modal) {
+                                                const bsModal = bootstrap.Modal.getInstance(modal);
+                                                bsModal.hide();
+                                            }
+                                        }, 500);
+                                    }
 
-                                                    // Initialize page
-                                                    document.addEventListener('DOMContentLoaded', function () {
-                                                        // Set active menu based on current page
-                                                        const currentPath = window.location.pathname;
-                                                        const menuLinks = document.querySelectorAll('.nav-link-item');
+                                    // Initialize page
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        // Set active menu based on current page
+                                        const currentPath = window.location.pathname;
+                                        const menuLinks = document.querySelectorAll('.nav-link-item');
 
-                                                        menuLinks.forEach(link => {
-                                                            const linkHref = link.getAttribute('href');
-                                                            link.classList.remove('active');
+                                        menuLinks.forEach(link => {
+                                            const linkHref = link.getAttribute('href');
+                                            link.classList.remove('active');
 
-                                                            if (currentPath.includes(linkHref.split('/').pop())) {
-                                                                link.classList.add('active');
-                                                            }
-                                                        });
+                                            if (currentPath.includes(linkHref.split('/').pop())) {
+                                                link.classList.add('active');
+                                            }
+                                        });
 
-                                                        // Default to orders if no match
-                                                        const hasActive = document.querySelector('.nav-link-item.active');
-                                                        if (!hasActive) {
-                                                            const ordersLink = document.getElementById('order');
-                                                            if (ordersLink) {
-                                                                ordersLink.classList.add('active');
-                                                            }
-                                                        }
-                                                    });
+                                        // Default to orders if no match
+                                        const hasActive = document.querySelector('.nav-link-item.active');
+                                        if (!hasActive) {
+                                            const ordersLink = document.getElementById('order');
+                                            if (ordersLink) {
+                                                ordersLink.classList.add('active');
+                                            }
+                                        }
+                                    });
 
-                                                    // Initialize Lucide icons
-                                                    lucide.createIcons();
+                                    // Initialize Lucide icons
+                                    lucide.createIcons();
 
-                                                    // Set active menu based on current page
-                                                    document.addEventListener("DOMContentLoaded", () => {
-                                                        const currentPath = window.location.pathname;
-                                                        const menuLinks = document.querySelectorAll('.nav-link-item');
+                                    // Set active menu based on current page
+                                    document.addEventListener("DOMContentLoaded", () => {
+                                        const currentPath = window.location.pathname;
+                                        const menuLinks = document.querySelectorAll('.nav-link-item');
 
-                                                        menuLinks.forEach(link => {
-                                                            const linkHref = link.getAttribute('href');
+                                        menuLinks.forEach(link => {
+                                            const linkHref = link.getAttribute('href');
 
-                                                            // Remove active from all
-                                                            link.classList.remove('active');
+                                            // Remove active from all
+                                            link.classList.remove('active');
 
-                                                            // Check if current path matches link href
-                                                            if (currentPath.includes(linkHref.split('/').pop())) {
-                                                                link.classList.add('active');
-                                                            }
-                                                        });
+                                            // Check if current path matches link href
+                                            if (currentPath.includes(linkHref.split('/').pop())) {
+                                                link.classList.add('active');
+                                            }
+                                        });
 
-                                                        // Default to profile if no match
-                                                        const hasActive = document.querySelector('.nav-link-item.active');
-                                                        if (!hasActive) {
-                                                            document.getElementById('profile').classList.add('active');
-                                                        }
-                                                    });
+                                        // Default to profile if no match
+                                        const hasActive = document.querySelector('.nav-link-item.active');
+                                        if (!hasActive) {
+                                            document.getElementById('profile').classList.add('active');
+                                        }
+                                    });
         </script>
 
     </body>

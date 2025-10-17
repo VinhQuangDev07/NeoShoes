@@ -54,6 +54,7 @@
                 align-items: center;
                 gap: 20px;
                 margin-top: 10px;
+                flex-wrap: wrap;
             }
             .order-date {
                 display: flex;
@@ -67,18 +68,27 @@
                 border-radius: 20px;
                 font-size: 14px;
                 font-weight: 600;
+                text-transform: capitalize;
             }
-            .status-delivered {
+            .status-APPROVED, .status-delivered {
                 background: #28a745;
                 color: white;
             }
-            .status-shipped {
+            .status-SHIPPED, .status-SHIPPING {
                 background: #17a2b8;
                 color: white;
             }
-            .status-pending {
+            .status-PENDING {
                 background: #ffc107;
                 color: #000;
+            }
+            .status-processing {
+                background: #007bff;
+                color: white;
+            }
+            .status-canceled, .status-cancelled {
+                background: #dc3545;
+                color: white;
             }
             .progress-section {
                 padding: 20px;
@@ -102,7 +112,10 @@
                 top: 20px;
                 width: 2px;
                 height: 40px;
-                background: #007bff;
+                background: #e9ecef;
+            }
+            .progress-step.completed::before {
+                background: #28a745;
             }
             .progress-step:last-child::before {
                 display: none;
@@ -211,6 +224,11 @@
             .product-name {
                 font-weight: 600;
                 margin-bottom: 4px;
+            }
+            .product-variant {
+                color: #999;
+                font-size: 13px;
+                margin-bottom: 2px;
             }
             .product-quantity {
                 color: #666;
@@ -361,6 +379,12 @@
             .cancel-cancel-btn:hover {
                 background: #5a6268;
             }
+            @media (max-width: 768px) {
+                .order-summary {
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                }
+            }
         </style>
     </head>
     <body>
@@ -382,7 +406,7 @@
                                     <i class="fas fa-calendar"></i>
                                     <span>${order.placedAt}</span>
                                 </div>
-                                <span class="status-badge status-pending">Pending</span>
+                                <span class="status-badge status-${order.status}">${order.status}</span>
                             </div>
                         </div>
 
@@ -404,10 +428,11 @@
                                 <div class="progress-step">
                                     <div class="step-circle current">
                                         <c:choose>
-                                            <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
+                                            <c:when test="${order.status == 'SHIPPING' || order.status == 'APPROVED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
-                                            <c:when test="${'PENDING' == 'PENDING'}">
+
+                                            <c:when test="${order.status == 'PENDING'}">
                                                 <i class="fas fa-clock"></i>
                                             </c:when>
                                             <c:otherwise>
@@ -420,9 +445,12 @@
                                             <div>Shipping</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
+                                                    <c:when test="${order.status == 'SHIPPED' || order.status == 'APPROVED'}">
+                                                        ${order.placedAt}
+                                                    </c:when><c:when test="${order.status == 'SHIPPED' || order.status == 'APPROVED'}">
                                                         ${order.placedAt}
                                                     </c:when>
+
                                                     <c:otherwise>
                                                         Pending
                                                     </c:otherwise>
@@ -432,32 +460,32 @@
                                     </div>
                                 </div>
                                 <div class="progress-step">
-                                    <div class="step-circle ${'PENDING' == 'COMPLETED' ? 'completed' : ''}">
+                                    <div class="step-circle ${order.status == 'APPROVED' ? 'completed' : ''}">
                                         <c:choose>
-                                            <c:when test="${'PENDING' == 'COMPLETED'}">
+                                            <c:when test="${order.status == 'APPROVED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
                                             <c:otherwise>
                                                 <i class="fas fa-home"></i>
                                             </c:otherwise>
                                         </c:choose>
-                            </div>
+                                    </div>
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Delivered</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${'PENDING' == 'COMPLETED'}">
+                                                    <c:when test="${order.status == 'APPROVED'}">
                                                         ${order.placedAt}
                                                     </c:when>
                                                     <c:otherwise>
                                                         Not yet
                                                     </c:otherwise>
                                                 </c:choose>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
                             </div>
                         </div>
 
@@ -492,10 +520,13 @@
                         <!-- Shipping Info -->
                         <div class="shipping-section">
                             <h6>Ship to</h6>
-                            <p class="mb-0">Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789</p>
+                            <c:forEach items="${order.items}" var="item">
+                                <p class="mb-0"> Address </p>
+                            </c:forEach>
+
                         </div>
 
-                        <!-- Products -->
+                        <!-- Products --> 
                         <div class="products-section">
                             <h6>Products</h6>
                             <c:forEach items="${order.items}" var="item">
@@ -511,24 +542,37 @@
                             </c:forEach>
                         </div>
 
+
                         <!-- Footer -->
                         <div class="modal-footer">
                             <c:choose>
-                                <c:when test="${'PENDING' == 'PENDING' || 'PENDING' == 'APPROVED'}">
+                                <c:when test="${order.status == 'PENDING'}">
                                     <button class="cancel-btn" onclick="showCancelModal()">
                                         <i class="fas fa-times"></i>
                                         Cancel Order
                                     </button>
                                 </c:when>
+
                                 <c:otherwise>
-                                    <button class="cancel-btn" disabled>
-                                        <i class="fas fa-times"></i>
-                                        Cancel Order
-                                    </button>
+
+                                    <c:choose>
+                                        <c:when test="${hasRequest}">
+                                            <a href="${pageContext.request.contextPath}/returnRequest?action=detail&requestId=${requestId}" class="cancel-btn"> 
+                                                View Return Request
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <a href="${pageContext.request.contextPath}/returnRequest?orderId=${order.orderId}" class="cancel-btn">
+                                                Create Return Request
+                                            </a>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </c:otherwise>
                             </c:choose>
+
                             <button class="close-btn" onclick="window.history.back()">Close</button>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -579,49 +623,49 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Custom JS -->
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
-        
+
         <script>
-            function showCancelModal() {
-                document.getElementById('cancelModal').style.display = 'block';
-            }
-            
-            function hideCancelModal() {
-                document.getElementById('cancelModal').style.display = 'none';
-            }
-            
-            function confirmCancelOrder() {
-                // Create a form to submit POST request
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '${pageContext.request.contextPath}/orders/detail';
-                
-                // Add action parameter
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'cancel';
-                form.appendChild(actionInput);
-                
-                // Add orderId parameter
-                const orderIdInput = document.createElement('input');
-                orderIdInput.type = 'hidden';
-                orderIdInput.name = 'orderId';
-                orderIdInput.value = '${order.orderId}';
-                form.appendChild(orderIdInput);
-                
-                // Submit the form
-                document.body.appendChild(form);
-                form.submit();
-            }
-            
-            // Close modal when clicking outside
-            window.onclick = function(event) {
-                const modal = document.getElementById('cancelModal');
-                if (event.target == modal) {
-                    hideCancelModal();
-                }
-            }
+                        function showCancelModal() {
+                            document.getElementById('cancelModal').style.display = 'block';
+                        }
+
+                        function hideCancelModal() {
+                            document.getElementById('cancelModal').style.display = 'none';
+                        }
+
+                        function confirmCancelOrder() {
+                            // Create a form to submit POST request
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '${pageContext.request.contextPath}/orders/detail';
+
+                            // Add action parameter
+                            const actionInput = document.createElement('input');
+                            actionInput.type = 'hidden';
+                            actionInput.name = 'action';
+                            actionInput.value = 'cancel';
+                            form.appendChild(actionInput);
+
+                            // Add orderId parameter
+                            const orderIdInput = document.createElement('input');
+                            orderIdInput.type = 'hidden';
+                            orderIdInput.name = 'orderId';
+                            orderIdInput.value = '${order.orderId}';
+                            form.appendChild(orderIdInput);
+
+                            // Submit the form
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+
+                        // Close modal when clicking outside
+                        window.onclick = function (event) {
+                            const modal = document.getElementById('cancelModal');
+                            if (event.target == modal) {
+                                hideCancelModal();
+                            }
+                        }
         </script>
     </body>
-    </html>
+</html>
 

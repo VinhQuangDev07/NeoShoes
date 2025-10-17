@@ -17,6 +17,7 @@ import java.util.List;
 
 /**
  * Data access for customer orders
+ *
  * @author Chau Gia Huy - CE190386
  */
 public class OrderDAO extends DB.DBContext {
@@ -24,26 +25,26 @@ public class OrderDAO extends DB.DBContext {
     /**
      * Get all orders for a customer
      */
-    public List<Order> listByCustomer(int customerId) {
-        String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, " +
-                     "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt " +
-                     "FROM [Order] o " +
-                     "WHERE o.CustomerId = ? " +
-                     "ORDER BY o.PlacedAt DESC";
-        
+    public List<Order> listByCustomer(int customerId) throws SQLException {
         List<Order> orders = new ArrayList<>();
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, customerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
-                    // Load order items
-                    order.setItems(getOrderItems(order.getOrderId()));
-                    orders.add(order);
-                }
+        String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, "
+                + "o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, "
+                + "o.PlacedAt, o.UpdatedAt, oh.OrderStatus "
+                + "FROM [NeoShoes].[dbo].[Order] o "
+                + "INNER JOIN (SELECT OrderId, OrderStatus, "
+                + "           ROW_NUMBER() OVER (PARTITION BY OrderId ORDER BY ChangedAt DESC) as rn "
+                + "           FROM OrderStatusHistory) oh "
+                + "ON o.OrderId = oh.OrderId AND oh.rn = 1 "
+                + "WHERE o.CustomerId = ? "
+                + "ORDER BY o.PlacedAt DESC";
+        Object[] params = {customerId};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
+                // Load order items
+                order.setItems(getOrderItems(order.getOrderId()));
+                orders.add(order);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return orders;
     }
@@ -51,43 +52,37 @@ public class OrderDAO extends DB.DBContext {
     /**
      * Get a specific order with its items
      */
-    public Order findWithItems(int orderId) {
-        String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, " +
-                     "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt " +
-                     "FROM [Order] o " +
-                     "WHERE o.OrderId = ?";
-        
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, orderId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
-                    // Load order items
-                    order.setItems(getOrderItems(order.getOrderId()));
-                    return order;
-                }
+    public Order findWithItems(int orderId) throws SQLException {
+        Order order = null;
+        String sql = "SELECT TOP 1 o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, oh.OrderStatus FROM [NeoShoes].[dbo].[Order] o INNER JOIN OrderStatusHistory oh ON o.OrderId = oh.OrderId WHERE o.OrderId = ? ORDER BY oh.ChangedAt DESC";
+        Object[] params = {orderId};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                order = createOrderFromResultSet(rs);
+                // Load order items
+                order.setItems(getOrderItems(order.getOrderId()));
+
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return null;
+
+        return order;
     }
 
     /**
      * Get order items for a specific order
      */
     public List<OrderDetail> getOrderItems(int orderId) {
-        String sql = "SELECT od.OrderDetailId, od.OrderId, od.ProductVariantId, od.DetailQuantity, od.DetailPrice, od.AddressDetail, " +
-                     "p.Name as ProductName, pv.Color " +
-                     "FROM OrderDetail od " +
-                     "INNER JOIN ProductVariant pv ON od.ProductVariantId = pv.ProductVariantId " +
-                     "INNER JOIN Product p ON pv.ProductId = p.ProductId " +
-                     "WHERE od.OrderId = ?";
-        
+        String sql = "SELECT od.OrderDetailId, od.OrderId, od.ProductVariantId, od.DetailQuantity, od.DetailPrice, od.AddressDetail, "
+                + "p.Name as ProductName, pv.Color "
+                + "FROM OrderDetail od "
+                + "INNER JOIN ProductVariant pv ON od.ProductVariantId = pv.ProductVariantId "
+                + "INNER JOIN Product p ON pv.ProductId = p.ProductId "
+                + "WHERE od.OrderId = ?";
+
         List<OrderDetail> items = new ArrayList<>();
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     OrderDetail item = new OrderDetail();
                     item.setOrderDetailId(rs.getInt("OrderDetailId"));
@@ -120,13 +115,11 @@ public class OrderDAO extends DB.DBContext {
         order.setVoucherId(rs.getObject("VoucherId", Integer.class));
         order.setTotalAmount(rs.getBigDecimal("TotalAmount"));
         order.setShippingFee(rs.getBigDecimal("ShippingFee"));
-        
-        // Handle LocalDateTime conversion like CustomerDAO
+        order.setStatus(rs.getString("OrderStatus"));
         Timestamp placedAt = rs.getTimestamp("PlacedAt");
         Timestamp updatedAt = rs.getTimestamp("UpdatedAt");
         order.setPlacedAt(placedAt == null ? null : placedAt.toLocalDateTime());
         order.setUpdatedAt(updatedAt == null ? null : updatedAt.toLocalDateTime());
-        
         return order;
     }
 
@@ -135,7 +128,7 @@ public class OrderDAO extends DB.DBContext {
      */
     public boolean updateOrderStatus(int orderId, String status) {
         String sql = "UPDATE [Order] SET UpdatedAt = ? WHERE OrderId = ?";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
             ps.setInt(2, orderId);
             return ps.executeUpdate() > 0;
@@ -144,37 +137,38 @@ public class OrderDAO extends DB.DBContext {
             return false;
         }
     }
-    
+
     /**
      * Delete an order and all its related data
+     *
      * @param orderId the order ID to delete
      * @return true if deletion successful, false otherwise
      */
     public boolean deleteOrder(int orderId) {
-        try (Connection con = getConnection()) {
+        try ( Connection con = getConnection()) {
             con.setAutoCommit(false); // Start transaction
-            
+
             try {
                 // Delete OrderStatusHistory first (foreign key constraint)
                 String deleteStatusHistorySql = "DELETE FROM OrderStatusHistory WHERE OrderId = ?";
-                try (PreparedStatement ps = con.prepareStatement(deleteStatusHistorySql)) {
+                try ( PreparedStatement ps = con.prepareStatement(deleteStatusHistorySql)) {
                     ps.setInt(1, orderId);
                     ps.executeUpdate();
                 }
-                
+
                 // Delete OrderDetail
                 String deleteOrderDetailSql = "DELETE FROM OrderDetail WHERE OrderId = ?";
-                try (PreparedStatement ps = con.prepareStatement(deleteOrderDetailSql)) {
+                try ( PreparedStatement ps = con.prepareStatement(deleteOrderDetailSql)) {
                     ps.setInt(1, orderId);
                     ps.executeUpdate();
                 }
-                
+
                 // Delete Order
                 String deleteOrderSql = "DELETE FROM [Order] WHERE OrderId = ?";
-                try (PreparedStatement ps = con.prepareStatement(deleteOrderSql)) {
+                try ( PreparedStatement ps = con.prepareStatement(deleteOrderSql)) {
                     ps.setInt(1, orderId);
                     int rowsAffected = ps.executeUpdate();
-                    
+
                     if (rowsAffected > 0) {
                         con.commit(); // Commit transaction
                         return true;

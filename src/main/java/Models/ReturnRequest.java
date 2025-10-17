@@ -4,7 +4,8 @@
  */
 package Models;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -16,8 +17,8 @@ public class ReturnRequest {
     private int orderId;
     private int customerId;
     private String returnStatus;
-    private Date requestDate;
-    private Date decideDate;
+    private LocalDateTime requestDate;
+    private LocalDateTime decideDate;
     private String reason;
     private String bankAccountInfo;
     private String note;
@@ -25,7 +26,7 @@ public class ReturnRequest {
     public ReturnRequest() {
     }
 
-    public ReturnRequest(int returnRequestId, int orderId, int customerId, String returnStatus, Date requestDate, Date decideDate, String reason, String bankAccountInfo, String note) {
+    public ReturnRequest(int returnRequestId, int orderId, int customerId, String returnStatus, LocalDateTime requestDate, LocalDateTime decideDate, String reason, String bankAccountInfo, String note) {
         this.returnRequestId = returnRequestId;
         this.orderId = orderId;
         this.customerId = customerId;
@@ -69,19 +70,19 @@ public class ReturnRequest {
         this.returnStatus = returnStatus;
     }
 
-    public Date getRequestDate() {
+    public LocalDateTime getRequestDate() {
         return requestDate;
     }
 
-    public void setRequestDate(Date requestDate) {
+    public void setRequestDate(LocalDateTime requestDate) {
         this.requestDate = requestDate;
     }
 
-    public Date getDecideDate() {
+    public LocalDateTime getDecideDate() {
         return decideDate;
     }
 
-    public void setDecideDate(Date decideDate) {
+    public void setDecideDate(LocalDateTime decideDate) {
         this.decideDate = decideDate;
     }
 
@@ -108,7 +109,5 @@ public class ReturnRequest {
     public void setNote(String note) {
         this.note = note;
     }
-
-    
 
 }
