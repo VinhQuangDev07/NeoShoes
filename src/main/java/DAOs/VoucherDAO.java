@@ -1,13 +1,12 @@
 package DAOs;
 
-import DB.DBContext;
 import Models.Voucher;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VoucherDAO extends DBContext {
+public class VoucherDAO extends DB.DBContext {
 
     // Lấy danh sách voucher khả dụng cho customer
     public List<Voucher> getAvailableVouchersForCustomer(int customerId) {

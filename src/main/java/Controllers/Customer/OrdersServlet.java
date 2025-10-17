@@ -5,12 +5,15 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
+import DAOs.CustomerDAO;
 import Models.Order;
+import Models.Customer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public class OrdersServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -31,13 +35,10 @@ public class OrdersServlet extends HttpServlet {
 //            response.sendRedirect(request.getContextPath() + "/login");
 //            return;
 //        }
-//        int customerId = 2;
-        int customerId = Integer.parseInt(request.getParameter("id"));
-        try {
-//            customerId = (int) session.getAttribute("customerId");
-        } catch (Exception e) {
-            // If customerId is not an integer, use default value
-        }
+        // For now, using hardcoded customer ID. In production, get from session
+        // Using Customer ID = ?
+        int customerId = 2;
+        Customer customer = customerDAO.findById(customerId);
         List<Order> orders = orderDAO.listByCustomer(customerId);
 
         // Check for success/error messages
@@ -51,6 +52,7 @@ public class OrdersServlet extends HttpServlet {
         }
 
         request.setAttribute("orders", orders);
+        request.setAttribute("customer", customer);
         request.getRequestDispatcher("/WEB-INF/views/customer/orders.jsp").forward(request, response);
     }
 }

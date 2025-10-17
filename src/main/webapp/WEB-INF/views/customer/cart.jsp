@@ -26,6 +26,15 @@
                 background-color: #000 !important;
                 border-color: #000 !important;
             }
+            .checkbox-black {
+                transform: scale(1.2);
+                margin: 8px;
+                cursor: pointer;
+            }
+            .card.selected {
+                border: 2px solid #007bff;
+                box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+            }
             .variant-btn-wrapper {
                 position: relative;
                 display: inline-block;
@@ -315,7 +324,7 @@
                                 <span class="fw-bold">Total:</span>
                                 <span class="fw-bold fs-4 text-danger" id="selectedTotalPrice">$0.00</span>
                             </div>
-                            <button class="btn btn-lg w-100 text-white" style="background:#000;">
+                            <button class="btn btn-lg w-100 text-white" style="background:#000;" onclick="proceedToCheckout()">
                                 Purchase
                             </button>
                         </div>
@@ -400,6 +409,25 @@
                                                             hiddenInput.value = cartItemId;
                                                             deleteModal.show();
                                                         }
+
+                                                        function proceedToCheckout() {
+                                                            const selectedItems = document.querySelectorAll('.checkbox-black:checked');
+                                                            if (selectedItems.length === 0) {
+                                                                alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!\n\nHướng dẫn:\n1. Tick vào ô vuông bên cạnh sản phẩm muốn mua\n2. Kiểm tra số lượng và giá tiền\n3. Nhấn nút Purchase để thanh toán');
+                                                                return;
+                                                            }
+                                                            
+                                                            // Get selected cart item IDs
+                                                            const cartItemIds = Array.from(selectedItems).map(checkbox => {
+                                                                return checkbox.id.replace('checkbox-', '');
+                                                            });
+                                                            
+                                                            // Redirect to purchase page with selected items
+                                                            const params = new URLSearchParams();
+                                                            cartItemIds.forEach(id => params.append('cartItemIds', id));
+                                                            
+                                                            window.location.href = '${pageContext.request.contextPath}/purchase?action=checkout&' + params.toString();
+                                                        }
         </script>
 
         <script>
@@ -410,7 +438,6 @@
 
                 // Cho phép updateSummary được gọi từ bên ngoài
                 window.updateSummary = function () {
-
                     let totalItems = 0;
                     let totalPrice = 0;
 
@@ -418,10 +445,12 @@
                         if (chk.checked) {
                             const card = chk.closest('.card');
                             const qtyInput = card.querySelector('.qty-input');
-                            const priceEl = card.querySelector('.text-primary');
+                            const priceEl = card.querySelector('#itemPrice-' + chk.id.replace('checkbox-', ''));
 
-                            if (!qtyInput || !priceEl)
+                            if (!qtyInput || !priceEl) {
+                                console.log('Missing elements for checkbox:', chk.id);
                                 return;
+                            }
 
                             const price = parseFloat(priceEl.textContent.replace('$', '').trim()) || 0;
                             const quantity = parseInt(qtyInput.value) || 0;
@@ -436,7 +465,15 @@
                 }
 
                 checkboxes.forEach(chk => {
-                    chk.addEventListener('change', updateSummary);
+                    chk.addEventListener('change', function() {
+                        const card = chk.closest('.card');
+                        if (chk.checked) {
+                            card.classList.add('selected');
+                        } else {
+                            card.classList.remove('selected');
+                        }
+                        updateSummary();
+                    });
                 });
 
                 const qtyInputs = document.querySelectorAll('.qty-input');
@@ -444,6 +481,14 @@
                     inp.addEventListener('input', updateSummary);
                 });
 
+                // Auto-check all items by default
+                checkboxes.forEach(chk => {
+                    chk.checked = true;
+                    const card = chk.closest('.card');
+                    card.classList.add('selected');
+                });
+
+                // Initial summary update
                 updateSummary();
 
                 // ✅ Đóng tất cả modal (helper function)
