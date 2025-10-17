@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Custom CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-        
+
         <style>
             .purchase-container {
                 background: #f8f9fa;
@@ -70,7 +70,22 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                margin-bottom: 1.5rem;
+                position: relative;
+                padding-bottom: 0.5rem;
             }
+
+            .section-title::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 50px;
+                height: 3px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 2px;
+            }
+
             .section-subtitle {
                 color: #666;
                 font-size: 14px;
@@ -375,7 +390,7 @@
                                 </div>
                                 <i class="fas fa-chevron-down" style="color: #666;"></i>
                             </div>
-                            
+
                             <div class="customer-info">
                                 <div class="info-item">
                                     <div class="info-label">Full Name</div>
@@ -415,7 +430,7 @@
                                     <p class="section-subtitle">${totalItems} items</p>
                                 </div>
                             </div>
-                            
+
                             <div class="order-items">
                                 <c:if test="${empty recentOrders}">
                                     <div class="empty-state">
@@ -472,7 +487,7 @@
                                     </h3>
                                 </div>
                             </div>
-                            
+
                             <div class="voucher-input">
                                 <div style="position: relative; flex: 1;">
                                     <input type="text" id="voucherCode" class="voucher-field" placeholder="Enter voucher code">
@@ -480,7 +495,7 @@
                                 </div>
                                 <button class="apply-btn" onclick="applyVoucher()">Apply</button>
                             </div>
-                            
+
                             <div class="available-vouchers">
                                 <h6>Available vouchers:</h6>
                                 <div class="voucher-suggestions">
@@ -489,7 +504,7 @@
                                     <span class="voucher-tag" onclick="selectVoucher('NEOSHOE25')">NEOSHOE25 (25.000 off)</span>
                                 </div>
                             </div>
-                            
+
                             <div id="discountApplied" class="discount-applied">
                                 <i class="fas fa-check-circle"></i>
                                 <span id="discountMessage"></span>
@@ -506,7 +521,7 @@
                                     </h3>
                                 </div>
                             </div>
-                            
+
                             <div class="summary-item">
                                 <span class="summary-label">Items (${totalItems}):</span>
                                 <span class="summary-value">$${totalSpent}</span>
@@ -545,81 +560,81 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Custom JS -->
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
-        
+
         <script>
-            let appliedDiscount = 0;
-            let originalTotal = ${totalSpent + 10};
-            
-            function selectVoucher(code) {
-                document.getElementById('voucherCode').value = code;
-            }
-            
-            function clearVoucher() {
-                document.getElementById('voucherCode').value = '';
-                removeDiscount();
-            }
-            
-            function applyVoucher() {
-                const voucherCode = document.getElementById('voucherCode').value.trim().toUpperCase();
-                
-                if (!voucherCode) {
-                    alert('Please enter a voucher code');
-                    return;
-                }
-                
-                // Voucher validation and discount calculation
-                let discount = 0;
-                let message = '';
-                
-                switch(voucherCode) {
-                    case 'FIXED15':
-                        discount = 15;
-                        message = 'FIXED15 applied! You saved $15.00';
-                        break;
-                    case 'FPTUCT':
-                        discount = 20;
-                        message = 'FPTUCT applied! You saved $20.00';
-                        break;
-                    case 'NEOSHOE25':
-                        discount = 25;
-                        message = 'NEOSHOE25 applied! You saved $25.00';
-                        break;
-                    default:
-                        alert('Invalid voucher code');
-                        return;
-                }
-                
-                appliedDiscount = discount;
-                updateTotal();
-                showDiscountMessage(message);
-            }
-            
-            function removeDiscount() {
-                appliedDiscount = 0;
-                updateTotal();
-                hideDiscountMessage();
-            }
-            
-            function updateTotal() {
-                const newTotal = originalTotal - appliedDiscount;
-                document.getElementById('totalAmount').textContent = newTotal.toFixed(2);
-                
-                if (appliedDiscount > 0) {
-                    document.getElementById('discountRow').style.display = 'flex';
-                    document.getElementById('discountAmount').textContent = appliedDiscount.toFixed(2);
-                } else {
-                    document.getElementById('discountRow').style.display = 'none';
-                }
-            }
-            
-            function showDiscountMessage(message) {
-                document.getElementById('discountMessage').textContent = message;
-                document.getElementById('discountApplied').style.display = 'block';
-            }
-            
-            function hideDiscountMessage() {
-                document.getElementById('discountApplied').style.display = 'none';
-            }
+                                        let appliedDiscount = 0;
+                                        let originalTotal = ${totalSpent + 10};
+
+                                        function selectVoucher(code) {
+                                            document.getElementById('voucherCode').value = code;
+                                        }
+
+                                        function clearVoucher() {
+                                            document.getElementById('voucherCode').value = '';
+                                            removeDiscount();
+                                        }
+
+                                        function applyVoucher() {
+                                            const voucherCode = document.getElementById('voucherCode').value.trim().toUpperCase();
+
+                                            if (!voucherCode) {
+                                                alert('Please enter a voucher code');
+                                                return;
+                                            }
+
+                                            // Voucher validation and discount calculation
+                                            let discount = 0;
+                                            let message = '';
+
+                                            switch (voucherCode) {
+                                                case 'FIXED15':
+                                                    discount = 15;
+                                                    message = 'FIXED15 applied! You saved $15.00';
+                                                    break;
+                                                case 'FPTUCT':
+                                                    discount = 20;
+                                                    message = 'FPTUCT applied! You saved $20.00';
+                                                    break;
+                                                case 'NEOSHOE25':
+                                                    discount = 25;
+                                                    message = 'NEOSHOE25 applied! You saved $25.00';
+                                                    break;
+                                                default:
+                                                    alert('Invalid voucher code');
+                                                    return;
+                                            }
+
+                                            appliedDiscount = discount;
+                                            updateTotal();
+                                            showDiscountMessage(message);
+                                        }
+
+                                        function removeDiscount() {
+                                            appliedDiscount = 0;
+                                            updateTotal();
+                                            hideDiscountMessage();
+                                        }
+
+                                        function updateTotal() {
+                                            const newTotal = originalTotal - appliedDiscount;
+                                            document.getElementById('totalAmount').textContent = newTotal.toFixed(2);
+
+                                            if (appliedDiscount > 0) {
+                                                document.getElementById('discountRow').style.display = 'flex';
+                                                document.getElementById('discountAmount').textContent = appliedDiscount.toFixed(2);
+                                            } else {
+                                                document.getElementById('discountRow').style.display = 'none';
+                                            }
+                                        }
+
+                                        function showDiscountMessage(message) {
+                                            document.getElementById('discountMessage').textContent = message;
+                                            document.getElementById('discountApplied').style.display = 'block';
+                                        }
+
+                                        function hideDiscountMessage() {
+                                            document.getElementById('discountApplied').style.display = 'none';
+                                        }
         </script>
     </body>
 </html>

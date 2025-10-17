@@ -5,15 +5,14 @@
 package Models;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  *
  * @author Le Huu Nghia - CE181052
  */
-public class Customer {
-    
-    private int id;
+public class Staff {
+    private int staffId;
+    private boolean role;
     private String email;
     private String passwordHash;
     private String name;
@@ -22,14 +21,14 @@ public class Customer {
     private String gender;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean isBlock;
     private boolean isDeleted;
 
-    public Customer() {
+    public Staff() {
     }
 
-        public Customer(int id, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isBlock, boolean isDeleted) {
-        this.id = id;
+    public Staff(int staffId, boolean role, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isDeleted) {
+        this.staffId = staffId;
+        this.role = role;
         this.email = email;
         this.passwordHash = passwordHash;
         this.name = name;
@@ -38,16 +37,23 @@ public class Customer {
         this.gender = gender;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.isBlock = isBlock;
         this.isDeleted = isDeleted;
     }
 
-    public int getId() {
-        return id;
+    public int getStaffId() {
+        return staffId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setStaffId(int staffId) {
+        this.staffId = staffId;
+    }
+
+    public boolean isRole() {
+        return role;
+    }
+
+    public void setRole(boolean role) {
+        this.role = role;
     }
 
     public String getEmail() {
@@ -114,15 +120,7 @@ public class Customer {
         this.updatedAt = updatedAt;
     }
 
-    public boolean isBlock() {
-        return isBlock;
-    }
-
-    public void setIsBlock(boolean isBlock) {
-        this.isBlock = isBlock;
-    }
-
-    public boolean isDeleted() {
+    public boolean isIsDeleted() {
         return isDeleted;
     }
 
@@ -130,16 +128,51 @@ public class Customer {
         this.isDeleted = isDeleted;
     }
     
-    public String getFormattedCreatedAt() {
-    if (createdAt != null) {
-        return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    // Helper method to get role name
+    public String getRoleName() {
+        return role ? "Admin" : "Staff";
     }
-    return "N/A";
-}
+    
+    // Helper method to format createdAt
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
+    }
+
+    // Helper method to format updatedAt
+    public String getFormattedUpdatedAt() {
+        if (updatedAt != null) {
+            return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
+    }
+
+    // Check if staff is admin
+    public boolean isAdmin() {
+        return role;
+    }
+
+    // Check if staff is regular staff
+    public boolean isStaff() {
+        return !role;
+    }
 
     @Override
     public String toString() {
-        return "Customer{" + "id=" + id + ", email=" + email + ", passwordHash=" + passwordHash + ", name=" + name + ", phoneNumber=" + phoneNumber + ", avatar=" + avatar + ", gender=" + gender + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", isBlock=" + isBlock + ", isDeleted=" + isDeleted + '}';
-    }  
+        return "Staff{" + "staffId=" + staffId 
+                + ", role=" + role 
+                + ", email=" + email 
+                + ", passwordHash=" + passwordHash 
+                + ", name=" + name 
+                + ", phoneNumber=" + phoneNumber 
+                + ", avatar=" + avatar 
+                + ", gender=" + gender 
+                + ", createdAt=" + createdAt 
+                + ", updatedAt=" + updatedAt 
+                + ", isDeleted=" + isDeleted + '}';
+    }
+    
     
 }

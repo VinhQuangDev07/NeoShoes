@@ -7,12 +7,15 @@
     <head>
         <title>${product.name} - NeoShoes</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     </head>
 
     <style>
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -230,7 +233,7 @@
             justify-content: flex-end;
             margin-bottom: 2rem;
         }
-        
+
         .add-to-cart-btn {
             background-color: #000 !important;
             border-color: #000 !important;
@@ -240,13 +243,13 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .add-to-cart-btn:hover {
             background-color: #333 !important;
             border-color: #333 !important;
             color: white !important;
         }
-        
+
         .view-reviews-btn {
             background-color: #000 !important;
             border-color: #000 !important;
@@ -257,7 +260,7 @@
             transition: all 0.3s ease;
             font-size: 0.875rem;
         }
-        
+
         .view-reviews-btn:hover {
             background-color: #333 !important;
             border-color: #333 !important;
@@ -440,26 +443,7 @@
             <a href="${pageContext.request.contextPath}/products">Products</a> &gt;
             <span>${product.name}</span>
         </div>
-        <c:if test="${not empty sessionScope.flash}">
-            <script>
-                showNotification("${sessionScope.flash}", "success");
-            </script>
-            <c:remove var="flash" scope="session"/>
-        </c:if>
-
-        <c:if test="${not empty sessionScope.flash_info}">
-            <script>
-                showNotification("${sessionScope.flash_info}", "info");
-            </script>
-            <c:remove var="flash_info" scope="session"/>
-        </c:if>
-
-        <c:if test="${not empty sessionScope.flash_error}">
-            <script>
-                showNotification("${sessionScope.flash_error}", "error");
-            </script>
-            <c:remove var="flash_error" scope="session"/>
-        </c:if>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <!-- Product Detail -->
         <main class="product-detail">
             <a href="javascript:history.back()" class="back-button">← Back</a>
@@ -496,28 +480,8 @@
                         ${product.description}
                     </div>
 
-                    <!-- Price -->
-                    <div class="price-section">
-                        <c:choose>
-                            <c:when test="${product.minPrice != product.maxPrice}">
-                                <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="price">$${product.minPrice}</div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-
                     <!-- Include Variant Selector -->
                     <jsp:include page="common/variant-selector.jsp"/>
-
-                        <!-- Action Buttons -->
-                        <div class="action-buttons">
-                            <button class="btn btn-dark add-to-cart-btn" onclick="addToCart()">
-                                <i class="fas fa-shopping-cart me-2"></i>
-                                Add to Cart
-                            </button>
-                        </div>
 
                     <!-- Product Details -->
                     <div class="product-details">
@@ -568,7 +532,7 @@
                                     </c:choose>
                                 </a>
                             </div>
-                            
+
                             <c:choose>
                                 <c:when test="${totalReviews > 0}">
                                     <!-- Rating Summary -->
@@ -652,7 +616,7 @@
                                     </div>
                                 </c:otherwise>
                             </c:choose>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -671,42 +635,6 @@
                                                  event.target.classList.add('active');
                                              }
 
-                                             // Quantity controls
-                                             function changeQuantity(change) {
-                                                 const quantityInput = document.getElementById('quantity');
-                                                 let quantity = parseInt(quantityInput.value);
-                                                 quantity += change;
-                                                 if (quantity < 1)
-                                                     quantity = 1;
-                                                 if (quantity > 10)
-                                                     quantity = 10;
-                                                 quantityInput.value = quantity;
-                                             }
-
-                                             // Variant selection
-                                             document.querySelectorAll('.variant-chip').forEach(chip => {
-                                                 chip.addEventListener('click', function () {
-                                                     if (this.classList.contains('out-of-stock'))
-                                                         return;
-
-                                                     const parent = this.parentElement;
-                                                     parent.querySelectorAll('.variant-chip').forEach(c => {
-                                                         c.classList.remove('selected');
-                                                     });
-                                                     this.classList.add('selected');
-                                                 });
-                                             });
-
-                                             // Add to cart function (placeholder)
-                                             function addToCart() {
-                                                 alert('Tính năng thêm vào giỏ hàng đang được phát triển!');
-                                             }
-
-                                             // Buy now function (placeholder)
-                                             function buyNow() {
-                                                 alert('Tính năng mua ngay đang được phát triển!');
-                                             }
-
                                              // Initialize first variant as selected
                                              document.addEventListener('DOMContentLoaded', function () {
                                                  const firstColor = document.querySelector('#colorOptions .variant-chip');
@@ -718,5 +646,6 @@
                                                      firstSize.classList.add('selected');
                                              });
         </script>
+        <jsp:include page="common/footer.jsp"/>
     </body>
 </html>
