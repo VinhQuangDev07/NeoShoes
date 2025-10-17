@@ -106,12 +106,15 @@
             margin-top: 0.25rem;
         }
 
+
+
         /* Responsive */
         @media (max-width: 768px) {
             .customer-sidebar {
                 width: 100%;
                 margin-top: 20px;
                 height: auto;
+                min-height: auto !important;
             }
         }
     </style>
@@ -600,11 +603,11 @@
                                                                 if (confirm('Are you sure you want to delete this address?')) {
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
-                                                                    form.action = '<%= request.getContextPath()%>/address';
+                                                                    form.action = '<%= request.getContextPath()%>/profile';
 
                                                                     const actionInput = document.createElement('input');
                                                                     actionInput.type = 'hidden';
-                                                                    actionInput.name = 'addressAction';
+                                                                    actionInput.name = 'action';
                                                                     actionInput.value = 'deleteAddress';
 
                                                                     const idInput = document.createElement('input');
@@ -613,9 +616,9 @@
                                                                     idInput.value = addressId;
 
                                                                     const customeridInput = document.createElement('input');
-                                                                    idInput.type = 'hidden';
-                                                                    idInput.name = 'customerId';
-                                                                    idInput.value = customerId;
+                                                                    customeridInput.type = 'hidden';
+                                                                    customeridInput.name = 'id';
+                                                                    customeridInput.value = '${customer.id}';
 
                                                                     form.appendChild(actionInput);
                                                                     form.appendChild(idInput);
