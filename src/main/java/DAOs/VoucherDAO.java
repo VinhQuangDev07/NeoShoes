@@ -10,10 +10,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import DB.DBContext;
 import Models.Voucher;
 
-public class VoucherDAO extends DBContext {
+public class VoucherDAO extends DB.DBContext {
 
     // Lấy danh sách voucher khả dụng cho customer
     public List<Voucher> getAvailableVouchersForCustomer(int customerId) {

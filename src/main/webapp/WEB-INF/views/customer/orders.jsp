@@ -20,6 +20,11 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 
         <style>
+            /* Orders-specific sidebar adjustments */
+            .customer-sidebar {
+                min-height: 350px !important;
+            }
+
             .orders-container {
                 background: #f8f9fa;
                 min-height: 100vh;
@@ -317,6 +322,10 @@
                                 </div>
                                 Your Orders
                             </h1>
+                            <!-- Debug Info (remove in production) -->
+                            <c:if test="${not empty orders}">
+                                <small class="text-muted">Found ${orders.size()} orders</small>
+                            </c:if>
                         </div>
 
                         <!-- Success/Error Messages -->
@@ -340,7 +349,7 @@
                             <div class="filter-tab active" onclick="filterOrders('all')">All</div>
                             <div class="filter-tab" onclick="filterOrders('pending')">Pending</div>
                             <div class="filter-tab" onclick="filterOrders('processing')">Processing</div>
-                            <div class="filter-tab" onclick="filterOrders('shipped')">Shipping</div>
+                            <div class="filter-tab" onclick="filterOrders('shipped')">Shipped</div>
                             <div class="filter-tab" onclick="filterOrders('completed')">Delivered</div>
                         </div>
 
@@ -358,13 +367,24 @@
 
                             <c:if test="${not empty orders}">
                             <c:forEach items="${orders}" var="order">
-                                <div class="order-card" data-status="pending">
+                                <div class="order-card" data-status="${order.paymentStatusId == 1 ? 'pending' : order.paymentStatusId == 2 ? 'processing' : order.paymentStatusId == 3 ? 'shipped' : 'completed'}">
                                     <!-- Order Header -->
                                     <div class="order-header">
                                         <div class="order-info">
                                             <span class="order-number">Order: #${order.orderId}</span>
-                                            <span class="order-date">${order.placedAt}</span>
-                                            <span class="order-status status-pending">Pending</span>
+                                            <span class="order-date">
+                                                <c:choose>
+                                                    <c:when test="${order.placedAt != null}">
+                                                        ${order.placedAt}
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        N/A
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                            <span class="order-status ${order.paymentStatusId == 1 ? 'status-pending' : order.paymentStatusId == 2 ? 'status-pending' : order.paymentStatusId == 3 ? 'status-shipped' : 'status-delivered'}">
+                                                ${order.paymentStatusId == 1 ? 'Pending' : order.paymentStatusId == 2 ? 'Processing' : order.paymentStatusId == 3 ? 'Shipped' : 'Delivered'}
+                                            </span>
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$${order.totalAmount}</span>
@@ -378,60 +398,79 @@
 
                                     <!-- Order Items -->
                                     <div class="order-items">
-                                        <c:forEach items="${order.items}" var="item">
-                                            <div class="order-item">
-                                                <c:choose>
-                                                    <c:when test="${item.productName.contains('Vans')}">
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Nike')}">
-                                                        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Adidas')}">
-                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Converse')}">
-                                                        <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Jordan')}">
-                                                        <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Puma')}">
-                                                        <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Reebok')}">
-                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('New Balance')}">
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:otherwise>
-                                                </c:choose>
-                                                <div class="item-details">
-                                                    <div class="item-name">${item.productName}</div>
-                                                    <div class="item-quantity">x${item.detailQuantity}</div>
+                                        <c:choose>
+                                            <c:when test="${not empty order.items}">
+                                                <c:forEach items="${order.items}" var="item">
+                                                    <div class="order-item">
+                                                        <c:choose>
+                                                            <c:when test="${item.productName.contains('Vans')}">
+                                                                <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Nike')}">
+                                                                <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Adidas')}">
+                                                                <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Converse')}">
+                                                                <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Jordan')}">
+                                                                <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Puma')}">
+                                                                <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('Reebok')}">
+                                                                <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:when test="${item.productName.contains('New Balance')}">
+                                                                <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                                     alt="${item.productName}" class="item-image">
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <div class="item-details">
+                                                            <div class="item-name">${item.productName}</div>
+                                                            <div class="item-quantity">x${item.detailQuantity}</div>
+                                                        </div>
+                                                        <div class="item-price">$${item.detailPrice}</div>
+                                                        <!-- Review button temporarily disabled -->
+                                                    </div>
+                                                </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="order-item">
+                                                    <div class="item-details">
+                                                        <div class="item-name">No items found</div>
+                                                        <div class="item-quantity">Please check order details</div>
+                                                    </div>
                                                 </div>
-                                                <div class="item-price">$${item.detailPrice}</div>
-                                                <!-- Review button temporarily disabled -->
-                                            </div>
-                                        </c:forEach>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
 
                                     <!-- Delivery Information -->
                                     <div class="delivery-info">
                                         <i class="fas fa-truck"></i>
-                                        Delivery to: Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789
+                                        <c:choose>
+                                            <c:when test="${not empty order.recipientName}">
+                                                Delivery to: ${order.recipientName}, ${order.addressDetails} | ${order.recipientPhone}
+                                            </c:when>
+                                            <c:otherwise>
+                                                Delivery to: Default Address
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                                         </c:forEach>
