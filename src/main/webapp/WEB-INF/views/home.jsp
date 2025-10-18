@@ -350,7 +350,7 @@
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
-                                 onerror="this.src='https://via.placeholder.com/56?text=Brand'">
+                                 onerror="this.src='https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png'">
                             <span>${brand.name}</span>
                         </a>
                     </c:forEach>
@@ -390,7 +390,7 @@
                         <div class="product-card">
                             <div class="product-media">
                                 <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                     onerror="this.src='https://via.placeholder.com/360x270?text=No+Image'">
+                                     onerror="this.src='https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png'">
                             </div>
                             <div class="product-info">
                                 <h3 class="product-name">${product.name}</h3>

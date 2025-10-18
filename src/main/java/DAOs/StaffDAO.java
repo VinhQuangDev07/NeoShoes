@@ -1,136 +1,65 @@
-// StaffDAO.java
 package DAOs;
 
 import DB.DBContext;
 import Models.Staff;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 public class StaffDAO {
-    private final DBContext dbContext;
 
-    public StaffDAO() {
-        this.dbContext = new DBContext();
-    }
+    private final DBContext db = new DBContext();
 
-    // Get staff by ID
-    public Staff getStaffById(int staffId) {
-        String query = "SELECT * FROM Staff WHERE StaffId = ? AND IsDeleted = 0";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
-            ps.setInt(1, staffId);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToStaff(rs);
+    public Staff getStaffById(int id) {
+        String sql = "SELECT * FROM Staff WHERE StaffId=? AND IsDeleted=0";
+        try ( Connection c = db.getConnection();  PreparedStatement p = c.prepareStatement(sql)) {
+            p.setInt(1, id);
+            try ( ResultSet rs = p.executeQuery()) {
+                return rs.next() ? map(rs) : null;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    // Get staff by email
-    public Staff getStaffByEmail(String email) {
-        String query = "SELECT * FROM Staff WHERE Email = ? AND IsDeleted = 0";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
-            ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                return mapResultSetToStaff(rs);
+    public boolean updateStaffProfile(Staff s) {
+        String sql = "UPDATE Staff SET Name=?, PhoneNumber=?, Avatar=?, Gender=?,\n" + "                     Address=?, DateOfBirth=?, UpdatedAt=SYSDATETIME()\n" + "    WHERE StaffId=?\n";
+        try ( Connection c = db.getConnection();  PreparedStatement p = c.prepareStatement(sql)) {
+            p.setString(1, s.getName());
+            p.setString(2, s.getPhoneNumber());
+            p.setString(3, s.getAvatar());
+            p.setString(4, s.getGender());
+            p.setString(5, s.getAddress());
+            if (s.getDateOfBirth() == null) {
+                p.setNull(6, Types.DATE);
+            } else {
+                p.setDate(6, Date.valueOf(s.getDateOfBirth()));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    // Update staff profile (without password)
-    public boolean updateStaffProfile(Staff staff) {
-        String query = "UPDATE Staff SET Name = ?, PhoneNumber = ?, Avatar = ?, Gender = ?, UpdatedAt = ? WHERE StaffId = ?";
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
-            ps.setString(1, staff.getName());
-            ps.setString(2, staff.getPhoneNumber());
-            ps.setString(3, staff.getAvatar());
-            ps.setString(4, staff.getGender());
-            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setInt(6, staff.getStaffId());
-            
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
-            
+            p.setInt(7, s.getStaffId());
+            return p.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    // Change password
-    public boolean changePassword(int staffId, String newPasswordHash) {
-        String query = "UPDATE Staff SET PasswordHash = ?, UpdatedAt = ? WHERE StaffId = ?";
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
-            ps.setString(1, newPasswordHash);
-            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setInt(3, staffId);
-            
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Get all staff (for admin)
-    public List<Staff> getAllStaff() {
-        List<Staff> staffList = new ArrayList<>();
-        String query = "SELECT * FROM Staff WHERE IsDeleted = 0";
-        
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-            
-            while (rs.next()) {
-                staffList.add(mapResultSetToStaff(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return staffList;
-    }
-
-    // Helper method to map ResultSet to Staff object
-    private Staff mapResultSetToStaff(ResultSet rs) throws SQLException {
-        Staff staff = new Staff();
-        staff.setStaffId(rs.getInt("StaffId"));
-        staff.setRole(rs.getBoolean("Role"));
-        staff.setEmail(rs.getString("Email"));
-        staff.setPasswordHash(rs.getString("PasswordHash"));
-        staff.setName(rs.getString("Name"));
-        staff.setPhoneNumber(rs.getString("PhoneNumber"));
-        staff.setAvatar(rs.getString("Avatar"));
-        staff.setGender(rs.getString("Gender"));
-        staff.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
-        
-        Timestamp updatedAt = rs.getTimestamp("UpdatedAt");
-        if (updatedAt != null) {
-            staff.setUpdatedAt(updatedAt.toLocalDateTime());
-        }
-        
-        staff.setDeleted(rs.getBoolean("IsDeleted"));
-        return staff;
+    private Staff map(ResultSet rs) throws SQLException {
+        Staff s = new Staff();
+        s.setStaffId(rs.getInt("StaffId"));
+        s.setRole(rs.getBoolean("Role"));
+        s.setEmail(rs.getString("Email"));
+        s.setPasswordHash(rs.getString("PasswordHash"));
+        s.setName(rs.getString("Name"));
+        s.setPhoneNumber(rs.getString("PhoneNumber"));
+        s.setAvatar(rs.getString("Avatar"));
+        s.setGender(rs.getString("Gender"));
+        s.setAddress(rs.getString("Address"));                               // NEW
+        Date dob = rs.getDate("DateOfBirth");                                // NEW
+        s.setDateOfBirth(dob == null ? null : dob.toLocalDate());
+        s.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
+        Timestamp up = rs.getTimestamp("UpdatedAt");
+        s.setUpdatedAt(up == null ? null : up.toLocalDateTime());
+        s.setDeleted(rs.getBoolean("IsDeleted"));
+        return s;
     }
 }
