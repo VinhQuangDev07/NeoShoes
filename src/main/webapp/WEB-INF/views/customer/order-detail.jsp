@@ -404,7 +404,16 @@
                             <div class="order-meta">
                                 <div class="order-date">
                                     <i class="fas fa-calendar"></i>
-                                    <span>${order.placedAt}</span>
+                                    <span>
+                                        <c:choose>
+                                            <c:when test="${order.placedAt != null}">
+                                                ${order.placedAt}
+                                            </c:when>
+                                            <c:otherwise>
+                                                N/A
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
                                 </div>
                                 <span class="status-badge status-${order.status}">${order.status}</span>
                             </div>
@@ -524,22 +533,82 @@
                                 <p class="mb-0"> Address </p>
                             </c:forEach>
 
+                            <p class="mb-0">
+                                <c:choose>
+                                    <c:when test="${not empty order.recipientName}">
+                                        ${order.recipientName}<br>
+                                        ${order.addressDetails}<br>
+                                        Phone: ${order.recipientPhone}
+                                    </c:when>
+                                    <c:otherwise>
+                                        Default Address
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
                         </div>
 
                         <!-- Products --> 
                         <div class="products-section">
                             <h6>Products</h6>
-                            <c:forEach items="${order.items}" var="item">
-                                <div class="product-item">
-                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                         alt="${item.productName}" class="product-image">
-                                    <div class="product-info">
-                                        <div class="product-name">${item.productName}</div>
-                                        <div class="product-quantity">x${item.detailQuantity}</div>
+                            <c:choose>
+                                <c:when test="${not empty order.items}">
+                                    <c:forEach items="${order.items}" var="item">
+                                        <div class="product-item">
+                                            <c:choose>
+                                                <c:when test="${item.productName.contains('Vans')}">
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Nike')}">
+                                                    <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Adidas')}">
+                                                    <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Converse')}">
+                                                    <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Jordan')}">
+                                                    <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Puma')}">
+                                                    <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Reebok')}">
+                                                    <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('New Balance')}">
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="product-info">
+                                                <div class="product-name">${item.productName}</div>
+                                                <div class="product-quantity">x${item.detailQuantity}</div>
+                                            </div>
+                                            <div class="product-price">$${item.detailPrice}</div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">No items found</div>
+                                            <div class="product-quantity">Please check order details</div>
+                                        </div>
                                     </div>
-                                    <div class="product-price">$${item.detailPrice}</div>
-                                </div>
-                            </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
 
@@ -600,7 +669,9 @@
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Order Status:</span>
-                            <span class="cancel-info-value">${'PENDING'}</span>
+                            <span class="cancel-info-value">
+                                ${order.paymentStatusId == 1 ? 'Pending' : order.paymentStatusId == 2 ? 'Processing' : order.paymentStatusId == 3 ? 'Shipped' : 'Delivered'}
+                            </span>
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Total Amount:</span>

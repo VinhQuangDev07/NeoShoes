@@ -1,217 +1,280 @@
 package Controllers.Customer;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.List;
+
+import DAOs.BrandDAO;
+import DAOs.CategoryDAO;
+import DAOs.ProductDAO;
+import Models.Brand;
+import Models.Category;
+import Models.Product;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import DAOs.CategoryDAO;
-import DAOs.ProductDAO;
-import DAOs.BrandDAO;
-import Models.Category;
-import Models.Product;
-import Models.Brand;
-import jakarta.servlet.RequestDispatcher;
-import java.sql.SQLException;
-import java.util.List;
 
-@WebServlet(name="ProductListServlet", urlPatterns={"/products"})
+@WebServlet(name = "ProductListServlet", urlPatterns = {"/products"})
 public class ProductListServlet extends HttpServlet {
-    private CategoryDAO categoryDAO;
+    
+    private static final int PAGE_SIZE = 12;
+    
     private ProductDAO productDAO;
+    private CategoryDAO categoryDAO;
     private BrandDAO brandDAO;
-    private final int PAGE_SIZE = 12;
     
     @Override
     public void init() throws ServletException {
         super.init();
-        categoryDAO = new CategoryDAO();
         productDAO = new ProductDAO();
+        categoryDAO = new CategoryDAO();
         brandDAO = new BrandDAO();
     }
-
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
+        
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
-
+        
         try {
-            switch (action) {
-                case "list":
-                    listAllProducts(request, response);
-                    break;
-                case "category":
-                    listProductsByCategory(request, response);
-                    break;
-                case "brand":
-                    listProductsByBrand(request, response);
-                    break;
-                case "category-brand":
-                    listProductsByCategoryAndBrand(request, response);
-                    break;
-                case "search":
-                    searchProducts(request, response);
-                    break;
-                default:
-                    listAllProducts(request, response);
-                    break;
+            if (action == null || action.isEmpty()) {
+                listAllProducts(request, response);
+            } else {
+                switch (action) {
+                    case "search":
+                        searchProducts(request, response);
+                        break;
+                    case "category":
+                        listProductsByCategory(request, response);
+                        break;
+                    case "brand":
+                        listProductsByBrand(request, response);
+                        break;
+                    default:
+                        listAllProducts(request, response);
+                        break;
+                }
             }
         } catch (Exception e) {
+            System.err.println("❌ Error in ProductListServlet: " + e.getMessage());
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
+        }
+    }
+    
+    // ========== LIST ALL PRODUCTS WITH PAGINATION ==========
+    private void listAllProducts(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            // Get page number from parameter
+            int page = getPageNumber(request);
+            int offset = (page - 1) * PAGE_SIZE;
+
+            // Load categories and brands for filters
+            List<Category> categories = categoryDAO.getAllActiveCategories();
+            List<Brand> brands = brandDAO.getAllBrands();
+            
+            // Load products with pagination
+            List<Product> products = productDAO.getAllProducts(offset, PAGE_SIZE);
+            
+            // Get total products and calculate total pages
+            int totalProducts = productDAO.getTotalProducts();
+            int totalPages = (int) Math.ceil((double) totalProducts / PAGE_SIZE);
+
+            // Debug log
+            System.out.println("✅ ProductList - Page " + page + "/" + totalPages + 
+                             " - Loaded " + products.size() + "/" + totalProducts + " products");
+
+            // Set attributes
+            setCommonAttributes(request, categories, brands, products);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalProducts", totalProducts);
+
+            // Forward to JSP
+            forwardToProductList(request, response);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error in listAllProducts: " + e.getMessage());
+            e.printStackTrace();
             throw new ServletException(e);
         }
     }
     
-    private void listAllProducts(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-    try {
-        // Lấy page number từ parameter
+    // ========== SEARCH PRODUCTS ==========
+    private void searchProducts(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String keyword = request.getParameter("searchTerm");
+            
+            if (keyword == null || keyword.trim().isEmpty()) {
+                listAllProducts(request, response);
+                return;
+            }
+            
+            // Load categories and brands
+            List<Category> categories = categoryDAO.getAllActiveCategories();
+            List<Brand> brands = brandDAO.getAllBrands();
+            
+            // Search products
+            List<Product> products = productDAO.searchProducts(keyword.trim());
+            
+            System.out.println("✅ Search '" + keyword + "': Found " + products.size() + " products");
+            
+            // Set attributes
+            setCommonAttributes(request, categories, brands, products);
+            request.setAttribute("searchTerm", keyword);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("totalProducts", products.size());
+            
+            // Forward to JSP
+            forwardToProductList(request, response);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error in searchProducts: " + e.getMessage());
+            e.printStackTrace();
+            throw new ServletException(e);
+        }
+    }
+    
+    // ========== FILTER BY CATEGORY (AND OPTIONAL BRAND) ==========
+    private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String categoryIdParam = request.getParameter("categoryId");
+            String brandIdParam = request.getParameter("brandId");
+            
+            if (categoryIdParam == null || categoryIdParam.trim().isEmpty()) {
+                listAllProducts(request, response);
+                return;
+            }
+            
+            int categoryId = Integer.parseInt(categoryIdParam);
+            
+            System.out.println("🔍 Filter by category: " + categoryId + 
+                             (brandIdParam != null ? ", brand: " + brandIdParam : ""));
+            
+            // Load categories and brands
+            List<Category> categories = categoryDAO.getAllActiveCategories();
+            List<Brand> brands = brandDAO.getAllBrands();
+            
+            // Load products
+            List<Product> products;
+            
+            if (brandIdParam != null && !brandIdParam.trim().isEmpty()) {
+                // Filter by both category and brand
+                int brandId = Integer.parseInt(brandIdParam);
+                products = productDAO.getProductsByCategoryAndBrand(categoryId, brandId);
+                request.setAttribute("selectedBrand", brandId);
+                System.out.println("✅ Filtered by category " + categoryId + " and brand " + brandId + 
+                                 ": " + products.size() + " products");
+            } else {
+                // Filter by category only
+                products = productDAO.getProductsByCategory(categoryId);
+                System.out.println("✅ Filtered by category " + categoryId + ": " + products.size() + " products");
+            }
+            
+            // Set attributes
+            setCommonAttributes(request, categories, brands, products);
+            request.setAttribute("selectedCategory", categoryId);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("totalProducts", products.size());
+            
+            // Forward to JSP
+            forwardToProductList(request, response);
+            
+        } catch (NumberFormatException e) {
+            System.err.println("❌ Invalid category/brand ID format");
+            listAllProducts(request, response);
+        } catch (Exception e) {
+            System.err.println("❌ Error in listProductsByCategory: " + e.getMessage());
+            e.printStackTrace();
+            throw new ServletException(e);
+        }
+    }
+    
+    // ========== FILTER BY BRAND ==========
+    private void listProductsByBrand(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String brandIdParam = request.getParameter("brandId");
+            
+            if (brandIdParam == null || brandIdParam.trim().isEmpty()) {
+                listAllProducts(request, response);
+                return;
+            }
+            
+            int brandId = Integer.parseInt(brandIdParam);
+            
+            System.out.println("🔍 Filter by brand: " + brandId);
+            
+            // Load categories and brands
+            List<Category> categories = categoryDAO.getAllActiveCategories();
+            List<Brand> brands = brandDAO.getAllBrands();
+            
+            // Load products by brand
+            List<Product> products = productDAO.getProductsByBrand(brandId);
+            
+            System.out.println("✅ Filtered by brand " + brandId + ": " + products.size() + " products");
+            
+            // Set attributes
+            setCommonAttributes(request, categories, brands, products);
+            request.setAttribute("selectedBrand", brandId);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPages", 1);
+            request.setAttribute("totalProducts", products.size());
+            
+            // Forward to JSP
+            forwardToProductList(request, response);
+            
+        } catch (NumberFormatException e) {
+            System.err.println("❌ Invalid brand ID format");
+            listAllProducts(request, response);
+        } catch (Exception e) {
+            System.err.println("❌ Error in listProductsByBrand: " + e.getMessage());
+            e.printStackTrace();
+            throw new ServletException(e);
+        }
+    }
+    
+    // ========== HELPER METHODS ==========
+    private int getPageNumber(HttpServletRequest request) {
         int page = 1;
         try {
-            page = Integer.parseInt(request.getParameter("page"));
+            String pageParam = request.getParameter("page");
+            if (pageParam != null && !pageParam.trim().isEmpty()) {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) {
+                    page = 1;
+                }
+            }
         } catch (NumberFormatException e) {
             page = 1;
         }
-
-        // Tính offset
-        int offset = (page - 1) * PAGE_SIZE;
-
-        // Lấy danh sách categories và brands
-        List<Category> categories = categoryDAO.getAllActiveCategories(); // Sử dụng getAllActiveCategories
-        List<Brand> brands = brandDAO.getAllBrands();
-        request.setAttribute("categories", categories);
-        request.setAttribute("brands", brands);
-
-        // Lấy danh sách sản phẩm với phân trang
-        List<Product> products = productDAO.getAllProductsWithPagination(offset, PAGE_SIZE);
-        request.setAttribute("products", products);
-
-        // Lấy tổng số sản phẩm và tính tổng số trang
-        int totalProducts = productDAO.getTotalProductsCount();
-        int totalPages = (int) Math.ceil((double) totalProducts / PAGE_SIZE);
-
-        // Set attributes cho phân trang
-        request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalProducts", totalProducts);
-        request.setAttribute("pageSize", PAGE_SIZE);
-
-        System.out.println("✅ Product list loaded: " + products.size() + " products, page " + page);
-
-        // Forward đến trang product list
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
-        dispatcher.forward(request, response);
-    } catch (Exception e) {
-        System.out.println("❌ Error in listAllProducts: " + e.getMessage());
-        e.printStackTrace();
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
-    }
-}
-    
-    private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException, SQLException {
-    int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-    String brandIdParam = request.getParameter("brandId");
-    
-    System.out.println("🔍 listProductsByCategory called - categoryId: " + categoryId + ", brandIdParam: " + brandIdParam);
-    
-    // Lấy danh sách categories và brands
-    List<Category> categories = categoryDAO.getAllActiveCategories();
-    List<Brand> brands = brandDAO.getAllBrands();
-    request.setAttribute("categories", categories);
-    request.setAttribute("brands", brands);
-    
-    // XÓA DÒNG NÀY: String brandIdParam = request.getParameter("brandId"); // Đã khai báo ở trên
-    List<Product> products;
-    
-    if (brandIdParam != null && !brandIdParam.isEmpty()) {
-        // Nếu có brandId từ parameter, lọc theo cả category và brand
-        int brandId = Integer.parseInt(brandIdParam);
-        products = productDAO.getProductsByCategoryAndBrand(categoryId, brandId);
-        request.setAttribute("selectedBrand", brandId);
-        System.out.println("✅ Filtering by category: " + categoryId + " and brand: " + brandId);
-    } else {
-        // Nếu không có brandId, chỉ lọc theo category
-        products = productDAO.getProductsByCategory(categoryId);
-        System.out.println("✅ Filtering by category only: " + categoryId);
+        return page;
     }
     
-    request.setAttribute("products", products);
-    request.setAttribute("selectedCategory", categoryId);
-    
-    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
-    dispatcher.forward(request, response);
-}
-    
-    
-    private void listProductsByBrand(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException, SQLException {
-    int brandId = Integer.parseInt(request.getParameter("brandId"));
-    
-    // Lấy danh sách TẤT CẢ categories (không chỉ của brand)
-    List<Category> categories = categoryDAO.getAllActiveCategories();
-    List<Brand> brands = brandDAO.getAllBrands();
-    
-    request.setAttribute("categories", categories);
-    request.setAttribute("brands", brands);
-    
-    // Lấy danh sách sản phẩm theo brand
-    List<Product> products = productDAO.getProductsByBrand(brandId);
-    request.setAttribute("products", products);
-    request.setAttribute("selectedBrand", brandId);
-    
-    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
-    dispatcher.forward(request, response);
-}
-
-    private void listProductsByCategoryAndBrand(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException, SQLException {
-    int categoryId = Integer.parseInt(request.getParameter("categoryId"));
-    int brandId = Integer.parseInt(request.getParameter("brandId"));
-
-    // Lấy danh sách categories và brands
-    List<Category> categories = categoryDAO.getAllActiveCategories();
-    List<Brand> brands = brandDAO.getAllBrands();
-    request.setAttribute("categories", categories);
-    request.setAttribute("brands", brands);
-
-    // Lấy danh sách sản phẩm theo category và brand
-    List<Product> products = productDAO.getProductsByCategoryAndBrand(categoryId, brandId);
-    request.setAttribute("products", products);
-    request.setAttribute("selectedCategory", categoryId);
-    request.setAttribute("selectedBrand", brandId);
-
-    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
-    dispatcher.forward(request, response);
-}
-
-    private void searchProducts(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException, SQLException {
-        
-        String searchTerm = request.getParameter("searchTerm");
-        
-        // Lấy danh sách categories và brands
-        List<Category> categories = categoryDAO.getAllActiveCategories();
-        List<Brand> brands = brandDAO.getAllBrands();
+    private void setCommonAttributes(HttpServletRequest request, List<Category> categories, 
+                                     List<Brand> brands, List<Product> products) {
         request.setAttribute("categories", categories);
         request.setAttribute("brands", brands);
-        
-        // Tìm kiếm sản phẩm
-        List<Product> products = productDAO.searchProducts(searchTerm);
         request.setAttribute("products", products);
-        request.setAttribute("searchTerm", searchTerm);
-        
+    }
+    
+    private void forwardToProductList(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
         dispatcher.forward(request, response);
     }
-
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-       doGet(request, response);
+            throws ServletException, IOException {
+        doGet(request, response);
     }
 }

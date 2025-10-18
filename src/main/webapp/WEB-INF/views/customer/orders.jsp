@@ -20,6 +20,11 @@
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 
         <style>
+            /* Orders-specific sidebar adjustments */
+            .customer-sidebar {
+                min-height: 350px !important;
+            }
+
             .orders-container {
                 background: #f8f9fa;
                 min-height: 100vh;
@@ -48,32 +53,6 @@
                 justify-content: center;
                 color: white;
                 font-size: 18px;
-            }
-            .filter-tabs {
-                display: flex;
-                gap: 8px;
-                margin-bottom: 20px;
-                flex-wrap: wrap;
-            }
-            .filter-tab {
-                padding: 8px 16px;
-                border: 1px solid #e0e0e0;
-                background: white;
-                border-radius: 20px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-size: 14px;
-                font-weight: 500;
-                color: #666;
-            }
-            .filter-tab:hover {
-                border-color: #007bff;
-                color: #007bff;
-            }
-            .filter-tab.active {
-                background: #007bff;
-                color: white;
-                border-color: #007bff;
             }
             .order-card {
                 background: white;
@@ -133,6 +112,7 @@
                 color: #004085;
             }
             .status-canceled, .status-cancelled {
+            
                 background: #f8d7da;
                 color: #721c24;
             }
@@ -164,6 +144,22 @@
             .details-btn:hover {
                 background: #0056b3;
                 color: white;
+            }
+            
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+            
+            .action-buttons .btn {
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 6px;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
             }
             .order-items {
                 padding: 20px;
@@ -259,6 +255,9 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="common/header.jsp"/>
+        
         <div class="orders-container">
             <div class="container">
                 <div class="row">
@@ -279,6 +278,10 @@
                                 </div>
                                 Your Orders
                             </h1>
+                            <!-- Debug Info (remove in production) -->
+                            <c:if test="${not empty orders}">
+                                <small class="text-muted">Found ${orders.size()} orders</small>
+                            </c:if>
                         </div>
 
                         <!-- Success/Error Messages -->
@@ -289,6 +292,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         </c:if>
+                        
                         <c:if test="${not empty errorMessage}">
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle"></i>
@@ -297,14 +301,25 @@
                             </div>
                         </c:if>
 
-                        <!-- Filter Tabs -->
-                        <div class="filter-tabs">
-                            <div class="filter-tab active" onclick="filterOrders('all')">All</div>
-                            <div class="filter-tab" onclick="filterOrders('pending')">Pending</div>
-                            <div class="filter-tab" onclick="filterOrders('processing')">Processing</div>
-                            <div class="filter-tab" onclick="filterOrders('shipped')">Shipping</div>
-                            <div class="filter-tab" onclick="filterOrders('completed')">Delivered</div>
+                        <!-- Flash Messages from Session -->
+                        <c:if test="${not empty sessionScope.flash}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i>
+                                ${sessionScope.flash}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <c:remove var="flash" scope="session"/>
+                        </c:if>
+                        
+                        <c:if test="${not empty sessionScope.flash_error}">
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                ${sessionScope.flash_error}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
+                            <c:remove var="flash_error" scope="session"/>
+                        </c:if>
+
 
                         <c:if test="${empty orders}">
                             <div class="empty-state">
@@ -331,16 +346,52 @@
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$${order.totalAmount}</span>
+                                            <div class="action-buttons">
+                                                <c:choose>
+                                                    <c:when test="${order.paymentStatusId == completeStatusId}">
+                                                        <!-- Order is completed/delivered - check if review exists -->
+                                                        <c:choose>
+                                                            <c:when test="${order.items[0].review != null}">
+                                                                <!-- Review exists - show edit/delete buttons -->
+                                                                <button type="button" class="btn btn-sm btn-warning" 
+                                                                        onclick="openEditReviewModal(${order.items[0].review.reviewId}, ${order.items[0].review.star}, '${order.items[0].review.reviewContent}', ${order.items[0].productVariantId}, '${order.items[0].productName}')">
+                                                                    <i class="fas fa-edit"></i> Edit Review
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-danger" 
+                                                                        onclick="deleteReview(${order.items[0].review.reviewId})">
+                                                                    <i class="fas fa-trash"></i> Delete
+                                                                </button>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <!-- No review - show write review button -->
+                                                                <button type="button" class="btn btn-sm btn-primary" 
+                                                                        onclick="openReviewModal(${order.items[0].productVariantId}, '${order.items[0].productName}')">
+                                                                    <i class="fas fa-star"></i> Write Review
+                                                                </button>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <!-- Order not completed - disable review -->
+                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                title="You can only review products after delivery">
+                                                            <i class="fas fa-star"></i> Review
+                                                        </button>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
                                                class="details-btn">
                                                 <i class="fas fa-eye"></i>
                                                 Details
                                             </a>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Order Items -->
                                     <div class="order-items">
+                                        <c:choose>
+                                            <c:when test="${not empty order.items}">
                                         <c:forEach items="${order.items}" var="item">
                                             <div class="order-item">
                                                 <c:choose>
@@ -386,15 +437,31 @@
                                                     <div class="item-quantity">x${item.detailQuantity}</div>
                                                 </div>
                                                 <div class="item-price">$${item.detailPrice}</div>
-                                                <!-- Review button temporarily disabled -->
                                             </div>
                                         </c:forEach>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="order-item">
+                                                    <div class="item-details">
+                                                        <div class="item-name">No items found</div>
+                                                        <div class="item-quantity">Please check order details</div>
+                                                    </div>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
 
                                     <!-- Delivery Information -->
                                     <div class="delivery-info">
                                         <i class="fas fa-truck"></i>
-                                        Delivery to: Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789
+                                        <c:choose>
+                                            <c:when test="${not empty order.recipientName}">
+                                                Delivery to: ${order.recipientName}, ${order.addressDetails} | ${order.recipientPhone}
+                                            </c:when>
+                                            <c:otherwise>
+                                                Delivery to: Default Address
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -403,11 +470,8 @@
                 </div>
             </div>
         </div>
-        <script src="https://unpkg.com/lucide@latest"></script>
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Custom JS -->
-        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
         <script>
                                     // Filter orders by status
                                     function filterOrders(status) {
@@ -510,6 +574,132 @@
                                             }
                                         }, 500);
                                     }
+                                                    // Review modal functions
+                                                    let currentReviewId = null;
+                                                    let currentProductVariantId = null;
+                                                    let currentAction = 'create';
+
+                                                    function openReviewModal(productVariantId, productName) {
+                                                        currentProductVariantId = productVariantId;
+                                                        currentAction = 'create';
+                                                        currentReviewId = null;
+                                                        
+                                                        document.getElementById('reviewModalLabel').textContent = 'Write Review - ' + productName;
+                                                        document.getElementById('reviewText').value = '';
+                                                        document.getElementById('starRating').value = 5;
+                                                        updateStarDisplay(5);
+                                                        
+                                                        const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                                                        modal.show();
+                                                    }
+
+                                                    function openEditReviewModal(reviewId, star, content, productVariantId, productName) {
+                                                        currentReviewId = reviewId;
+                                                        currentProductVariantId = productVariantId;
+                                                        currentAction = 'update';
+                                                        
+                                                        document.getElementById('reviewModalLabel').textContent = 'Edit Review - ' + productName;
+                                                        document.getElementById('reviewText').value = content;
+                                                        document.getElementById('starRating').value = star;
+                                                        updateStarDisplay(star);
+                                                        
+                                                        const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                                                        modal.show();
+                                                    }
+
+                                                    function deleteReview(reviewId) {
+                                                        if (confirm('Are you sure you want to delete this review?')) {
+                                                            const form = document.createElement('form');
+                                                            form.method = 'POST';
+                                                            form.action = '<%= request.getContextPath()%>/orders';
+                                                            
+                                                            const actionInput = document.createElement('input');
+                                                            actionInput.type = 'hidden';
+                                                            actionInput.name = 'action';
+                                                            actionInput.value = 'deleteReview';
+                                                            
+                                                            const reviewIdInput = document.createElement('input');
+                                                            reviewIdInput.type = 'hidden';
+                                                            reviewIdInput.name = 'reviewId';
+                                                            reviewIdInput.value = reviewId;
+                                                            
+                                                            form.appendChild(actionInput);
+                                                            form.appendChild(reviewIdInput);
+                                                            document.body.appendChild(form);
+                                                            form.submit();
+                                                        }
+                                                    }
+
+                                                    function updateStarDisplay(rating) {
+                                                        const stars = document.querySelectorAll('.star-rating .star');
+                                                        stars.forEach((star, index) => {
+                                                            if (index < rating) {
+                                                                star.classList.add('active');
+                                                            } else {
+                                                                star.classList.remove('active');
+                                                            }
+                                                        });
+                                                    }
+
+                                                    function setRating(rating) {
+                                                        document.getElementById('starRating').value = rating;
+                                                        updateStarDisplay(rating);
+                                                    }
+
+                                                    function submitReview() {
+                                                        const star = document.getElementById('starRating').value;
+                                                        const content = document.getElementById('reviewText').value.trim();
+                                                        
+                                                        if (!star || star < 1 || star > 5) {
+                                                            alert('Please select a rating.');
+                                                            return;
+                                                        }
+                                                        
+                                                        if (!content) {
+                                                            alert('Please write a review.');
+                                                            return;
+                                                        }
+
+                                                        const form = document.createElement('form');
+                                                        form.method = 'POST';
+                                                        form.action = '<%= request.getContextPath()%>/orders';
+                                                        
+                                                        const actionInput = document.createElement('input');
+                                                        actionInput.type = 'hidden';
+                                                        actionInput.name = 'action';
+                                                        actionInput.value = currentAction + 'Review';
+                                                        
+                                                        const productVariantInput = document.createElement('input');
+                                                        productVariantInput.type = 'hidden';
+                                                        productVariantInput.name = 'productVariantId';
+                                                        productVariantInput.value = currentProductVariantId;
+                                                        
+                                                        const starInput = document.createElement('input');
+                                                        starInput.type = 'hidden';
+                                                        starInput.name = 'star';
+                                                        starInput.value = star;
+                                                        
+                                                        const contentInput = document.createElement('input');
+                                                        contentInput.type = 'hidden';
+                                                        contentInput.name = 'reviewContent';
+                                                        contentInput.value = content;
+                                                        
+                                                        if (currentAction === 'update') {
+                                                            const reviewIdInput = document.createElement('input');
+                                                            reviewIdInput.type = 'hidden';
+                                                            reviewIdInput.name = 'reviewId';
+                                                            reviewIdInput.value = currentReviewId;
+                                                            form.appendChild(reviewIdInput);
+                                                        }
+                                                        
+                                                        form.appendChild(actionInput);
+                                                        form.appendChild(productVariantInput);
+                                                        form.appendChild(starInput);
+                                                        form.appendChild(contentInput);
+                                                        
+                                                        document.body.appendChild(form);
+                                                        form.submit();
+                                                    }
 
                                     // Initialize page
                                     document.addEventListener('DOMContentLoaded', function () {
@@ -563,6 +753,66 @@
                                         }
                                     });
         </script>
+
+        <!-- Review Modal -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalLabel">Write Review</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Rating:</label>
+                            <div class="star-rating">
+                                <input type="hidden" id="starRating" value="5">
+                                <span class="star" onclick="setRating(1)">★</span>
+                                <span class="star" onclick="setRating(2)">★</span>
+                                <span class="star" onclick="setRating(3)">★</span>
+                                <span class="star" onclick="setRating(4)">★</span>
+                                <span class="star active" onclick="setRating(5)">★</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewText" class="form-label">Your Review:</label>
+                            <textarea class="form-control" id="reviewText" rows="5" placeholder="Share your experience with this product..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .star-rating {
+                display: flex;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+            
+            .star {
+                font-size: 30px;
+                color: #ddd;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            
+            .star:hover,
+            .star.active {
+                color: #ffc107;
+            }
+            
+            .star:hover ~ .star {
+                color: #ddd;
+            }
+        </style>
+
+        <!-- Footer -->
+        <jsp:include page="common/footer.jsp"/>
 
     </body>
 </html>

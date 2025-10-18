@@ -46,6 +46,14 @@ public class Order {
         this.updatedAt = updatedAt;
         this.status = status;
     }
+    // Address information for display
+    private String addressName;
+    private String addressDetails;
+    private String recipientName;
+    private String recipientPhone;
+    
+    // Payment status name for display
+    private String paymentStatusName;
 
     public int getOrderId() {
         return orderId;
@@ -145,4 +153,43 @@ public class Order {
 
    
 
+    public String getAddressName() {
+        return addressName;
+    }
+
+    public void setAddressName(String addressName) {
+        this.addressName = addressName;
+    }
+
+    public String getAddressDetails() {
+        return addressDetails;
+    }
+
+    public void setAddressDetails(String addressDetails) {
+        this.addressDetails = addressDetails;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
+
+    public String getRecipientPhone() {
+        return recipientPhone;
+    }
+
+    public void setRecipientPhone(String recipientPhone) {
+        this.recipientPhone = recipientPhone;
+    }
+
+    public String getPaymentStatusName() {
+        return paymentStatusName;
+    }
+
+    public void setPaymentStatusName(String paymentStatusName) {
+        this.paymentStatusName = paymentStatusName;
+    }
 }

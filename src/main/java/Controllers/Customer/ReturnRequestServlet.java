@@ -42,7 +42,7 @@ public class ReturnRequestServlet extends HttpServlet {
 
             // Validate requestId parameter
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                 return;
             }
 
@@ -56,7 +56,7 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 if (returnRequest == null) {
                     request.setAttribute("errorMessage", "Return request not found");
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                     return;
                 }
 
@@ -107,13 +107,13 @@ public class ReturnRequestServlet extends HttpServlet {
                 request.setAttribute("order", order);
                 request.setAttribute("totalRefund", totalRefund);
 
-                request.getRequestDispatcher("/WEB-INF/views/customer/returnRequest/view-detail.jsp")
+                request.getRequestDispatcher("/WEB-INF/views/customer/return-request/view-detail.jsp")
                         .forward(request, response);
 
             } catch (NumberFormatException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
                         .log(Level.WARNING, "Invalid requestId format: " + requestIdParam, e);
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
 
             } catch (SQLException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
@@ -128,7 +128,7 @@ public class ReturnRequestServlet extends HttpServlet {
 
             // Validate requestId parameter
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                 return;
             }
 
@@ -142,14 +142,14 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 if (returnRequest == null) {
                     request.setAttribute("errorMessage", "Return request not found");
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                     return;
                 }
 
                 // Only allow editing pending requests
                 if (!"PENDING".equals(returnRequest.getReturnStatus())) {
                     request.setAttribute("errorMessage", "Only pending requests can be edited");
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                     return;
                 }
 
@@ -173,13 +173,13 @@ public class ReturnRequestServlet extends HttpServlet {
                 request.setAttribute("returnRequestDetails", listDetail);
                 request.setAttribute("order", order);
 
-                request.getRequestDispatcher("/WEB-INF/views/customer/returnRequest/edit.jsp")
+                request.getRequestDispatcher("/WEB-INF/views/customer/return-request/edit.jsp")
                         .forward(request, response);
 
             } catch (NumberFormatException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
                         .log(Level.WARNING, "Invalid requestId format: " + requestIdParam, e);
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
 
             } catch (SQLException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
@@ -222,7 +222,7 @@ public class ReturnRequestServlet extends HttpServlet {
                 }
 
                 request.setAttribute("order", order);
-                request.getRequestDispatcher("/WEB-INF/views/customer/returnRequest/create.jsp")
+                request.getRequestDispatcher("/WEB-INF/views/customer/return-request/create.jsp")
                         .forward(request, response);
 
             } catch (NumberFormatException e) {
@@ -230,12 +230,6 @@ public class ReturnRequestServlet extends HttpServlet {
                         .log(Level.WARNING, "Invalid orderId format: " + orderIdParam, e);
                 response.sendRedirect(request.getContextPath() + "/customer/orders");
 
-            } catch (SQLException e) {
-                Logger.getLogger(ReturnRequestServlet.class.getName())
-                        .log(Level.SEVERE, "Database error while fetching order", e);
-                request.setAttribute("errorMessage", "System error occurred");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp")
-                        .forward(request, response);
             }
         }
     }
@@ -288,7 +282,7 @@ public class ReturnRequestServlet extends HttpServlet {
                         int quantity = Integer.parseInt(request.getParameter("qty_" + pid));
 
                         // Lấy giá sản phẩm
-                        BigDecimal amount = order.getTotalAmount();                        
+                        BigDecimal amount = order.getTotalAmount();
                         ReturnRequestDetail d = new ReturnRequestDetail();
                         d.setReturnRequestId(requestId);
                         d.setProductVariantId(productVariantId);
@@ -316,7 +310,7 @@ public class ReturnRequestServlet extends HttpServlet {
             String requestIdParam = request.getParameter("requestId");
 
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                 return;
             }
 
@@ -339,13 +333,13 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 if (existingRequest == null) {
                     request.setAttribute("errorMessage", "Return request not found");
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                     return;
                 }
 
                 if (!"PENDING".equals(existingRequest.getReturnStatus())) {
                     request.setAttribute("errorMessage", "Only pending requests can be edited");
-                    response.sendRedirect(request.getContextPath() + "/returnRequest?action=detail&requestId=" + requestId);
+                    response.sendRedirect(request.getContextPath() + "/return-request?action=detail&requestId=" + requestId);
                     return;
                 }
 
@@ -361,7 +355,7 @@ public class ReturnRequestServlet extends HttpServlet {
                     List<ReturnRequestDetail> listDetail = detailDAO.getDetailsByReturnRequestId(requestId);
                     request.setAttribute("returnRequestDetails", listDetail);
 
-                    request.getRequestDispatcher("/WEB-INF/views/customer/returnRequest/edit.jsp")
+                    request.getRequestDispatcher("/WEB-INF/views/customer/return-request/edit.jsp")
                             .forward(request, response);
                     return;
                 }
@@ -404,7 +398,7 @@ public class ReturnRequestServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
                         .log(Level.WARNING, "Invalid parameter format", e);
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
 
             } catch (SQLException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
@@ -433,7 +427,7 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 if (existingRequest == null) {
                     request.setAttribute("errorMessage", "Return request not found");
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                     return;
                 }
 
