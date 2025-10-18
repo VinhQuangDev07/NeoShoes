@@ -23,14 +23,55 @@ import java.math.BigDecimal;
 public class OrderDAO extends DB.DBContext {
 
     /**
+     * Get PaymentStatusId for Complete status
+     */
+    public int getCompleteStatusId() {
+        String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Complete'";
+        
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("PaymentStatusId");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return 2; // Default fallback
+    }
+    
+    /**
+     * Get PaymentStatus name by ID
+     */
+    public String getPaymentStatusName(int statusId) {
+        String sql = "SELECT Name FROM PaymentStatus WHERE PaymentStatusId = ?";
+        
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, statusId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Name");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return "Unknown"; // Default fallback
+    }
+
+    /**
      * Get all orders for a customer
      */
     public List<Order> listByCustomer(int customerId) {
         String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, " +
                      "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, " +
-                     "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone " +
+                     "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone, " +
+                     "ps.Name as PaymentStatusName " +
                      "FROM [Order] o " +
                      "LEFT JOIN Address a ON o.AddressId = a.AddressId " +
+                     "LEFT JOIN PaymentStatus ps ON o.PaymentStatusId = ps.PaymentStatusId " +
                      "WHERE o.CustomerId = ? " +
                      "ORDER BY o.PlacedAt DESC";
         
@@ -45,6 +86,8 @@ public class OrderDAO extends DB.DBContext {
                     order.setAddressDetails(rs.getString("AddressDetails"));
                     order.setRecipientName(rs.getString("RecipientName"));
                     order.setRecipientPhone(rs.getString("RecipientPhone"));
+                    // Load payment status name
+                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
                     // Load order items
                     order.setItems(getOrderItems(order.getOrderId()));
                     orders.add(order);

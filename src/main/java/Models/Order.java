@@ -33,6 +33,9 @@ public class Order {
     private String addressDetails;
     private String recipientName;
     private String recipientPhone;
+    
+    // Payment status name for display
+    private String paymentStatusName;
 
     public int getOrderId() {
         return orderId;
@@ -152,5 +155,13 @@ public class Order {
 
     public void setRecipientPhone(String recipientPhone) {
         this.recipientPhone = recipientPhone;
+    }
+
+    public String getPaymentStatusName() {
+        return paymentStatusName;
+    }
+
+    public void setPaymentStatusName(String paymentStatusName) {
+        this.paymentStatusName = paymentStatusName;
     }
 }
