@@ -108,7 +108,7 @@
                 <div class="info-group">
                     <span class="label">Total Refund Amount:</span>
                     <span class="value">
-                        <fmt:formatNumber value="${order.totalAmount}" type="currency" 
+                        <fmt:formatNumber value="${totalRefund}" type="currency" 
                                           currencySymbol="$" maxFractionDigits="2" />
                     </span>
                 </div>
@@ -135,7 +135,7 @@
                     <div class="info-group">
                         <span class="label">Order Total:</span>
                         <span class="value">
-                            <fmt:formatNumber value="${totalRefund}" type="currency" 
+                            <fmt:formatNumber value="${order.totalAmount}" type="currency" 
                                               currencySymbol="$" maxFractionDigits="2" />
                         </span>
                     </div>
@@ -143,7 +143,6 @@
             </div>
 
             <!-- Return Items -->
-            <!-- Returned Items (fixed) -->
             <div class="section">
                 <h3>Returned Items</h3>
                 <c:choose>

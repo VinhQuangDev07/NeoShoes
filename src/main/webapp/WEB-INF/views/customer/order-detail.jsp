@@ -74,7 +74,7 @@
                 background: #28a745;
                 color: white;
             }
-            .status-SHIPPED, .status-SHIPPING {
+            .status-SHIPPED, .status-Shipping {
                 background: #17a2b8;
                 color: white;
             }
@@ -428,7 +428,7 @@
                                 <div class="progress-step">
                                     <div class="step-circle current">
                                         <c:choose>
-                                            <c:when test="${order.status == 'SHIPPING' || order.status == 'APPROVED'}">
+                                            <c:when test="${order.status == 'Shipping' || order.status == 'APPROVED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
 
