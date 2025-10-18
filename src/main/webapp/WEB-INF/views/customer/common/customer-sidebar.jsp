@@ -59,7 +59,7 @@
         background: white;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         overflow: hidden;
-        height: 326px;
+        min-height: 350px;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         margin-right: 12px;
@@ -128,15 +128,15 @@
 
     /* Sidebar */
     .nav-menu {
-        padding: 1.5rem 0;
+        padding: 2rem 0;
     }
 
     .nav-link-item {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.75rem 1.25rem;
-        margin-bottom: 0.5rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.75rem;
         border-radius: 8px;
         color: #374151;
         text-decoration: none;
@@ -219,7 +219,7 @@
         color: #1f2937;
     }
 
-    /* badge voucher luôn dính v? bên ph?i, không làm l?ch hàng */
+    /* badge voucher luï¿½n dï¿½nh v? bï¿½n ph?i, khï¿½ng lï¿½m l?ch hï¿½ng */
     .voucher-badge{
         margin-left:auto;
         background:#e74c3c;
@@ -249,7 +249,7 @@
     document.getElementById('profile')?.classList.add('active');
     }
 
-    // fallback theo data-page (không nhân ?ôi class)
+    // fallback theo data-page (khï¿½ng nhï¿½n ?ï¿½i class)
     document.querySelectorAll('.nav-link-item').forEach(item => {
     const key = item.getAttribute('data-page');
     if (key && href.includes(key)) item.classList.add('active');

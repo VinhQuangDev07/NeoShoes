@@ -380,9 +380,20 @@
                             <div class="order-meta">
                                 <div class="order-date">
                                     <i class="fas fa-calendar"></i>
-                                    <span>${order.placedAt}</span>
+                                    <span>
+                                        <c:choose>
+                                            <c:when test="${order.placedAt != null}">
+                                                ${order.placedAt}
+                                            </c:when>
+                                            <c:otherwise>
+                                                N/A
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
                                 </div>
-                                <span class="status-badge status-pending">Pending</span>
+                                <span class="status-badge ${order.paymentStatusId == 1 ? 'status-pending' : order.paymentStatusId == 2 ? 'status-pending' : order.paymentStatusId == 3 ? 'status-shipped' : 'status-delivered'}">
+                                    ${order.paymentStatusId == 1 ? 'Pending' : order.paymentStatusId == 2 ? 'Processing' : order.paymentStatusId == 3 ? 'Shipped' : 'Delivered'}
+                                </span>
                             </div>
                         </div>
 
@@ -402,62 +413,31 @@
                                     </div>
                                 </div>
                                 <div class="progress-step">
-                                    <div class="step-circle current">
-                                        <c:choose>
-                                            <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
-                                                <i class="fas fa-check"></i>
-                                            </c:when>
-                                            <c:when test="${'PENDING' == 'PENDING'}">
-                                                <i class="fas fa-clock"></i>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <i class="fas fa-truck"></i>
-                                            </c:otherwise>
-                                        </c:choose>
+                                    <div class="step-circle ${order.paymentStatusId >= 2 ? 'completed' : ''}">
+                                        <i class="fas fa-truck"></i>
                                     </div>
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Shipping</div>
                                             <div class="step-date">
-                                                <c:choose>
-                                                    <c:when test="${'PENDING' == 'SHIPPED' || 'PENDING' == 'COMPLETED'}">
-                                                        ${order.placedAt}
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        Pending
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                ${order.paymentStatusId >= 2 ? 'Completed' : 'Pending'}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="progress-step">
-                                    <div class="step-circle ${'PENDING' == 'COMPLETED' ? 'completed' : ''}">
-                                        <c:choose>
-                                            <c:when test="${'PENDING' == 'COMPLETED'}">
-                                                <i class="fas fa-check"></i>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <i class="fas fa-home"></i>
-                                            </c:otherwise>
-                                        </c:choose>
-                            </div>
+                                    <div class="step-circle ${order.paymentStatusId >= 3 ? 'completed' : ''}">
+                                        <i class="fas fa-home"></i>
+                                    </div>
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Delivered</div>
                                             <div class="step-date">
-                                                <c:choose>
-                                                    <c:when test="${'PENDING' == 'COMPLETED'}">
-                                                        ${order.placedAt}
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        Not yet
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                ${order.paymentStatusId >= 3 ? 'Completed' : 'Not yet'}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
                             </div>
                         </div>
 
@@ -492,29 +472,88 @@
                         <!-- Shipping Info -->
                         <div class="shipping-section">
                             <h6>Ship to</h6>
-                            <p class="mb-0">Demo Customer, 123 Main Street, Ho Chi Minh City | 0123456789</p>
+                            <p class="mb-0">
+                                <c:choose>
+                                    <c:when test="${not empty order.recipientName}">
+                                        ${order.recipientName}<br>
+                                        ${order.addressDetails}<br>
+                                        Phone: ${order.recipientPhone}
+                                    </c:when>
+                                    <c:otherwise>
+                                        Default Address
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
                         </div>
 
                         <!-- Products -->
                         <div class="products-section">
                             <h6>Products</h6>
-                            <c:forEach items="${order.items}" var="item">
-                                <div class="product-item">
-                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                         alt="${item.productName}" class="product-image">
-                                    <div class="product-info">
-                                        <div class="product-name">${item.productName}</div>
-                                        <div class="product-quantity">x${item.detailQuantity}</div>
+                            <c:choose>
+                                <c:when test="${not empty order.items}">
+                                    <c:forEach items="${order.items}" var="item">
+                                        <div class="product-item">
+                                            <c:choose>
+                                                <c:when test="${item.productName.contains('Vans')}">
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Nike')}">
+                                                    <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Adidas')}">
+                                                    <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Converse')}">
+                                                    <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Jordan')}">
+                                                    <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Puma')}">
+                                                    <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('Reebok')}">
+                                                    <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:when test="${item.productName.contains('New Balance')}">
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                         alt="${item.productName}" class="product-image">
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div class="product-info">
+                                                <div class="product-name">${item.productName}</div>
+                                                <div class="product-quantity">x${item.detailQuantity}</div>
+                                            </div>
+                                            <div class="product-price">$${item.detailPrice}</div>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="product-item">
+                                        <div class="product-info">
+                                            <div class="product-name">No items found</div>
+                                            <div class="product-quantity">Please check order details</div>
+                                        </div>
                                     </div>
-                                    <div class="product-price">$${item.detailPrice}</div>
-                                </div>
-                            </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <!-- Footer -->
                         <div class="modal-footer">
                             <c:choose>
-                                <c:when test="${'PENDING' == 'PENDING' || 'PENDING' == 'APPROVED'}">
+                                <c:when test="${order.paymentStatusId <= 2}">
                                     <button class="cancel-btn" onclick="showCancelModal()">
                                         <i class="fas fa-times"></i>
                                         Cancel Order
@@ -556,7 +595,9 @@
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Order Status:</span>
-                            <span class="cancel-info-value">${'PENDING'}</span>
+                            <span class="cancel-info-value">
+                                ${order.paymentStatusId == 1 ? 'Pending' : order.paymentStatusId == 2 ? 'Processing' : order.paymentStatusId == 3 ? 'Shipped' : 'Delivered'}
+                            </span>
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Total Amount:</span>
