@@ -139,7 +139,7 @@ public class ImportProductDAO extends DB.DBContext{
                 detail.setColor(rs.getString("Color"));
                 detail.setSize(rs.getString("Size"));
                 detail.setQuantity(rs.getInt("Quantity"));
-                detail.setCostPrice(rs.getDouble("CostPrice"));
+                detail.setCostPrice(rs.getBigDecimal("CostPrice"));
                 detail.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
                 detail.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
                 detail.setProductName(rs.getString("ProductName"));
@@ -166,7 +166,7 @@ public class ImportProductDAO extends DB.DBContext{
                 detail.setImportProductId(rs.getInt("ImportProductId"));
                 detail.setProductVariantId(rs.getInt("ProductVariantId"));
                 detail.setQuantity(rs.getInt("Quantity"));
-                detail.setCostPrice(rs.getDouble("CostPrice"));
+                detail.setCostPrice(rs.getBigDecimal("CostPrice"));
                 detail.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
                 detail.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
                 details.add(detail);

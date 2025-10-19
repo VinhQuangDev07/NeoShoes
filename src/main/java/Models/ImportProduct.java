@@ -5,19 +5,21 @@
 package Models;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
  * @author Le Huu Nghia - CE181052
  */
 public class ImportProduct {
+
     private int importProductId;
     private int staffId;
     private LocalDateTime importDate;
     private String supplierName;
     private String note;
     private boolean isDeleted;
-    
+
     // Additional fields for display
     private String staffName;
 
@@ -90,15 +92,22 @@ public class ImportProduct {
         this.staffName = staffName;
     }
 
+    public String getFormattedImportDate() {
+        if (importDate != null) {
+            return importDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
+    }
+
     @Override
     public String toString() {
-        return "ImportProduct{" + "importProductId=" + importProductId 
-                + ", staffId=" + staffId 
-                + ", importDate=" + importDate 
-                + ", supplierName=" + supplierName 
-                + ", note=" + note 
-                + ", isDeleted=" + isDeleted 
+        return "ImportProduct{" + "importProductId=" + importProductId
+                + ", staffId=" + staffId
+                + ", importDate=" + importDate
+                + ", supplierName=" + supplierName
+                + ", note=" + note
+                + ", isDeleted=" + isDeleted
                 + ", staffName=" + staffName + '}';
     }
-    
+
 }

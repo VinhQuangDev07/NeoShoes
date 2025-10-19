@@ -4,7 +4,9 @@
  */
 package Models;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -15,7 +17,7 @@ public class ImportProductDetail {
     private int importProductId;
     private int productVariantId;
     private int quantity;
-    private double costPrice;
+    private BigDecimal costPrice;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -28,14 +30,14 @@ public class ImportProductDetail {
     public ImportProductDetail() {
     }
 
-    public ImportProductDetail(int importProductId, int productVariantId, int quantity, double costPrice) {
+    public ImportProductDetail(int importProductId, int productVariantId, int quantity, BigDecimal costPrice) {
         this.importProductId = importProductId;
         this.productVariantId = productVariantId;
         this.quantity = quantity;
         this.costPrice = costPrice;
     }
     
-    public ImportProductDetail(int importProductDetailId, int importProductId, int productVariantId, int quantity, double costPrice, LocalDateTime createdAt, LocalDateTime updatedAt, String productName, String color, String size, String variantImage) {
+    public ImportProductDetail(int importProductDetailId, int importProductId, int productVariantId, int quantity, BigDecimal costPrice, LocalDateTime createdAt, LocalDateTime updatedAt, String productName, String color, String size, String variantImage) {
         this.importProductDetailId = importProductDetailId;
         this.importProductId = importProductId;
         this.productVariantId = productVariantId;
@@ -81,11 +83,11 @@ public class ImportProductDetail {
         this.quantity = quantity;
     }
 
-    public double getCostPrice() {
+    public BigDecimal getCostPrice() {
         return costPrice;
     }
 
-    public void setCostPrice(double costPrice) {
+    public void setCostPrice(BigDecimal costPrice) {
         this.costPrice = costPrice;
     }
 
@@ -136,6 +138,20 @@ public class ImportProductDetail {
 
     public void setVariantImage(String variantImage) {
         this.variantImage = variantImage;
+    }
+    
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
+    }
+    
+    public String getFormattedUpdatedAt() {
+        if (updatedAt != null) {
+            return updatedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
     }
 
     @Override

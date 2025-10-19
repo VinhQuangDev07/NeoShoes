@@ -271,7 +271,7 @@ public class ImportProductServlet extends HttpServlet {
             for (int i = 0; i < variantIds.length; i++) {
                 int variantId = Integer.parseInt(variantIds[i]);
                 int quantity = Integer.parseInt(quantities[i]);
-                double costPrice = Double.parseDouble(costPrices[i]);
+                BigDecimal costPrice = BigDecimal.valueOf(Double.parseDouble(costPrices[i]));
 
                 ProductVariant variant = variantDAO.findById(variantId);
                 if (variant == null) {
