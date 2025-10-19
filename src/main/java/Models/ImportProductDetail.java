@@ -28,6 +28,13 @@ public class ImportProductDetail {
     public ImportProductDetail() {
     }
 
+    public ImportProductDetail(int importProductId, int productVariantId, int quantity, double costPrice) {
+        this.importProductId = importProductId;
+        this.productVariantId = productVariantId;
+        this.quantity = quantity;
+        this.costPrice = costPrice;
+    }
+    
     public ImportProductDetail(int importProductDetailId, int importProductId, int productVariantId, int quantity, double costPrice, LocalDateTime createdAt, LocalDateTime updatedAt, String productName, String color, String size, String variantImage) {
         this.importProductDetailId = importProductDetailId;
         this.importProductId = importProductId;

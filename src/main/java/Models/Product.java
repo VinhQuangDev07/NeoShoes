@@ -16,6 +16,7 @@ public class Product {
     private String availableSizes;
     private String brandName;
     private String categoryName;
+    private int variantCount;
 
     public Product() {
     }
@@ -148,4 +149,14 @@ public class Product {
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
     }
+
+    public int getVariantCount() {
+        return variantCount;
+    }
+
+    public void setVariantCount(int variantCount) {
+        this.variantCount = variantCount;
+    }
+    
+    
 }

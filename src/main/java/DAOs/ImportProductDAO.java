@@ -51,8 +51,8 @@ public class ImportProductDAO extends DB.DBContext{
             detail.getProductVariantId(),
             detail.getQuantity(),
             detail.getCostPrice(),
-            Timestamp.valueOf(detail.getCreatedAt()),
-            Timestamp.valueOf(detail.getUpdatedAt())
+            LocalDateTime.now(),
+            LocalDateTime.now()
         };
         try {
             return execQueryReturnId(sql, params);
