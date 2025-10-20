@@ -4,6 +4,7 @@
  */
 package DAOs;
 
+import Models.Product;
 import Models.ProductVariant;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,6 +51,50 @@ public class ProductVariantDAO extends DB.DBContext {
             e.printStackTrace();
         }
         return variants;
+    }
+
+    /**
+     * Lấy danh sách các màu sắc khác nhau của product
+     */
+    public List<String> getColorsByProductId(int productId) {
+        List<String> colors = new ArrayList<>();
+        String sql = "SELECT DISTINCT Color FROM ProductVariant "
+                + "WHERE ProductId = ? AND IsDeleted = 0 "
+                + "ORDER BY Color";
+
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
+            while (rs.next()) {
+                String color = rs.getString("Color");
+                if (color != null && !color.isEmpty()) {
+                    colors.add(color);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return colors;
+    }
+
+    /**
+     * Lấy danh sách các kích cỡ khác nhau của product
+     */
+    public List<String> getSizesByProductId(int productId) {
+        List<String> sizes = new ArrayList<>();
+        String sql = "SELECT DISTINCT Size FROM ProductVariant "
+                + "WHERE ProductId = ? AND IsDeleted = 0 "
+                + "ORDER BY Size";
+
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
+            while (rs.next()) {
+                String size = rs.getString("Size");
+                if (size != null && !size.isEmpty()) {
+                    sizes.add(size);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sizes;
     }
 
     /**

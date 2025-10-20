@@ -306,9 +306,9 @@
             lucide.createIcons();
             // Product variants grouped by product ID
             const productVariantsData = {
-            <c:forEach var="entry" items="${productVariantsMap}" varStatus="status">
-            "${entry.key}": [
-                <c:forEach var="variant" items="${entry.value}" varStatus="vStatus">
+            <c:forEach var="product" items="${products}" varStatus="status">
+            "${product.productId}": [
+                <c:forEach var="variant" items="${product.variants}" varStatus="vStatus">
             {
             variantId: ${variant.productVariantId},
                     color: "${fn:escapeXml(variant.color)}",

@@ -1,5 +1,8 @@
 package Models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Product {
 
     private int productId;
@@ -17,8 +20,18 @@ public class Product {
     private String brandName;
     private String categoryName;
     private int variantCount;
+    
+    // List of variants for this product
+    private List<ProductVariant> variants;
+    
+    // Available colors and sizes as lists
+    private List<String> colors;
+    private List<String> sizes;
 
     public Product() {
+        this.variants = new ArrayList<>();
+        this.colors = new ArrayList<>();
+        this.sizes = new ArrayList<>();
     }
 
     public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName) {
@@ -156,6 +169,30 @@ public class Product {
 
     public void setVariantCount(int variantCount) {
         this.variantCount = variantCount;
+    }
+
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
+
+    public List<String> getColors() {
+        return colors;
+    }
+
+    public void setColors(List<String> colors) {
+        this.colors = colors;
+    }
+
+    public List<String> getSizes() {
+        return sizes;
+    }
+
+    public void setSizes(List<String> sizes) {
+        this.sizes = sizes;
     }
     
     

@@ -60,22 +60,10 @@ public class ProductDetailServlet extends HttpServlet {
                 return;
             }
 
-            // Load List<ProductVariant>
+            // Product already has variants, colors, and sizes loaded from ProductDAO
             List<ProductVariant> variants = variantDAO.getByProductId(productId);
-            // Extract unique colors and sizes from variants
-            List<String> colors = new ArrayList<>();
-            List<String> sizes = new ArrayList<>();
-            
-            for (ProductVariant variant : variants) {
-                // Add unique colors
-                if (!colors.contains(variant.getColor()) && variant.getColor() != null) {
-                    colors.add(variant.getColor());
-                }
-                // Add unique sizes
-                if (!sizes.contains(variant.getSize()) && variant.getSize() != null) {
-                    sizes.add(variant.getSize());
-                }
-            }
+            List<String> colors = variantDAO.getColorsByProductId(productId);
+            List<String> sizes = variantDAO.getSizesByProductId(productId);
             
             // Load reviews for the product
             List<Review> reviews = reviewDAO.getReviewsByProduct(productId);

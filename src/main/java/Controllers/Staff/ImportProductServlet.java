@@ -5,6 +5,7 @@
 package Controllers.Staff;
 
 import DAOs.ImportProductDAO;
+import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.ImportProduct;
 import Models.ImportProductDetail;
@@ -40,12 +41,14 @@ public class ImportProductServlet extends HttpServlet {
 
     private ImportProductDAO importDAO;
     private ProductVariantDAO variantDAO;
+    private ProductDAO productDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         importDAO = new ImportProductDAO();
         variantDAO = new ProductVariantDAO();
+        productDAO = new ProductDAO();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -141,16 +144,12 @@ public class ImportProductServlet extends HttpServlet {
             // 1. Lấy tất cả variants
             List<ProductVariant> allVariants = variantDAO.getAllActiveVariants();
 
-            // 2. Group variants theo productId
-            Map<Integer, List<ProductVariant>> productVariantsMap = new LinkedHashMap<>();
+            // 2. Group variants theo productId và tạo products
             List<Product> products = new ArrayList<>();
-            Set<Integer> processedProducts = new HashSet<>();
+            List<Integer> processedProducts = new ArrayList<>();
 
             for (ProductVariant variant : allVariants) {
                 int productId = variant.getProductId();
-
-                // Add variant vào map
-                productVariantsMap.computeIfAbsent(productId, k -> new ArrayList<>()).add(variant);
 
                 // Tạo ProductInfo cho product (chỉ tạo 1 lần)
                 if (!processedProducts.contains(productId)) {
@@ -164,15 +163,20 @@ public class ImportProductServlet extends HttpServlet {
                 }
             }
 
-            // 3. Đếm số lượng variants cho mỗi product
+            // 3. Load variants cho từng product
             for (Product product : products) {
-                int variantCount = productVariantsMap.get(product.getProductId()).size();
-                product.setVariantCount(variantCount);
+                List<ProductVariant> productVariants = new ArrayList<>();
+                for (ProductVariant variant : allVariants) {
+                    if (variant.getProductId() == product.getProductId()) {
+                        productVariants.add(variant);
+                    }
+                }
+                product.setVariants(productVariants);
+                product.setVariantCount(productVariants.size());
             }
 
-            // 5. Gửi data sang JSP
+            // 4. Gửi data sang JSP
             request.setAttribute("products", products);
-            request.setAttribute("productVariantsMap", productVariantsMap);
 
             request.getRequestDispatcher("/WEB-INF/views/staff/import-product.jsp").forward(request, response);
         } catch (Exception e) {

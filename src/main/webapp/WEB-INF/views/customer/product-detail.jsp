@@ -551,7 +551,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="rating-breakdown">
-                                                    <c:forEach var="i" begin="5" end="1" step="-1">
+                                                    <c:forEach var="i" begin="5" end="1" step="1">
                                                         <div class="rating-bar d-flex align-items-center mb-1">
                                                             <span class="me-2" style="width: 20px;">${i}★</span>
                                                             <div class="progress flex-grow-1 me-2" style="height: 8px;">
@@ -588,7 +588,7 @@
                                                     <p class="mb-2">${review.reviewContent}</p>
                                                 </c:if>
                                                 <small class="text-muted">
-                                                    <fmt:formatDate value="${review.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                    ${review.createdAt}
                                                 </small>
                                             </div>
                                         </c:forEach>
