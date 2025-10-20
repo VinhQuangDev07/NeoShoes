@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * Customer order aggregate root
+ *
  * @author Chau Gia Huy - CE190386
  */
 public class Order {
@@ -25,9 +26,26 @@ public class Order {
     private BigDecimal shippingFee;
     private LocalDateTime placedAt;
     private LocalDateTime updatedAt;
-
+    private String status;
     private List<OrderDetail> items = new ArrayList<>();
     
+
+    public Order() {
+    }
+
+    public Order(int orderId, int customerId, int addressId, int paymentMethodId, int paymentStatusId, Integer voucherId, BigDecimal totalAmount, BigDecimal shippingFee, LocalDateTime placedAt, LocalDateTime updatedAt, String status) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.addressId = addressId;
+        this.paymentMethodId = paymentMethodId;
+        this.paymentStatusId = paymentStatusId;
+        this.voucherId = voucherId;
+        this.totalAmount = totalAmount;
+        this.shippingFee = shippingFee;
+        this.placedAt = placedAt;
+        this.updatedAt = updatedAt;
+        this.status = status;
+    }
     // Address information for display
     private String addressName;
     private String addressDetails;
@@ -85,20 +103,20 @@ public class Order {
         this.voucherId = voucherId;
     }
 
-    public BigDecimal getShippingFee() {
-        return shippingFee;
-    }
-
-    public void setShippingFee(BigDecimal shippingFee) {
-        this.shippingFee = shippingFee;
-    }
-
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public BigDecimal getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(BigDecimal shippingFee) {
+        this.shippingFee = shippingFee;
     }
 
     public LocalDateTime getPlacedAt() {
@@ -124,6 +142,16 @@ public class Order {
     public void setItems(List<OrderDetail> items) {
         this.items = items;
     }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+   
 
     public String getAddressName() {
         return addressName;
