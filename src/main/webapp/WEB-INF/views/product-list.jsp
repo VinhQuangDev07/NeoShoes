@@ -6,6 +6,8 @@
 <html>
     <head>
         <title>NeoShoes - All Products</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <style>
             * {
                 margin: 0;
@@ -16,86 +18,6 @@
                 font-family: 'Arial', sans-serif;
                 background-color: #f8f9fa;
                 line-height: 1.6;
-            }
-
-            /* Header */
-            .header{
-                background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
-                color:#fff;
-                padding:1rem 0;
-                box-shadow:0 2px 10px rgba(0,0,0,.25);
-            }
-
-            .header-container {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 20px;
-            }
-            .logo {
-                font-size: 2rem;
-                font-weight: bold;
-                text-decoration: none;
-                color: white;
-            }
-            /* container của form – căn cho đẹp */
-            .search-form{
-                display:flex;
-                gap:10px;
-                flex:0 1 560px; /* rộng hơn một chút */
-                justify-content:flex-end;
-            }
-
-            /* INPUT hiện đại trên nền đen */
-            /* Search input — light theme on black header */
-            .header .search-input{
-                flex:1;
-                padding:12px 16px;
-                border-radius:999px;
-                background:#ffffff;              /* NỀN TRẮNG */
-                color:#111827;                   /* chữ đen */
-                border:1px solid #e5e7eb;        /* viền xám nhạt */
-                outline:none;
-                font-size:15px;
-                box-shadow:0 2px 8px rgba(0,0,0,.06); /* nhẹ nhàng */
-                transition:border-color .2s, box-shadow .2s;
-            }
-            .header .search-input::placeholder{
-                color:#9aa0a6;
-            }  /* placeholder xám */
-            .header .search-input:focus{
-                border-color:#22c55e;                         /* xanh lá khi focus */
-                box-shadow:0 0 0 4px rgba(34,197,94,.20);
-            }
-
-            /* BUTTON xanh lá hiện đại */
-            .search-button{
-                background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); /* xanh lá */
-                color:#fff;
-                border:none;
-                padding:12px 22px;
-                border-radius:999px;
-                cursor:pointer;
-                font-size:15px;
-                font-weight:700;
-                letter-spacing:.2px;
-                transition:transform .18s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
-                box-shadow:0 10px 24px rgba(22,163,74,.28);
-            }
-            .search-button:hover{
-                transform:translateY(-1px);
-                box-shadow:0 14px 28px rgba(22,163,74,.35);
-                filter:saturate(1.05);
-            }
-            .search-button:active{
-                transform:translateY(0);
-                box-shadow:0 8px 18px rgba(22,163,74,.25);
-            }
-            .search-button:focus-visible{
-                outline:3px solid rgba(34,197,94,.35);
-                outline-offset:2px;
             }
 
 
@@ -407,9 +329,7 @@
 
             /* --- Buttons (base) --- */
             .btn{
-                --btn-bg:#fff;
-                --btn-fg:#e11d48;
-                --btn-bd:#fecaca;
+                
                 display:inline-flex;
                 align-items:center;
                 justify-content:center;
@@ -485,16 +405,17 @@
     </head>
     <body>
         <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <form action="${pageContext.request.contextPath}/products" method="get" class="search-form">
-                    <input type="hidden" name="action" value="search">
-                    <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                    <button type="submit" class="search-button">Search</button>
-                </form>
-            </div>
-        </header>
+        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <!--        <header class="header">
+                    <div class="header-container">
+                        <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
+                        <form action="${pageContext.request.contextPath}/products" method="get" class="search-form">
+                            <input type="hidden" name="action" value="search">
+                            <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
+                            <button type="submit" class="search-button">Search</button>
+                        </form>
+                    </div>
+                </header>-->
 
         <!-- Main Content -->
         <div class="main-container">
@@ -508,7 +429,7 @@
                                 <!-- When a brand is selected, 'All' goes back to the brand page -->
                                 <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${param.brandId}"
                                    class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
                                     <span>All Categories</span>
                                 </a>
                             </c:when>
@@ -516,7 +437,7 @@
                                 <!-- When no brand is selected, 'All' goes to all products -->
                                 <a href="${pageContext.request.contextPath}/products"
                                    class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
                                     <span>All Products</span>
                                 </a>
                             </c:otherwise>
@@ -531,9 +452,9 @@
                                     <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
                                        class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
-                                             src="${empty category.image ? 'https://via.placeholder.com/52?text=Cat' : category.image}"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
                                              alt="${category.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Cat'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                         <span>${category.name}</span>
                                     </a>
                                 </c:when>
@@ -542,9 +463,9 @@
                                     <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}"
                                        class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
-                                             src="${empty category.image ? 'https://via.placeholder.com/52?text=Cat' : category.image}"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
                                              alt="${category.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Cat'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                         <span>${category.name}</span>
                                     </a>
                                 </c:otherwise>
@@ -624,7 +545,7 @@
                                 <div class="product-card">
                                     <div class="product-media">
                                         <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                             onerror="this.src='https://via.placeholder.com/360x270?text=No+Image'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                     </div>
                                     <div class="product-info">
                                         <h3 class="product-name">${product.name}</h3>

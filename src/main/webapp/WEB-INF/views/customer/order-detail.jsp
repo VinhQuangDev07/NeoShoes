@@ -442,49 +442,93 @@
                         </div>
 
                         <!-- Order Summary -->
-                        <div class="order-summary">
-                            <div class="summary-section">
-                                <h6>Order Amount Details</h6>
-                                <div class="summary-item">
-                                    <span>Subtotal:</span>
-                                    <span>$${order.totalAmount - order.shippingFee}</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span>Shipping fee:</span>
-                                    <span>$${order.shippingFee}</span>
-                                </div>
-                                <div class="summary-item summary-total">
-                                    <span>Total to pay:</span>
-                                    <span>$${order.totalAmount}</span>
-                                </div>
-                            </div>
-                            <div class="summary-section">
-                                <h6>Payment Method</h6>
-                                <div class="mb-3">
-                                    <span class="payment-badge payment-cod">Cash on Delivery</span>
-                                </div>
-                                <div>
-                                    <span class="payment-badge payment-completed">Completed</span>
-                                </div>
-                            </div>
-                        </div>
+<div class="order-summary">
+    <div class="summary-section">
+        <h6>Order Amount Details</h6>
 
-                        <!-- Shipping Info -->
-                        <div class="shipping-section">
-                            <h6>Ship to</h6>
-                            <p class="mb-0">
-                                <c:choose>
-                                    <c:when test="${not empty order.recipientName}">
-                                        ${order.recipientName}<br>
-                                        ${order.addressDetails}<br>
-                                        Phone: ${order.recipientPhone}
-                                    </c:when>
-                                    <c:otherwise>
-                                        Default Address
-                                    </c:otherwise>
-                                </c:choose>
-                            </p>
-                        </div>
+        <!-- ✅ Subtotal -->
+        <div class="summary-item">
+            <span>Subtotal:</span>
+            <span>$${order.subtotal}</span>
+        </div>
+        
+        <!-- Shipping fee -->
+        <div class="summary-item">
+            <span>Shipping fee:</span>
+            <span>$${order.shippingFee}</span>
+        </div>
+        
+        <!-- ✅ Discount (chỉ hiển thị nếu có voucher) -->
+        <c:if test="${order.voucherId != null && order.discount > 0}">
+            <div class="summary-item" style="color: #dc2626; font-weight: 600; background: #fef2f2; padding: 8px; margin: 4px -8px; border-radius: 6px;">
+                <span>
+                    Discount
+                    <c:if test="${not empty order.voucher}">
+                        (${order.voucher.voucherCode})
+                    </c:if>
+                    :
+                </span>
+                <span>-$${order.discount}</span>
+            </div>
+        </c:if>
+        
+        <!-- Total -->
+        <div class="summary-item summary-total">
+            <span>Total to pay:</span>
+            <span>$${order.totalAmount}</span>
+        </div>
+        
+        <!-- ✅ Voucher info box -->
+        <c:if test="${not empty order.voucher}">
+            <div style="margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid #166534; border-radius: 8px; font-size: 13px; box-shadow: 0 2px 4px rgba(22, 101, 52, 0.1);">
+                <strong style="color: #166534; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-check-circle"></i>
+                    Voucher applied
+                </strong>
+                <div style="margin-top: 6px;">
+                    <span style="display: inline-block; padding: 4px 10px; background: #166534; color: white; border-radius: 6px; font-weight: 700; font-size: 12px; letter-spacing: 0.5px;">
+                        ${order.voucher.voucherCode}
+                    </span>
+                    <c:choose>
+                        <c:when test="${order.voucher.type eq 'PERCENTAGE'}">
+                            <span style="color: #166534; font-weight: 600;"> - ${order.voucher.value}% discount</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span style="color: #166534; font-weight: 600;"> - $${order.voucher.value} off</span>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </c:if>
+    </div>
+    
+    <div class="summary-section">
+        <h6>Payment Method</h6>
+        <div class="mb-3">
+            <span class="payment-badge payment-cod">Cash on Delivery</span>
+        </div>
+        <div>
+            <span class="payment-badge payment-completed">Completed</span>
+        </div>
+    </div>
+</div>
+
+<!-- Shipping Info -->
+<div class="shipping-section">
+    <h6>Ship to</h6>
+    <p class="mb-0">
+        <c:choose>
+            <c:when test="${not empty order.recipientName}">
+                ${order.recipientName}<br>
+                ${order.addressDetails}<br>
+                Phone: ${order.recipientPhone}
+            </c:when>
+            <c:otherwise>
+                Default Address
+            </c:otherwise>
+        </c:choose>
+    </p>
+</div>
 
                         <!-- Products -->
                         <div class="products-section">

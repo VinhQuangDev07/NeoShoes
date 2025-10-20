@@ -108,7 +108,7 @@ public class BrandServlet extends HttpServlet {
         boolean canModify = canModify(role); // CHỈ admin mới được sửa đổi
         request.setAttribute("canModify", canModify);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Brand-list.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Brand-list.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -121,7 +121,7 @@ public class BrandServlet extends HttpServlet {
             return;
         }
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/brand-form.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
         request.setAttribute("formAction", "add");
         dispatcher.forward(request, response);
     }
@@ -141,7 +141,7 @@ public class BrandServlet extends HttpServlet {
         if (brand != null) {
             request.setAttribute("brand", brand);
             request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/brand-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
             dispatcher.forward(request, response);
         } else {
             response.sendError(404, "Brand not found");
@@ -202,7 +202,7 @@ public class BrandServlet extends HttpServlet {
             brand.setLogo(logo);
             request.setAttribute("brand", brand);
             request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/brand-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
             dispatcher.forward(request, response);
             return;
         }

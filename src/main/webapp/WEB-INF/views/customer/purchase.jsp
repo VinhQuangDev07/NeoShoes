@@ -683,31 +683,70 @@
                         return;
                     }
 
-                    // For now, using hardcoded vouchers. In production, this should be validated server-side
-                    let discount = 0;
-                    let message = '';
-
-                    switch (voucherCode) {
-                        case 'FIXED15':
-                            discount = 15;
-                            message = 'FIXED15 applied! You saved $15.00';
-                            break;
-                        case 'FPTUCT':
-                            discount = 20;
-                            message = 'FPTUCT applied! You saved $20.00';
-                            break;
-                        case 'NEOSHOE25':
-                            discount = 25;
-                            message = 'NEOSHOE25 applied! You saved $25.00';
-                            break;
-                        default:
-                            alert('Invalid voucher code');
-                            return;
-                    }
-
-                    appliedDiscount = discount;
-                    updateTotal();
-                    showDiscountMessage(message);
+                    // ✅ GỌI SERVER ĐỂ VALIDATE
+                    console.log('=== APPLY VOUCHER REQUEST ===');
+                    console.log('Voucher Code:', voucherCode);
+                    console.log('Order Total:', originalTotal);
+                    
+                    fetch('${pageContext.request.contextPath}/voucher?action=apply', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'voucherCode': voucherCode,
+                            'orderTotal': originalTotal
+                        })
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Content-Type:', response.headers.get('content-type'));
+                        return response.text();
+                    })
+                    .then(text => {
+                        console.log('Raw response:', text);
+                        
+                        try {
+                            const data = JSON.parse(text);
+                            console.log('Parsed JSON:', data);
+                            
+                            if (data.success) {
+                                console.log('SUCCESS!');
+                                
+                                // Update discount
+                                appliedDiscount = data.discount;
+                                updateTotal();
+                                showDiscountMessage(data.message);
+                                
+                                // Set hidden input để submit form
+                                let hiddenInput = document.getElementById('hiddenVoucherCode');
+                                if (!hiddenInput) {
+                                    hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.id = 'hiddenVoucherCode';
+                                    hiddenInput.name = 'voucherCode';
+                                    document.getElementById('checkoutForm').appendChild(hiddenInput);
+                                }
+                                hiddenInput.value = data.voucherCode;
+                                
+                                // Disable input và button
+                                document.getElementById('voucherCode').disabled = true;
+                                document.querySelector('.apply-btn').disabled = true;
+                                
+                            } else {
+                                console.error('FAILED:', data.message);
+                                alert(data.message || 'Invalid voucher code');
+                                removeDiscount();
+                            }
+                        } catch (e) {
+                            console.error('NOT JSON! Response:', text);
+                            alert('Error applying voucher. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('FETCH ERROR:', error);
+                        alert('Failed to apply voucher. Please check your connection.');
+                    });
                 }
 
                 function removeDiscount() {

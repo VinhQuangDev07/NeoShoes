@@ -20,7 +20,7 @@ public class BrandDAO {
     public List<Brand> getAllBrands() throws SQLException {
         List<Brand> brands = new ArrayList<>();
         String sql = "SELECT BrandId, Name, Logo, ISNULL(IsDeleted,0) AS IsDeleted " +
-                     "FROM " + TBL + " WHERE ISNULL(IsDeleted,0) = 0 ORDER BY Name";
+                     "FROM " + TBL + " WHERE ISNULL(IsDeleted,0) = 0 ORDER BY BrandId ASC";
         
         try (ResultSet rs = dbContext.execSelectQuery(sql)) {
             while (rs.next()) {

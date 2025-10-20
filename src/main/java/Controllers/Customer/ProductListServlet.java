@@ -59,7 +59,7 @@ public class ProductListServlet extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            System.err.println("❌ Error in ProductListServlet: " + e.getMessage());
+            System.err.println("Error in ProductListServlet: " + e.getMessage());
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
         }
@@ -85,7 +85,7 @@ public class ProductListServlet extends HttpServlet {
             int totalPages = (int) Math.ceil((double) totalProducts / PAGE_SIZE);
 
             // Debug log
-            System.out.println("✅ ProductList - Page " + page + "/" + totalPages + 
+            System.out.println(" ProductList - Page " + page + "/" + totalPages + 
                              " - Loaded " + products.size() + "/" + totalProducts + " products");
 
             // Set attributes
@@ -98,7 +98,7 @@ public class ProductListServlet extends HttpServlet {
             forwardToProductList(request, response);
             
         } catch (Exception e) {
-            System.err.println("❌ Error in listAllProducts: " + e.getMessage());
+            System.err.println(" Error in listAllProducts: " + e.getMessage());
             e.printStackTrace();
             throw new ServletException(e);
         }
@@ -122,7 +122,7 @@ public class ProductListServlet extends HttpServlet {
             // Search products
             List<Product> products = productDAO.searchProducts(keyword.trim());
             
-            System.out.println("✅ Search '" + keyword + "': Found " + products.size() + " products");
+            System.out.println("Search '" + keyword + "': Found " + products.size() + " products");
             
             // Set attributes
             setCommonAttributes(request, categories, brands, products);
@@ -135,7 +135,7 @@ public class ProductListServlet extends HttpServlet {
             forwardToProductList(request, response);
             
         } catch (Exception e) {
-            System.err.println("❌ Error in searchProducts: " + e.getMessage());
+            System.err.println("Error in searchProducts: " + e.getMessage());
             e.printStackTrace();
             throw new ServletException(e);
         }
@@ -155,7 +155,7 @@ public class ProductListServlet extends HttpServlet {
             
             int categoryId = Integer.parseInt(categoryIdParam);
             
-            System.out.println("🔍 Filter by category: " + categoryId + 
+            System.out.println("Filter by category: " + categoryId + 
                              (brandIdParam != null ? ", brand: " + brandIdParam : ""));
             
             // Load categories and brands
@@ -170,12 +170,12 @@ public class ProductListServlet extends HttpServlet {
                 int brandId = Integer.parseInt(brandIdParam);
                 products = productDAO.getProductsByCategoryAndBrand(categoryId, brandId);
                 request.setAttribute("selectedBrand", brandId);
-                System.out.println("✅ Filtered by category " + categoryId + " and brand " + brandId + 
+                System.out.println("Filtered by category " + categoryId + " and brand " + brandId + 
                                  ": " + products.size() + " products");
             } else {
                 // Filter by category only
                 products = productDAO.getProductsByCategory(categoryId);
-                System.out.println("✅ Filtered by category " + categoryId + ": " + products.size() + " products");
+                System.out.println("Filtered by category " + categoryId + ": " + products.size() + " products");
             }
             
             // Set attributes
@@ -189,10 +189,10 @@ public class ProductListServlet extends HttpServlet {
             forwardToProductList(request, response);
             
         } catch (NumberFormatException e) {
-            System.err.println("❌ Invalid category/brand ID format");
+            System.err.println("Invalid category/brand ID format");
             listAllProducts(request, response);
         } catch (Exception e) {
-            System.err.println("❌ Error in listProductsByCategory: " + e.getMessage());
+            System.err.println("Error in listProductsByCategory: " + e.getMessage());
             e.printStackTrace();
             throw new ServletException(e);
         }

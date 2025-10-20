@@ -1,8 +1,3 @@
-<%-- 
-    Document   : pagination
-    Created on : Oct 17, 2025, 11:26:12 AM
-    Author     : Le Huu Nghia - CE181052
---%>
 
 <%
     // Get parameters from request
