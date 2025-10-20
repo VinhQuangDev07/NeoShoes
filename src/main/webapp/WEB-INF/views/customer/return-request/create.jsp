@@ -12,7 +12,7 @@
         <p>Total: ${order.totalAmount}</p>
         <p>Status: ${order.status}</p>
 
-        <form action="returnRequest" method="post">
+        <form action="return-request" method="post">
             <input type="hidden" name="action" value="create">
             <input type="hidden" name="orderId" value="${order.orderId}">
             <input type="hidden" name="customerId" value="1">

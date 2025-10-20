@@ -8,11 +8,9 @@ import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
 import DAOs.ReturnRequestDetailDAO;
 import Models.Order;
-import Models.OrderDetail;
 import Models.ReturnRequest;
 import Models.ReturnRequestDetail;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -30,7 +28,7 @@ import java.util.logging.Logger;
  *
  * @author Nguyen Huynh Thien An - CE190979
  */
-@WebServlet(name = "ReturnRequestServlet", urlPatterns = {"/returnRequest"})
+@WebServlet(name = "ReturnRequestServlet", urlPatterns = {"/return-request"})
 public class ReturnRequestServlet extends HttpServlet {
 
     @Override
@@ -412,7 +410,7 @@ public class ReturnRequestServlet extends HttpServlet {
             String requestIdParam = request.getParameter("requestId");
 
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                 return;
             }
 
@@ -433,7 +431,7 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 if (!"PENDING".equals(existingRequest.getReturnStatus())) {
                     request.setAttribute("errorMessage", "Only pending requests can be cancelled");
-                    response.sendRedirect(request.getContextPath() + "/returnRequest?action=detail&requestId=" + requestId);
+                    response.sendRedirect(request.getContextPath() + "/return-request?action=detail&requestId=" + requestId);
                     return;
                 }
 
@@ -445,16 +443,16 @@ public class ReturnRequestServlet extends HttpServlet {
                     ReturnRequestDetailDAO detailDAO = new ReturnRequestDetailDAO();
                     detailDAO.deleteDetailsByReturnRequestId(requestId);
 
-                    response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                    response.sendRedirect(request.getContextPath() + "/customer/return-requests");
                 } else {
                     request.setAttribute("errorMessage", "Failed to cancel return request");
-                    response.sendRedirect(request.getContextPath() + "/returnRequest?action=detail&requestId=" + requestId);
+                    response.sendRedirect(request.getContextPath() + "/return-request?action=detail&requestId=" + requestId);
                 }
 
             } catch (NumberFormatException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())
                         .log(Level.WARNING, "Invalid requestId format", e);
-                response.sendRedirect(request.getContextPath() + "/customer/returnRequests");
+                response.sendRedirect(request.getContextPath() + "/customer/return-requests");
 
             } catch (SQLException e) {
                 Logger.getLogger(ReturnRequestServlet.class.getName())

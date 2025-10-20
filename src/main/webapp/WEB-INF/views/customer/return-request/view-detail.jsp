@@ -211,7 +211,7 @@
                 </a>
 
                 <c:if test="${returnRequest.returnStatus == 'PENDING'}">
-                    <a href="${pageContext.request.contextPath}/returnRequest?action=edit&requestId=${returnRequest.returnRequestId}" class="btn" style="background-color: #007bff; color: white;">
+                    <a href="${pageContext.request.contextPath}/return-request?action=edit&requestId=${returnRequest.returnRequestId}" class="btn" style="background-color: #007bff; color: white;">
                         Edit Request
                     </a>
                     <button onclick="confirmCancel()" class="btn btn-cancel">
@@ -224,7 +224,7 @@
         <script>
             function confirmCancel() {
                 if (confirm('Are you sure you want to cancel this return request?')) {
-                    window.location.href = '${pageContext.request.contextPath}/returnRequest?action=delete&requestId=${returnRequest.returnRequestId}';
+                    window.location.href = '${pageContext.request.contextPath}/return-request?action=delete&requestId=${returnRequest.returnRequestId}';
                             }
                         }
         </script>

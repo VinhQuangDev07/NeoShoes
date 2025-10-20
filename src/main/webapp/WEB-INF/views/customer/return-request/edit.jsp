@@ -129,7 +129,7 @@
                 <div class="error-message">${errorMessage}</div>
             </c:if>
 
-            <form action="${pageContext.request.contextPath}/returnRequest" method="post" onsubmit="return validateForm()">
+            <form action="${pageContext.request.contextPath}/return-request" method="post" onsubmit="return validateForm()">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="customerId" value="${returnRequest.customerId}">
                 <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
@@ -254,7 +254,7 @@
                 <!-- Action Buttons -->
                 <div class="section">
                     <button type="submit" class="btn btn-submit">Update Request</button>
-                    <a href="${pageContext.request.contextPath}/returnRequest?action=confirmEdit&requestId=${returnRequest.returnRequestId}" 
+                    <a href="${pageContext.request.contextPath}/return-request?action=confirmEdit&requestId=${returnRequest.returnRequestId}" 
                        class="btn btn-cancel">Cancel</a>
                 </div>
             </form>
