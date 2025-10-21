@@ -215,15 +215,16 @@ public class ProductDAO extends DBContext {
     public List<Product> searchProducts(String keyword) {
         List<Product> products = new ArrayList<>();
 
-        String query = buildBaseQuery()
-                + "WHERE (p.Name LIKE ? OR p.Description LIKE ?) AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+       String query = buildBaseQuery()
+        + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+        + GROUP_BY + " ORDER BY p.ProductId ASC";
+
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
+           
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
