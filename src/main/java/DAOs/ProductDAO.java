@@ -1,24 +1,73 @@
 package DAOs;
 
-import DB.DBContext;
-import Models.Product;
-import Models.ProductVariant;
-
-import java.sql.*;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.LinkedHashSet;
-import java.util.Set;
+
+import DB.DBContext;
+import Models.Product;
+import java.sql.Timestamp;
 
 public class ProductDAO extends DBContext {
+
+    // ========== COMMON QUERY PARTS ==========
+    private static final String PRODUCT_COLUMNS
+            = "p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+            + "p.Description, p.DefaultImageUrl, p.Material, "
+            + "p.CreatedAt, p.UpdatedAt, "
+            + "b.Name AS BrandName, c.Name AS CategoryName";
+    private static final String PRICE_AGGREGATION
+            = "MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
+            + "MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
+            + "SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity";
+
+    private static final String COLOR_SUBQUERY
+            = "OUTER APPLY ( "
+            + "  SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
+            + "    FROM ProductVariant pv2 "
+            + "    WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
+            + "    FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
+            + ") Colors";
+
+    private static final String SIZE_SUBQUERY
+            = "OUTER APPLY ( "
+            + "  SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
+            + "    FROM ProductVariant pv3 "
+            + "    WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
+            + "    FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
+            + ") Sizes";
+
+    private static final String COMMON_JOINS
+            = "FROM Product p "
+            + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
+            + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
+            + "INNER JOIN Category c ON p.CategoryId = c.CategoryId";
+
+    private static final String GROUP_BY
+            = "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
+            + "p.Description, p.DefaultImageUrl, p.Material, "
+            + "p.CreatedAt, p.UpdatedAt, "
+            + 
+            "b.Name, c.Name, "
+            + "Colors.AvailableColors, Sizes.AvailableSizes";
 
     public ProductDAO() {
         super();
     }
 
-    /* ---------- Helper: map 1 row -> Product ---------- */
+    // ========== HELPER: BUILD BASE QUERY ==========
+    private String buildBaseQuery() {
+        return "SELECT " + PRODUCT_COLUMNS + ", " + PRICE_AGGREGATION + ", "
+                + "Colors.AvailableColors, Sizes.AvailableSizes "
+                + COMMON_JOINS + " "
+                + COLOR_SUBQUERY + " "
+                + SIZE_SUBQUERY + " ";
+    }
+
+    // ========== HELPER: MAP RESULTSET TO PRODUCT ==========
     private Product mapProduct(ResultSet rs) throws SQLException {
         Product product = new Product();
         product.setProductId(rs.getInt("ProductId"));
@@ -28,660 +77,191 @@ public class ProductDAO extends DBContext {
         product.setDescription(rs.getString("Description"));
         product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
         product.setMaterial(rs.getString("Material"));
-        
-        // Xử lý giá có thể NULL
+
+        // Xử lý giá
         double minPrice = rs.getDouble("MinPrice");
         double maxPrice = rs.getDouble("MaxPrice");
-        if (rs.wasNull()) {
-            minPrice = 0.0;
-            maxPrice = 0.0;
+        if (!rs.wasNull()) {
+            product.setMinPrice(minPrice);
+            product.setMaxPrice(maxPrice);
+        } else {
+            product.setMinPrice(0.0);
+            product.setMaxPrice(0.0);
         }
-        product.setMinPrice(minPrice);
-        product.setMaxPrice(maxPrice);
-        
-        product.setTotalQuantity(rs.getInt("TotalQuantity"));
-        product.setAvailableColors(rs.getString("AvailableColors"));
-        product.setAvailableSizes(rs.getString("AvailableSizes"));
+
+        // Brand và Category name
         product.setBrandName(rs.getString("BrandName"));
         product.setCategoryName(rs.getString("CategoryName"));
+
+        // Available colors và sizes
+        product.setAvailableColors(rs.getString("AvailableColors"));
+        product.setAvailableSizes(rs.getString("AvailableSizes"));
+
+        // Total quantity
+        int totalQty = rs.getInt("TotalQuantity");
+        product.setTotalQuantity(rs.wasNull() ? 0 : totalQty);
+        Timestamp cr = rs.getTimestamp("CreatedAt");
+        product.setCreatedAt(cr.toLocalDateTime());
+        Timestamp up = rs.getTimestamp("UpdatedAt");
+        product.setUpdatedAt(up.toLocalDateTime());
         return product;
     }
 
-    /* ---------- 1) Featured products (limit) ---------- */
-    public List<Product> getFeaturedProducts(int limit) {
+    // ========== GET LATEST PRODUCTS ==========
+    public List<Product> getLatestProducts(int limit) {
         List<Product> products = new ArrayList<>();
-        
-        // Validation input
-        if (limit <= 0) {
-            System.err.println("❌ Limit phải lớn hơn 0");
-            return products;
-        }
 
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
+        String query = buildBaseQuery()
                 + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId ASC "
+                + GROUP_BY + " "
+                + "ORDER BY p.ProductId DESC "
                 + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
 
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getFeaturedProducts");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, Math.max(1, limit));
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getFeaturedProducts: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return products;
-    }
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
-    /* ---------- 2) All products with pagination ---------- */
-    public List<Product> getAllProductsWithPagination(int offset, int pageSize) {
-        List<Product> products = new ArrayList<>();
-        
-        // Validation input
-        if (offset < 0 || pageSize <= 0) {
-            System.err.println("❌ Offset phải >= 0 và pageSize phải > 0");
-            return products;
-        }
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId ASC "
-                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getAllProductsWithPagination");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, Math.max(0, offset));
-                ps.setInt(2, Math.max(1, pageSize));
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getAllProductsWithPagination: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return products;
-    }
-
-    /* ---------- 3) Total count (đếm theo sản phẩm active, có ít nhất 1 variant hợp lệ) ---------- */
-    public int getTotalProductsCount() {
-        String query
-                = "SELECT COUNT(*) AS Total "
-                + "FROM Product p "
-                + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "  AND EXISTS (SELECT 1 FROM ProductVariant pv "
-                + "              WHERE pv.ProductId = p.ProductId AND pv.IsDeleted = 0)";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getTotalProductsCount");
-                return 0;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query);
-                 ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("Total");
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getTotalProductsCount: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    /* ---------- 4) Products by category ---------- */
-    public List<Product> getProductsByCategory(int categoryId) {
-        List<Product> products = new ArrayList<>();
-        
-        // Validation input
-        if (categoryId <= 0) {
-            System.err.println("❌ CategoryId phải lớn hơn 0");
-            return products;
-        }
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE p.CategoryId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId ASC";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getProductsByCategory");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, categoryId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getProductsByCategory: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return products;
-    }
-
-    /* ---------- 5) Search products ---------- */
-    public List<Product> searchProducts(String searchTerm) {
-        List<Product> products = new ArrayList<>();
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE (p.Name LIKE ? OR p.Description LIKE ? OR b.Name LIKE ?) "
-                + "  AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId ASC";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong searchProducts");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                String like = "%" + (searchTerm == null ? "" : searchTerm.trim()) + "%";
-                ps.setString(1, like);
-                ps.setString(2, like);
-                ps.setString(3, like);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong searchProducts: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return products;
-    }
-
-    /* ---------- 6) Get product by ID with variants ---------- */
-    public Product getProductById(int productId) {
-        Product product = null;
-        
-        // Validation input
-        if (productId <= 0) {
-            System.err.println("❌ ProductId phải lớn hơn 0");
-            return null;
-        }
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE p.ProductId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getProductById");
-                return null;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, productId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        product = mapProduct(rs);
-
-                        // Lấy danh sách variants
-                        List<ProductVariant> variants = getProductVariants(productId);
-
-                        // Thiết lập gallery ảnh
-                        setProductImageGallery(product, variants);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getProductById: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return product;
-    }
-
-    /* ---------- Helper: Get product variants ---------- */
-    private List<ProductVariant> getProductVariants(int productId) {
-        List<ProductVariant> variants = new ArrayList<>();
-
-        String query
-                = "SELECT ProductVariantId, ProductId, Image, Color, Size, Price, "
-                + "       QuantityAvailable, CreatedAt, UpdatedAt, IsDeleted "
-                + "FROM ProductVariant "
-                + "WHERE ProductId = ? AND IsDeleted = 0 "
-                + "ORDER BY Color, Size";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getProductVariants");
-                return variants;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, productId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        ProductVariant variant = new ProductVariant();
-                        variant.setProductVariantId(rs.getInt("ProductVariantId"));
-                        variant.setProductId(rs.getInt("ProductId"));
-                        variant.setImage(rs.getString("Image"));
-                        variant.setColor(rs.getString("Color"));
-                        variant.setSize(rs.getString("Size"));
-                        variant.setPrice(BigDecimal.valueOf(rs.getDouble("Price")));
-                        variant.setQuantityAvailable(rs.getInt("QuantityAvailable"));
-                        variant.setCreatedAt(rs.getObject("CreatedAt", LocalDateTime.class));
-                        variant.setUpdatedAt(rs.getObject("UpdatedAt", LocalDateTime.class));
-                        variant.setIsDeleted(rs.getInt("IsDeleted"));
-
-                        variants.add(variant);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getProductVariants: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return variants;
-    }
-
-    /* ---------- Helper: Set product image gallery ---------- */
-    private void setProductImageGallery(Product product, List<ProductVariant> variants) {
-        if (product == null) {
-            return;
-        }
-        
-        Set<String> imageSet = new LinkedHashSet<>();
-
-        // Thêm ảnh mặc định đầu tiên
-        if (product.getDefaultImageUrl() != null && !product.getDefaultImageUrl().trim().isEmpty()) {
-            String optimizedUrl = optimizeCloudinaryUrl(product.getDefaultImageUrl(), 600, 600);
-            imageSet.add(optimizedUrl);
-        }
-
-        // Thêm ảnh từ các variants
-        if (variants != null) {
-            for (ProductVariant variant : variants) {
-                if (variant != null && variant.getImage() != null && !variant.getImage().trim().isEmpty()) {
-                    String optimizedUrl = optimizeCloudinaryUrl(variant.getImage(), 600, 600);
-                    imageSet.add(optimizedUrl);
-                }
-            }
-        }
-
-        // Nếu không có ảnh nào, thêm ảnh placeholder
-        if (imageSet.isEmpty()) {
-            imageSet.add("https://via.placeholder.com/600x600?text=No+Image");
-        }
-
-        // TODO: Thêm method setImageGallery vào Product class nếu cần
-        // product.setImageGallery(new ArrayList<>(imageSet));
-    }
-
-    /* ---------- Helper: Optimize Cloudinary URL ---------- */
-    private String optimizeCloudinaryUrl(String originalUrl, int width, int height) {
-        if (originalUrl == null || originalUrl.trim().isEmpty()) {
-            return "https://via.placeholder.com/" + width + "x" + height + "?text=No+Image";
-        }
-
-        // Nếu ảnh đã là từ Cloudinary, thêm parameters để tối ưu
-        if (originalUrl.contains("cloudinary.com")) {
-            String[] parts = originalUrl.split("/upload/");
-            if (parts.length == 2) {
-                return parts[0] + "/upload/w_" + width + ",h_" + height + ",c_fill,q_auto,f_auto/" + parts[1];
-            }
-        }
-
-        // Nếu không phải Cloudinary, trả về URL gốc
-        return originalUrl;
-    }
-
-    /* ---------- Helper: Get thumbnail URLs ---------- */
-    public List<String> getThumbnailUrls(List<String> imageUrls) {
-        List<String> thumbnails = new ArrayList<>();
-        if (imageUrls == null || imageUrls.isEmpty()) {
-            thumbnails.add("https://via.placeholder.com/100x100?text=No+Image");
-            return thumbnails;
-        }
-
-        for (String url : imageUrls) {
-            thumbnails.add(optimizeCloudinaryUrl(url, 100, 100));
-        }
-        return thumbnails;
-    }
-
-
-    /* ---------- 7) Products by brand ---------- */
-    public List<Product> getProductsByBrand(int brandId) {
-        List<Product> products = new ArrayList<>();
-
-        String query
-                = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "       p.Description, p.DefaultImageUrl, p.Material, "
-                + "       b.Name AS BrandName, c.Name AS CategoryName, "
-                + "       MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-                + "       MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-                + "       SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-                + "       Colors.AvailableColors, Sizes.AvailableSizes "
-                + "FROM Product p "
-                + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-                + "                 FROM ProductVariant pv2 "
-                + "                 WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-                + ") Colors "
-                + "OUTER APPLY ( "
-                + "   SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-                + "                 FROM ProductVariant pv3 "
-                + "                 WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-                + "                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-                + ") Sizes "
-                + "WHERE p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-                + "         p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-                + "         Colors.AvailableColors, Sizes.AvailableSizes "
-                + "ORDER BY p.ProductId ASC";
-
-        try (Connection conn = this.getConnection()) {
-            if (conn == null) {
-                System.err.println("❌ Không thể kết nối database trong getProductsByBrand");
-                return products;
-            }
-            try (PreparedStatement ps = conn.prepareStatement(query)) {
-                ps.setInt(1, brandId);
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        products.add(mapProduct(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi SQL trong getProductsByBrand: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return products;
-    }
-   /* ---------- Latest products (dựa trên thời gian tạo) ---------- */
-public List<Product> getLatestProducts(int limit) {
-    List<Product> products = new ArrayList<>();
-    
-    if (limit <= 0) {
-        System.err.println("❌ Limit phải lớn hơn 0");
-        return products;
-    }
-
-    String query
-        = "SELECT TOP (?) "  // SỬ DỤNG TOP THAY VÌ OFFSET/FETCH
-        + " p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-        + " p.Description, p.DefaultImageUrl, p.Material, "
-        + " b.Name AS BrandName, c.Name AS CategoryName, "
-        + " MIN(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) AS MinPrice, "
-        + " MAX(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) AS MaxPrice, "
-        + " SUM(CASE WHEN pv.IsDeleted = 0 AND pv.QuantityAvailable > 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-        + " Colors.AvailableColors, Sizes.AvailableSizes, "
-        + " p.CreatedAt AS ProductCreatedAt "
-        + "FROM Product p "
-        + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-        + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-        + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-        + "OUTER APPLY ( "
-        + " SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-        + " FROM ProductVariant pv2 "
-        + " WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 AND pv2.Price > 0 "
-        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-        + ") Colors "
-        + "OUTER APPLY ( "
-        + " SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-        + " FROM ProductVariant pv3 "
-        + " WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 AND pv3.Price > 0 "
-        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-        + ") Sizes "
-        + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
-        + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-        + " p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-        + " Colors.AvailableColors, Sizes.AvailableSizes, p.CreatedAt "
-        + "HAVING MIN(CASE WHEN pv.IsDeleted = 0 AND pv.Price > 0 THEN pv.Price END) IS NOT NULL "
-        + "ORDER BY p.CreatedAt DESC";  // SẮP XẾP THEO THỜI GIAN TẠO MỚI NHẤT
-
-    try (Connection conn = this.getConnection()) {
-        if (conn == null) {
-            System.err.println("❌ Không thể kết nối database trong getLatestProducts");
-            return products;
-        }
-        
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, limit);
-            
-            try (ResultSet rs = ps.executeQuery()) {
+
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     products.add(mapProduct(rs));
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in getLatestProducts: " + e.getMessage());
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        System.err.println("❌ Lỗi SQL trong getLatestProducts: " + e.getMessage());
-        e.printStackTrace();
+
+        System.out.println("✅ Retrieved " + products.size() + " latest products");
+        return products;
     }
-    
-    System.out.println("✅ Lấy được " + products.size() + " sản phẩm mới nhất");
-    return products;
-}
 
-    /* ---------- 8) Products by category and brand ---------- */
-    public List<Product> getProductsByCategoryAndBrand(int categoryId, int brandId) {
-    List<Product> products = new ArrayList<>();
+    // ========== GET PRODUCTS BY CATEGORY ==========
+    public List<Product> getProductsByCategory(int categoryId) {
+        List<Product> products = new ArrayList<>();
 
-    String query
-        = "SELECT p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-        + " p.Description, p.DefaultImageUrl, p.Material, "
-        + " b.Name AS BrandName, c.Name AS CategoryName, "
-        + " MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
-        + " MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
-        + " SUM(CASE WHEN pv.IsDeleted = 0 THEN pv.QuantityAvailable ELSE 0 END) AS TotalQuantity, "
-        + " Colors.AvailableColors, Sizes.AvailableSizes "
-        + "FROM Product p "
-        + "LEFT JOIN ProductVariant pv ON p.ProductId = pv.ProductId "
-        + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
-        + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
-        + "OUTER APPLY ( "
-        + " SELECT STUFF((SELECT DISTINCT ',' + pv2.Color "
-        + " FROM ProductVariant pv2 "
-        + " WHERE pv2.ProductId = p.ProductId AND pv2.IsDeleted = 0 "
-        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableColors "
-        + ") Colors "
-        + "OUTER APPLY ( "
-        + " SELECT STUFF((SELECT DISTINCT ',' + pv3.Size "
-        + " FROM ProductVariant pv3 "
-        + " WHERE pv3.ProductId = p.ProductId AND pv3.IsDeleted = 0 "
-        + " FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS AvailableSizes "
-        + ") Sizes "
-        + "WHERE p.CategoryId = ? AND p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 " // QUAN TRỌNG: cả categoryId và brandId
-        + "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-        + " p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
-        + " Colors.AvailableColors, Sizes.AvailableSizes "
-        + "ORDER BY p.ProductId ASC";
+        String query = buildBaseQuery()
+                + "WHERE p.CategoryId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " ORDER BY p.ProductId ASC";
 
-    try (Connection conn = this.getConnection()) {
-        if (conn == null) {
-            System.err.println("❌ Không thể kết nối database trong getProductsByCategoryAndBrand");
-            return products;
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, categoryId);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in getProductsByCategory: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
+        System.out.println("✅ Found " + products.size() + " products for category " + categoryId);
+        return products;
+    }
+
+    // ========== GET PRODUCTS BY CATEGORY AND BRAND ==========
+    public List<Product> getProductsByCategoryAndBrand(int categoryId, int brandId) {
+        List<Product> products = new ArrayList<>();
+
+        String query = buildBaseQuery()
+                + "WHERE p.CategoryId = ? AND p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " ORDER BY p.ProductId ASC";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
             ps.setInt(1, categoryId);
             ps.setInt(2, brandId);
 
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     products.add(mapProduct(rs));
                 }
             }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in getProductsByCategoryAndBrand: " + e.getMessage());
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        System.err.println("❌ Lỗi SQL trong getProductsByCategoryAndBrand: " + e.getMessage());
-        e.printStackTrace();
+
+        System.out.println("✅ Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
+        return products;
     }
 
-    System.out.println("✅ Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
-    return products;
-}
-    /**
-     * Get product by ID
-     *
-     * @param productId Product ID
-     * @return Product object or null if not found
-     */
-    public Product getById(int productId) {
-        // Validation input
-        if (productId <= 0) {
-            System.err.println("ProductId phải lớn hơn 0");
-            return null;
-        }
-        
-        String query = "SELECT * FROM Product WHERE ProductId=? AND IsDeleted=0";
+    // ========== GET PRODUCTS BY BRAND ==========
+    public List<Product> getProductsByBrand(int brandId) {
+        List<Product> products = new ArrayList<>();
 
-        try (ResultSet rs = this.execSelectQuery(query, new Object[]{productId})) {
+        String query = buildBaseQuery()
+                + "WHERE p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " ORDER BY p.ProductId ASC";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, brandId);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in getProductsByBrand: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Found " + products.size() + " products for brand " + brandId);
+        return products;
+    }
+
+    // ========== SEARCH PRODUCTS ==========
+    public List<Product> searchProducts(String keyword) {
+        List<Product> products = new ArrayList<>();
+
+        String query = buildBaseQuery()
+                + "WHERE (p.Name LIKE ? OR p.Description LIKE ?) AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " ORDER BY p.ProductId ASC";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in searchProducts: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Found " + products.size() + " products matching '" + keyword + "'");
+        return products;
+    }
+
+   public Product getById(int productId) {
+    if (productId <= 0) {
+        System.err.println("❌ Invalid productId: " + productId);
+        return null;
+    }
+
+    String query = "SELECT p.*, " +
+                   "b.Name AS BrandName, " +
+                   "c.Name AS CategoryName " +
+                   "FROM Product p " +
+                   "INNER JOIN Brand b ON p.BrandId = b.BrandId " +
+                   "INNER JOIN Category c ON p.CategoryId = c.CategoryId " +
+                   "WHERE p.ProductId = ? AND p.IsDeleted = 0";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(query)) {
+
+        ps.setInt(1, productId);
+
+        try (ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 Product product = new Product();
                 product.setProductId(rs.getInt("ProductId"));
@@ -691,16 +271,74 @@ public List<Product> getLatestProducts(int limit) {
                 product.setBrandId(rs.getInt("BrandId"));
                 product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
                 product.setMaterial(rs.getString("Material"));
+                
+                // ⭐ Thêm BrandName và CategoryName
+                product.setBrandName(rs.getString("BrandName"));
+                product.setCategoryName(rs.getString("CategoryName"));
+                
+                Timestamp cr = rs.getTimestamp("CreatedAt");
+                if (cr != null) {
+                    product.setCreatedAt(cr.toLocalDateTime());
+                }
+                
+                Timestamp up = rs.getTimestamp("UpdatedAt");
+                if (up != null) {
+                    product.setUpdatedAt(up.toLocalDateTime());
+                }
+
                 return product;
             }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error in getById: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    return null;
+}
+
+    // ========== COUNT TOTAL PRODUCTS ==========
+    public int getTotalProducts() {
+        String query = "SELECT COUNT(*) AS Total FROM Product WHERE IsActive = 1 AND IsDeleted = 0";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
         } catch (SQLException e) {
-            System.err.println("Lỗi SQL trong getById: " + e.getMessage());
+            System.err.println("❌ Error in getTotalProducts: " + e.getMessage());
             e.printStackTrace();
         }
 
-        return null;
+        return 0;
     }
-    
-    
-    
+
+    // ========== GET ALL PRODUCTS WITH PAGINATION ==========
+    public List<Product> getAllProducts(int offset, int limit) {
+        List<Product> products = new ArrayList<>();
+
+        String query = buildBaseQuery()
+                + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " "
+                + "ORDER BY p.ProductId ASC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ Error in getAllProducts: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return products;
+    }
 }

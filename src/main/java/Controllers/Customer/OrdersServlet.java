@@ -5,8 +5,13 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
-import Models.Customer;
+import DAOs.CustomerDAO;
+import DAOs.ReviewDAO;
 import Models.Order;
+import Models.OrderStatusHistory;
+import Models.OrderDetail;
+import Models.Customer;
+import Models.Review;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,45 +19,202 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "OrdersServlet", urlPatterns = {"/orders"})
 public class OrdersServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final CustomerDAO customerDAO = new CustomerDAO();
+    private final ReviewDAO reviewDAO = new ReviewDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
-//        
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            System.out.println("❌ No session or customerId - redirecting to login");
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-//        int customerId = 2;
-        int customerId = Integer.parseInt(request.getParameter("id"));
+        // Hardcode customerId = 2 for testing (no login functionality yet)
+        int customerId = 1;
+
+        List<Order> orders;
         try {
-//            customerId = (int) session.getAttribute("customerId");
-        } catch (Exception e) {
-            // If customerId is not an integer, use default value
+            orders = orderDAO.listByCustomer(customerId);
+            request.setAttribute("orders", orders);
+            for (Order order : orders) {
+                if (order.getItems() != null) {
+                    for (OrderDetail item : order.getItems()) {
+                        Review existingReview = reviewDAO.getExistingReview(item.getProductVariantId(), customerId);
+                        item.setReview(existingReview);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(OrdersServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Order> orders = orderDAO.listByCustomer(customerId);
+        // For now, using hardcoded customer ID. In production, get from session
+        Customer customer = customerDAO.findById(customerId);
+        // Load existing reviews for each order item
 
         // Check for success/error messages
         String cancelled = request.getParameter("cancelled");
         String error = request.getParameter("error");
-        
+
         if ("true".equals(cancelled)) {
             request.setAttribute("successMessage", "Order has been cancelled successfully!");
         } else if ("cancel_failed".equals(error)) {
             request.setAttribute("errorMessage", "Failed to cancel order. Please try again.");
         }
 
-        request.setAttribute("orders", orders);
+        // Get complete status ID from database
+        int completeStatusId = orderDAO.getCompleteStatusId();
+
+     
+        request.setAttribute("customer", customer);
+        request.setAttribute("completeStatusId", completeStatusId);
         request.getRequestDispatcher("/WEB-INF/views/customer/orders.jsp").forward(request, response);
+    }
+
+
+@Override
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        String action = request.getParameter("action");
+
+        // For now, using hardcoded customer ID. In production, get from session
+        int customerId = 2;
+
+        try {
+            if ("createReview".equals(action)) {
+                handleCreateReview(request, response, customerId);
+            } else if ("updateReview".equals(action)) {
+                handleUpdateReview(request, response, customerId);
+            } else if ("deleteReview".equals(action)) {
+                handleDeleteReview(request, response, customerId);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/orders");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "An error occurred. Please try again.");
+            response.sendRedirect(request.getContextPath() + "/orders");
+        }
+    }
+
+    private void handleCreateReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+
+        try {
+            int productVariantId = Integer.parseInt(request.getParameter("productVariantId"));
+            int star = Integer.parseInt(request.getParameter("star"));
+            String reviewContent = request.getParameter("reviewContent");
+
+            // Validate input
+            if (star < 1 || star > 5 || reviewContent == null || reviewContent.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Please provide valid rating and review content.");
+                response.sendRedirect(request.getContextPath() + "/orders");
+                return;
+            }
+
+            // Check if review already exists
+            Review existingReview = reviewDAO.getExistingReview(productVariantId, customerId);
+            if (existingReview != null) {
+                session.setAttribute("flash_error", "You have already reviewed this product.");
+                response.sendRedirect(request.getContextPath() + "/orders");
+                return;
+            }
+
+            // Create new review
+            Review review = new Review();
+            review.setProductVariantId(productVariantId);
+            review.setCustomerId(customerId);
+            review.setStar(star);
+            review.setReviewContent(reviewContent.trim());
+
+            boolean success = reviewDAO.createReview(review);
+
+            if (success) {
+                session.setAttribute("flash", "Review submitted successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to submit review. Please try again.");
+            }
+
+        } catch (NumberFormatException e) {
+            session.setAttribute("flash_error", "Invalid input. Please try again.");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/orders");
+    }
+
+    private void handleUpdateReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+
+        try {
+            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            int star = Integer.parseInt(request.getParameter("star"));
+            String reviewContent = request.getParameter("reviewContent");
+
+            // Validate input
+            if (star < 1 || star > 5 || reviewContent == null || reviewContent.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Please provide valid rating and review content.");
+                response.sendRedirect(request.getContextPath() + "/orders");
+                return;
+            }
+
+            // Verify review belongs to customer
+            Review existingReview = reviewDAO.getReviewById(reviewId, customerId);
+            if (existingReview == null) {
+                session.setAttribute("flash_error", "Review not found.");
+                response.sendRedirect(request.getContextPath() + "/orders");
+                return;
+            }
+
+            // Update review
+            existingReview.setStar(star);
+            existingReview.setReviewContent(reviewContent.trim());
+
+            boolean success = reviewDAO.updateReview(existingReview);
+
+            if (success) {
+                session.setAttribute("flash", "Review updated successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to update review. Please try again.");
+            }
+
+        } catch (NumberFormatException e) {
+            session.setAttribute("flash_error", "Invalid input. Please try again.");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/orders");
+    }
+
+    private void handleDeleteReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+            throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+
+        try {
+            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+
+            boolean success = reviewDAO.deleteReview(reviewId, customerId);
+
+            if (success) {
+                session.setAttribute("flash", "Review deleted successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to delete review.");
+            }
+
+        } catch (NumberFormatException e) {
+            session.setAttribute("flash_error", "Invalid review ID.");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/orders");
     }
 }

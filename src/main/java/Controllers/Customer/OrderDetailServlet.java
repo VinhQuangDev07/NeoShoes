@@ -5,7 +5,11 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
+import DAOs.ReturnRequestDAO;
 import Models.Order;
+import Models.ReturnRequest;
+import DAOs.CustomerDAO;
+import Models.Customer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,67 +17,69 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "OrderDetailServlet", urlPatterns = {"/orders/detail"})
 public class OrderDetailServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession(false);
-//        System.out.println("🔍 Session: " + (session != null ? "exists" : "null"));
-//        
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            System.out.println("❌ No session or customerId - redirecting to login");
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
+        // For now, using hardcoded customer ID. In production, get from session
         int customerId = 2;
-        try {
-//            customerId = (int) session.getAttribute("customerId");
-
-        } catch (Exception e) {
-            // If customerId is not an integer, use default value
-        }
+        Customer customer = customerDAO.findById(customerId);
 
         int orderId = Integer.parseInt(request.getParameter("id"));
-        System.out.println("🔍 OrderDetailServlet: Looking for Order ID: " + orderId);
-        Order order = orderDAO.findWithItems(orderId);
-        System.out.println("🔍 OrderDetailServlet: Order found: " + (order != null ? "YES" : "NO"));
-        
-        if (order == null) {
-            System.out.println("❌ OrderDetailServlet: Order not found, sending 404");
-            response.sendError(404);
-            return;
+        int requestId=0;
+        try {
+
+            Order order = orderDAO.findWithItems(orderId);
+            request.setAttribute("order", order);
+            
+            ReturnRequestDAO rrDAO = new ReturnRequestDAO();
+            boolean hasRequest = rrDAO.existsByOrderId(orderId);
+          
+            if (hasRequest) {
+                requestId = rrDAO.getRequestIdByOrderId(orderId);
+            }
+              request.setAttribute("hasRequest", hasRequest);
+              request.setAttribute("requestId", requestId);
+            if (order == null) {
+                response.sendError(404);
+                return;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(OrderDetailServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         // For demo purposes, allow access to any order
         // In production, you should check: order.getCustomerId() != customerId
-        request.setAttribute("order", order);
+      
+        request.setAttribute("customer", customer);
         request.getRequestDispatcher("/WEB-INF/views/customer/order-detail.jsp").forward(request, response);
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
-        
+
         if ("cancel".equals(action)) {
             int orderId = Integer.parseInt(request.getParameter("orderId"));
-            System.out.println("🗑️ OrderDetailServlet: Cancelling Order ID: " + orderId);
-            
+
             boolean success = orderDAO.deleteOrder(orderId);
-            
+
             if (success) {
-                System.out.println("✅ OrderDetailServlet: Order cancelled successfully");
                 // Redirect to orders page with success message
                 response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
             } else {
-                System.out.println("❌ OrderDetailServlet: Failed to cancel order");
                 // Redirect to orders page with error message
                 response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
             }

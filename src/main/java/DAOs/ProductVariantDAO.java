@@ -5,19 +5,24 @@
 package DAOs;
 
 import Models.ProductVariant;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Le Huu Nghia - CE181052
  */
-public class ProductVariantDAO extends DB.DBContext{
+public class ProductVariantDAO extends DB.DBContext {
+
     /**
      * Get all variants of a specific product
+     *
      * @param productId Product ID
      * @return List of ProductVariant
      */
@@ -25,7 +30,7 @@ public class ProductVariantDAO extends DB.DBContext{
         List<ProductVariant> variants = new ArrayList<>();
         String sql = "SELECT * FROM ProductVariant WHERE ProductId=? AND IsDeleted=0";
 
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
             while (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
@@ -50,6 +55,7 @@ public class ProductVariantDAO extends DB.DBContext{
 
     /**
      * Get a product variant by product ID, color, and size
+     *
      * @param productId Product ID
      * @param color Color value
      * @param size Size value
@@ -58,7 +64,7 @@ public class ProductVariantDAO extends DB.DBContext{
     public ProductVariant findByProductColorSize(int productId, String color, String size) {
         String sql = "SELECT * FROM ProductVariant WHERE ProductId=? AND Color=? AND Size=? AND IsDeleted=0";
 
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{productId, color, size})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId, color, size})) {
             if (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
@@ -80,16 +86,17 @@ public class ProductVariantDAO extends DB.DBContext{
         }
         return null;
     }
-    
+
     /**
      * Get a product variant by product variant ID
+     *
      * @param variantId Product Variant ID
      * @return ProductVariant or null if not found
      */
     public ProductVariant findById(int variantId) {
         String sql = "SELECT * FROM ProductVariant WHERE ProductVariantId=? AND IsDeleted=0";
 
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{variantId})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{variantId})) {
             if (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
@@ -111,4 +118,38 @@ public class ProductVariantDAO extends DB.DBContext{
         }
         return null;
     }
+
+    public int getTotalQuantityAvailable() {
+        try {
+            String sql = "SELECT SUM(QuantityAvailable) AS TotalQuantity FROM ProductVariant";
+            ResultSet rs = execSelectQuery(sql);
+            int total = 0;
+            if (rs.next()) {
+                total = rs.getInt("TotalQuantity");
+            }
+            return total;
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductVariantDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
+    }
+
+    public BigDecimal getTotalInventoryValue() {
+        try {
+            String sql = "SELECT SUM(QuantityAvailable * Price) AS TotalPrice FROM ProductVariant";
+            ResultSet rs = execSelectQuery(sql);
+            BigDecimal totalPrice = BigDecimal.ZERO;
+            if (rs.next()) {
+                totalPrice = rs.getBigDecimal("TotalPrice");
+                if (totalPrice == null) {
+                    totalPrice = BigDecimal.ZERO;
+                }
+            }
+            return totalPrice;
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductVariantDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
 }
