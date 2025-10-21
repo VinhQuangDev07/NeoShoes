@@ -6,6 +6,13 @@
 <html>
     <head>
         <title>NeoShoes - Home</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+
+
+
         <style>
             /* Reset & base */
             * {
@@ -459,17 +466,20 @@
         </style>
     </head>
     <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
-                    <input type="hidden" name="action" value="search">
-                    <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                    <button type="submit" class="search-button">Search</button>
-                </form>
-            </div>
-        </header>
+        
+       <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <!--         Header 
+                <header class="header">
+                    <div class="header-container">
+                        <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
+                        <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
+                            <input type="hidden" name="action" value="search">
+                            <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
+                            <button type="submit" class="search-button">Search</button>
+                        </form>
+                    </div>
+                </header>-->
+
 
         <!-- Video Banner Section -->
         <section class="video-banner">
@@ -499,7 +509,7 @@
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
-                                 onerror="this.src='https://via.placeholder.com/56?text=Brand'">
+                                 onerror="this.src='https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png'">
                             <span>${brand.name}</span>
                         </a>
                     </c:forEach>
@@ -526,10 +536,7 @@
                     <c:otherwise>Newest Products</c:otherwise> 
                 </c:choose>
             </h2>
-            <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
-                <!-- Correct route: /products -->
-                <a href="${pageContext.request.contextPath}/products" class="view-all-btn">View All →</a>
-            </c:if>
+
         </div>
 
         <c:choose>
@@ -539,7 +546,7 @@
                         <div class="product-card">
                             <div class="product-media">
                                 <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                     onerror="this.src='https://via.placeholder.com/360x270?text=No+Image'">
+                                     onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                             </div>
                             <div class="product-info">
                                 <h3 class="product-name">${product.name}</h3>

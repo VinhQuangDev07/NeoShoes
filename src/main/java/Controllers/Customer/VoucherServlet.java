@@ -2,19 +2,18 @@ package Controllers.Customer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.List;
+
+import DAOs.VoucherDAO;
+import Models.Voucher;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import DAOs.VoucherDAO;
-import Models.Voucher;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "VoucherServlet", urlPatterns = {"/voucher"})
 public class VoucherServlet extends HttpServlet {
@@ -187,42 +186,72 @@ public class VoucherServlet extends HttpServlet {
         String voucherCode = request.getParameter("voucherCode");
         String orderTotalParam = request.getParameter("orderTotal");
 
+        // ✅ SET response type là JSON
+        response.setContentType("application/json; charset=UTF-8");
+        PrintWriter out = response.getWriter();
+
         try {
+            // ✅ THÊM LOG DEBUG
+            System.out.println("=== APPLY VOUCHER DEBUG ===");
+            System.out.println("Customer ID: " + customerId);
+            System.out.println("Voucher Code: " + voucherCode);
+            System.out.println("Order Total: " + orderTotalParam);
+            
             double orderTotal = orderTotalParam != null ? Double.parseDouble(orderTotalParam) : 0;
 
             // Kiểm tra voucher
+            System.out.println("Querying voucher from database...");
             Voucher voucher = voucherDAO.getVoucherByCode(voucherCode, customerId);
 
             if (voucher == null) {
-                request.setAttribute("errorMessage", "Voucher code không tồn tại!");
+                System.err.println("❌ Voucher NOT FOUND");
+                out.print("{\"success\": false, \"message\": \"Voucher code không tồn tại!\"}");
             } else if (!voucher.isActive()) {
-                request.setAttribute("errorMessage", "Voucher không còn hoạt động!");
+                System.err.println("❌ Voucher NOT ACTIVE");
+                out.print("{\"success\": false, \"message\": \"Voucher không còn hoạt động!\"}");
             } else if (voucher.isExpired()) {
-                request.setAttribute("errorMessage", "Voucher đã hết hạn!");
+                System.err.println("❌ Voucher EXPIRED");
+                out.print("{\"success\": false, \"message\": \"Voucher đã hết hạn!\"}");
             } else if (voucher.getMinValue() != null && orderTotal < voucher.getMinValue().doubleValue()) {
-                request.setAttribute("errorMessage",
-                        "Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue());
+                System.err.println("❌ Order total too low: " + orderTotal + " < " + voucher.getMinValue());
+                out.print("{\"success\": false, \"message\": \"Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue() + "\"}");
             } else if (!voucherDAO.isVoucherUsable(voucher.getVoucherId(), customerId)) {
-                request.setAttribute("errorMessage", "Voucher không thể sử dụng!");
+                System.err.println("❌ Voucher NOT USABLE (usage limit reached)");
+                out.print("{\"success\": false, \"message\": \"Bạn đã sử dụng hết lượt cho voucher này!\"}");
             } else {
-                // Tính toán discount
+                // ✅ Tính toán discount
                 double discount = calculateDiscount(voucher, orderTotal);
                 double finalAmount = orderTotal - discount;
 
-                request.setAttribute("successMessage", "Áp dụng voucher thành công!");
-                request.setAttribute("voucher", voucher);
-                request.setAttribute("discount", discount);
-                request.setAttribute("finalAmount", finalAmount);
-                request.setAttribute("originalAmount", orderTotal);
+                // ✅ Lưu vào session
+                HttpSession session = request.getSession();
+                session.setAttribute("appliedVoucherCode", voucher.getVoucherCode());
+                session.setAttribute("appliedVoucherId", voucher.getVoucherId());
+                session.setAttribute("voucherDiscount", discount);
+
+                System.out.println("✅ Voucher applied successfully!");
+                System.out.println("  - Discount: $" + discount);
+                System.out.println("  - Final Amount: $" + finalAmount);
+                System.out.println("===========================");
+
+                // ✅ RETURN JSON SUCCESS
+                out.print("{\"success\": true, " +
+                         "\"message\": \"Áp dụng voucher thành công! Giảm $" + String.format("%.2f", discount) + "\", " +
+                         "\"voucherCode\": \"" + voucher.getVoucherCode() + "\", " +
+                         "\"discount\": " + discount + ", " +
+                         "\"finalAmount\": " + finalAmount + "}");
             }
 
         } catch (NumberFormatException e) {
-            request.setAttribute("errorMessage", "Số tiền đơn hàng không hợp lệ!");
+            System.err.println("❌ Invalid number format: " + e.getMessage());
+            out.print("{\"success\": false, \"message\": \"Số tiền đơn hàng không hợp lệ!\"}");
+        } catch (Exception e) {
+            System.err.println("❌ Error: " + e.getMessage());
+            e.printStackTrace();
+            out.print("{\"success\": false, \"message\": \"Lỗi hệ thống!\"}");
+        } finally {
+            out.flush();
         }
-
-        request.setAttribute("customerId", customerId);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/views/apply-voucher.jsp");
-        dispatcher.forward(request, response);
     }
 
     private void checkVoucher(HttpServletRequest request, HttpServletResponse response, int customerId)
