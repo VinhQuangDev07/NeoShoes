@@ -7,7 +7,11 @@
     <head>
         <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Staff Profile</title>
+
+        <!-- Icons & Bootstrap -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
             :root{
@@ -18,9 +22,15 @@
                 --line:#e5e7eb;
                 --primary:#111;
                 --radius:14px;
-
+                --header-h:74px;
+                --sidebar-w:280px;
+                --banana:#ffffff;
+                --banana-weak:#f7f7ff;
             }
 
+            body{
+                padding-top:var(--header-h);
+            }
             *{
                 box-sizing:border-box
             }
@@ -28,117 +38,89 @@
                 margin:0;
                 background:var(--bg);
                 color:var(--text);
-                font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif
+                font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
             }
+
+            /* ====== LAYOUT ====== */
             .wrap{
-                max-width:1120px;
-                margin:24px auto;
-                padding:0 20px
+                margin-left:var(--sidebar-w);
+                width:calc(100% - var(--sidebar-w));
+                padding:24px 20px;
             }
             .card{
                 background:var(--card);
                 border:1px solid var(--line);
                 border-radius:var(--radius);
-                box-shadow:0 4px 24px rgba(0,0,0,.06)
-            }
-            .head{
-                padding:24px;
-                border-bottom:1px solid var(--line);
-                display:flex;
-                gap:12px;
-                justify-content:center;
-                align-items:center;
-                flex-wrap:wrap;
-                flex-direction: column !important;
-            }
-            .avatar{
-                width:96px;
-                height:96px;
-                border-radius:999px;
-                background:#f1f5f9;
-                border:3px solid #fff;
-                display:grid;
-                place-items:center;
-                box-shadow:0 6px 18px rgba(0,0,0,.08);
-                overflow:hidden
-            }
-            .avatar img{
-                width:100%;
-                height:100%;
-                object-fit:cover
-            }
-            .btn{
-                border:1px solid var(--line);
-                background:#fff;
-                padding:10px 14px;
-                border-radius:10px;
-                font-weight:600;
-                cursor:pointer
-            }
-            .btn-primary{
-                background:#E0E7FF;
-                color:#111827;
-                border-color:#c7d2fe;
-            }
-            .btn-secondary{
-                background:#fff;
-                color:#111827;
-                border:1px solid var(--line);
-            }
-            .btn-secondary:hover{
-                filter:brightness(.98)
+                box-shadow:0 4px 24px rgba(0,0,0,.06);
             }
 
+            /* Căn giữa card trong trang */
+            .container-centered{
+                max-width:1200px;
+                margin:0 auto;
+            }
+
+            /* ====== FORM GRID ====== */
             .body{
-                padding:24px
+                padding:32px;
             }
             .grid{
                 display:grid;
-                gap:16px;
-                grid-template-columns:repeat(12,minmax(0,1fr))
-            }
-            .col-6{
-                grid-column:span 6
-            }
-            .col-12{
-                grid-column:span 12
-            }
-            .col-4{
-                grid-column: span 4;
+                grid-template-columns:repeat(12,minmax(0,1fr));
+                gap:24px;
+                align-items:start;
             }
 
-            @media(max-width:920px){
-                .col-6{
-                    grid-column:span 12
-                }
-                .col-4{
-                    grid-column:span 12
+            /* Tất cả các cột đều 6 - cân đối và đều nhau */
+            .grid.profile-grid .col-field{
+                grid-column:span 6;
+            }
+            .grid.profile-grid .col-full{
+                grid-column:span 12;
+            }
+
+            /* Change password: 3 cột đều nhau */
+            .grid.pw-grid .pw-field{
+                grid-column:span 4;
+            }
+
+            /* Mobile: full width 1 cột */
+            @media(max-width:992px){
+                .grid.profile-grid .col-field,
+                .grid.profile-grid .col-full,
+                .grid.pw-grid .pw-field{
+                    grid-column:span 12;
                 }
             }
 
             .field{
                 display:flex;
                 flex-direction:column;
-                gap:6px
+                gap:8px;
+                height:100%;
             }
             .label{
-                font-size:13px;
+                font-size:14px;
                 font-weight:700;
-                color:var(--muted)
+                color:var(--muted);
+                min-height:20px;
             }
 
+            /* ====== INPUT CONTROL - ĐỒNG ĐỀU ====== */
             .ctrl{
                 display:flex;
                 align-items:center;
-                gap:10px;
+                gap:12px;
                 background:var(--banana);
                 border:1px solid var(--line);
                 border-radius:10px;
-                padding:12px;
-                min-height:44px
+                padding:14px 16px;
+                min-height:52px;
+                width:100%;
+                transition: all 0.2s ease;
             }
             .ctrl.readonly{
-                background:var(--banana-weak)
+                background:var(--banana-weak);
             }
             .ctrl input,.ctrl select{
                 border:0;
@@ -146,303 +128,539 @@
                 width:100%;
                 outline:0;
                 font-size:15px;
-                color:var(--text)
+                color:var(--text);
+                font-family:inherit;
+            }
+            .ctrl input::placeholder{
+                color:var(--muted);
+                opacity:0.7;
             }
             .ctrl.editing{
                 background:#fef9c3;
+                border-color:#3b82f6;
+                box-shadow:0 0 0 3px rgba(59, 130, 246, 0.1);
             }
-
             .edit-icon{
                 color:#3b82f6;
                 cursor:pointer;
                 margin-left:auto;
-                transition:.2s
+                transition:all 0.2s ease;
+                flex-shrink:0;
             }
             .edit-icon:hover{
                 color:#1e40af;
-                transform:scale(1.1)
+                transform:scale(1.1);
+            }
+
+            /* ====== BUTTONS ====== */
+            .btn{
+                border:1px solid var(--line);
+                background:#fff;
+                padding:12px 20px;
+                border-radius:10px;
+                font-weight:600;
+                font-size:14px;
+                cursor:pointer;
+                transition:all 0.2s ease;
+                display:inline-flex;
+                align-items:center;
+                gap:8px;
+            }
+            .btn-primary{
+                background:#E0E7FF;
+                color:#111827;
+                border-color:#c7d2fe;
+            }
+            .btn-primary:hover{
+                background:#d1daff;
+                transform:translateY(-1px);
+            }
+            .btn-secondary{
+                background:#fff;
+                color:#111827;
+                border:1px solid var(--line);
+            }
+            .btn-secondary:hover{
+                background:#f9fafb;
+                transform:translateY(-1px);
             }
 
             .actions{
                 display:flex;
                 justify-content:flex-end;
-                padding:0 24px 12px;
-                margin-top:12px;
-                gap:10px; /* có khoảng trống giữa 2 nút */
+                gap:12px;
+                padding:0 32px 16px;
+                margin-top:24px;
             }
 
-            .alert{
-                margin:12px 24px 0;
-                padding:12px 14px;
-                border-radius:10px;
-                border:1px solid;
-                display:flex;
-                gap:10px;
-                font-weight:600
+            /* ====== ERROR ====== */
+            .msg-error{
+                font-size:13px;
+                color:#dc2626;
+                margin-top:4px;
+                line-height:1.35;
+                min-height:18px;
             }
-            .success{
-                color:#065f46;
-                background:#ecfdf5;
-                border-color:#a7f3d0
-            }
-            .error{
-                color:#991b1b;
+            .ctrl.invalid{
+                border-color:#fca5a5;
                 background:#fef2f2;
-                border-color:#fecaca
+            }
+            .ctrl.valid{
+                border-color:#22c55e;
+                background:#ecfdf5;
+            }
+            .hidden{
+                display:none;
+            }
+
+            /* ====== PASSWORD FIELD - CẬP NHẬT ĐỂ ĐỒNG ĐỀU ====== */
+            .password-field{
+                position:relative;
+                width:100%;
+            }
+            .password-field input{
+                padding-right:72px;
+                width:100%;
+                border:none;
+                background:transparent;
+                outline:none;
+                font-size:15px;
+            }
+            .toggle-pass{
+                position:absolute;
+                right:36px;
+                top:50%;
+                transform:translateY(-50%);
+                color:#6b7280;
+                cursor:pointer;
+                transition:all 0.25s ease;
+                z-index:2;
+                background:none;
+                border:none;
+                padding:0;
+                width:20px;
+                height:20px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+            }
+            .toggle-pass:hover{
+                color:#1e40af;
+                transform:translateY(-50%) scale(1.15);
+            }
+            .error-icon{
+                position:absolute;
+                right:12px;
+                top:50%;
+                transform:translateY(-50%);
+                color:#dc2626;
+                font-size:16px;
+                opacity:0;
+                pointer-events:none;
+                transition:opacity 0.2s ease;
+                z-index:1;
+            }
+            .ctrl.invalid .error-icon{
+                opacity:1;
             }
 
             .divider{
                 height:1px;
                 background:#e5e7eb;
-                margin:20px 0
+                margin:28px 0;
             }
 
-            /* Ẩn icon reveal mặc định của trình duyệt */
-            input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear{
-                display:none
+            /* ====== HEADER & AVATAR ====== */
+            .head{
+                padding:32px;
+                border-bottom:1px solid var(--line);
             }
-            input[type="password"]::-moz-password-reveal{
-                display:none
+            .avatar{
+                width:80px;
+                height:80px;
+                border-radius:50%;
+                overflow:hidden;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:var(--banana-weak);
+                border:2px solid var(--line);
             }
+            .avatar img{
+                width:100%;
+                height:100%;
+                object-fit:cover;
+            }
+
+            /* ====== ALERT ====== */
+            .alert{
+                margin:0 32px 24px;
+                padding:12px 16px;
+                border-radius:8px;
+                border:1px solid;
+                font-size:14px;
+                display:flex;
+                align-items:center;
+                gap:8px;
+            }
+            .alert.success{
+                background:#f0fdf4;
+                border-color:#bbf7d0;
+                color:#166534;
+            }
+            .alert.error{
+                background:#fef2f2;
+                border-color:#fecaca;
+                color:#dc2626;
+            }
+
+            /* ====== PASSWORD CARD HEADER ====== */
+            .password-header {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--line);
+            }
+            .password-header h3 {
+                font-size: 20px;
+                font-weight: 600;
+                margin: 0;
+                color: var(--text);
+            }
+            .password-header i {
+                color: #3b82f6;
+                font-size: 18px;
+            }
+
+            /* ====== SIDEBAR ====== */
+            .staff-sidebar{
+                position:fixed;
+                top:var(--header-h);
+                left:0;
+                width:var(--sidebar-w);
+                height:calc(100vh - var(--header-h));
+                overflow-y:auto;
+                background:#fff;
+                border-right:1px solid #e5e7eb;
+                z-index:900;
+            }
+            .staff-header{
+                position:fixed;
+                top:0;
+                left:0;
+                right:0;
+                z-index:999;
+            }
+            @media (max-width: 992px){
+                :root{
+                    --sidebar-w:0px;
+                }
+                .wrap{
+                    margin-left:0;
+                    width:100%;
+                }
+                .staff-sidebar{
+                    position:fixed;
+                    top:var(--header-h);
+                    left:0;
+                    width:260px;
+                    transform:translateX(-100%);
+                    transition:transform 0.3s ease;
+                }
+            }
+
+            /* Ẩn nút reveal mặc định của trình duyệt trong ô password */
+            input[type="password"]::-ms-reveal,
+            input[type="password"]::-ms-clear,
             input[type="password"]::-webkit-credentials-auto-fill-button,
             input[type="password"]::-webkit-contacts-auto-fill-button{
-                display:none
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
             }
-
-            /* helper + lỗi */
-            .pw-grid{
-                align-items:start
-            }
-            .msg-error{
-                font-size:13px;
-                color:#dc2626;
-                margin-top:6px;
-                line-height:1.35
-            }
-            .ctrl.invalid{
-                border-color:#fca5a5;
-                background:#fef2f2
-            }
-            .ctrl.valid {
-                border-color: #22c55e;   /* xanh lá tươi */
-                background: #ecfdf5;     /* nền xanh nhạt */
-            }
-            .hidden{
-                display:none
-            }
-
-            .password-field {
+            /* Khi lưu thành công thì highlight xanh trong 1s */
+            .ctrl.saved {
+                border-color: #22c55e !important;
+                box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
                 position: relative;
+                transition: all 0.4s ease;
             }
-            .password-field input {
-                padding-right: 72px;
-            }
-            .toggle-pass {
+
+            .ctrl.saved::after {
+                content: "\f00c"; /* FontAwesome tick */
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                color: #22c55e;
                 position: absolute;
-                right: 36px;
+                right: 14px;
                 top: 50%;
-                transform: translateY(-50%);
-                color: #6b7280;
-                cursor: pointer;
-                transition: 0.25s;
-                z-index: 1;
-            }
-            .toggle-pass:hover {
-                color: #1e40af;
-                transform: translateY(-50%) scale(1.15);
-            }
-            .error-icon {
-                position: absolute;
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #dc2626;
-                font-size: 16px;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.2s ease;
-            }
-            .ctrl.invalid .error-icon {
+                transform: translateY(-50%) scale(1);
                 opacity: 1;
+                transition: all 0.4s ease;
             }
+            .ctrl:not(.saved)::after {
+                opacity: 0;
+                transform: translateY(-50%) scale(0.8);
+            }
+            
+            /* Chừa khoảng trống bên phải cho icon (bút hoặc mắt) */
+.ctrl input,
+.ctrl select {
+  padding-right: 40px; /* chừa chỗ cho icon */
+}
+
+/* Với password có cả con mắt + dấu chấm than => chừa rộng hơn */
+.password-field input {
+  padding-right: 72px !important;
+}
+
+/* Đảm bảo icon bút không bị dính sát biên */
+.ctrl .edit-icon {
+  margin-right: 8px;
+}
+
+/* Nếu có tick xanh thì tick vẫn nằm gọn bên phải icon */
+.ctrl.saved::after {
+  right: 10px;
+}
+
+
 
         </style>
     </head>
 
     <body>
+        <!-- Header -->
+        <jsp:include page="common/staff-header.jsp"/>
+        <!-- Sidebar -->
+        <jsp:include page="common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
+
         <div class="wrap">
-            <div class="card">
+            <div class="container-centered">
+                <div class="card">
 
-                <!-- Header -->
-                <div class="head">
-                    <div class="avatar" id="avatarBox">
-                        <c:choose>
-                            <c:when test="${not empty staff.avatar}">
-                                <img id="avatarImg" src="${staff.avatar}" alt="Avatar">
-                            </c:when>
-                            <c:otherwise>
-                                <i class="fa-solid fa-user fa-2x" style="color:#9ca3af"></i>
-                            </c:otherwise>
-                        </c:choose>
+                    <div class="head text-center">
+                        <div class="avatar mx-auto mb-3" id="avatarBox">
+                            <c:choose>
+                                <c:when test="${not empty staff.avatar}">
+                                    <img id="avatarImg" src="${staff.avatar}" alt="Avatar">
+                                </c:when>
+                                <c:otherwise>
+                                    <i class="fa-solid fa-user fa-2x" style="color:#9ca3af"></i>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <label class="btn btn-secondary">
+                            <i class="fa-solid fa-image"></i> Change Avatar
+                            <input id="avatarFile" type="file" accept="image/*" style="display:none">
+                        </label>
                     </div>
 
-                    <label class="btn">
-                        <i class="fa-solid fa-image"></i> Change Avatar
-                        <input id="avatarFile" type="file" accept="image/*" style="display:none">
-                    </label>
-                </div>
-
-                <!-- Flash message -->
-                <c:if test="${not empty message}">
-                    <div class="alert ${messageType}">
-                        <i class="fa-solid ${messageType eq 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
-                        ${message}
-                    </div>
-                </c:if>
-
-                <!-- Profile form -->
-                <form id="profileForm" class="body" action="${pageContext.request.contextPath}/profilestaff"
-                      method="post" enctype="multipart/form-data" novalidate>
-
-                    <input type="hidden" name="avatar" id="avatarUrlHidden" value="${staff.avatar}"/>
-                    <input type="hidden" name="action" value="updateProfile">
-
-                    <div class="grid">
-                        <div class="col-12 field">
-                            <span class="label">Full Name</span>
-                            <div class="ctrl readonly"><input value="${staff.name}" readonly></div>
+                    <!-- Flash message -->
+                    <c:if test="${not empty message}">
+                        <div class="alert ${messageType}">
+                            <i class="fa-solid ${messageType eq 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                            ${message}
                         </div>
+                    </c:if>
 
-                        <div class="col-6 field">
-                            <span class="label">Email Address</span>
-                            <div class="ctrl readonly">
-                                <i class="fa-regular fa-envelope"></i>
-                                <input value="${staff.email}" readonly>
-                            </div>
-                        </div>
+                    <!-- Profile Form -->
+                    <form id="profileForm" class="body" action="${pageContext.request.contextPath}/profilestaff"
+                          method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" name="avatar" id="avatarUrlHidden" value="${staff.avatar}"/>
+                        <input type="hidden" name="action" value="updateProfile">
 
-                        <div class="col-6 field">
-                            <span class="label">Staff ID</span>
-                            <div class="ctrl readonly">
-                                <i class="fa-solid fa-id-badge"></i>
-                                <input value="${staff.staffId}" readonly>
-                            </div>
-                        </div>
-
-                        <!-- Gender -->
-                        <div class="col-6 field">
-                            <span class="label">Gender</span>
-                            <div class="ctrl editable" id="genderCtrl">
-                                <i class="fa-solid fa-venus-mars"></i>
-                                <span id="genderText">${staff.gender}</span>
-                                <select name="gender" id="genderSelect" class="hidden">
-                                    <option value="Male"   <c:if test="${staff.gender eq 'Male'}">selected</c:if>>Male</option>
-                                    <option value="Female" <c:if test="${staff.gender eq 'Female'}">selected</c:if>>Female</option>
-                                    <option value="Other"  <c:if test="${staff.gender eq 'Other'}">selected</c:if>>Other</option>
-                                    </select>
-                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="editGender()"></i>
+                        <div class="grid profile-grid">
+                            <!-- Full Name - chiếm full width -->
+                            <div class="col-full field">
+                                <span class="label">Full Name</span>
+                                <div class="ctrl readonly">
+                                    <i class="fa-regular fa-user"></i>
+                                    <input value="${staff.name}" readonly>
                                 </div>
                             </div>
 
-                            <!-- Address -->
-                            <div class="col-6 field">
-                                <span class="label">Address</span>
+                            <!-- Các trường còn lại - 2 cột đều nhau -->
+                            <div class="col-field field">
+                                <span class="label">Email Address</span>
+                                <div class="ctrl readonly">
+                                    <i class="fa-regular fa-envelope"></i>
+                                    <input value="${staff.email}" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-field field">
+                                <span class="label">Staff ID</span>
+                                <div class="ctrl readonly">
+                                    <i class="fa-solid fa-id-badge"></i>
+                                    <input value="${staff.staffId}" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-field field">
+                                <span class="label">Gender</span>
+                                <div class="ctrl editable" id="genderCtrl">
+                                    <i class="fa-solid fa-venus-mars"></i>
+                                    <span id="genderText">${staff.gender}</span>
+                                    <select name="gender" id="genderSelect" class="hidden">
+                                        <option value="Male"   <c:if test="${staff.gender eq 'Male'}">selected</c:if>>Male</option>
+                                        <option value="Female" <c:if test="${staff.gender eq 'Female'}">selected</c:if>>Female</option>
+                                        <option value="Other"  <c:if test="${staff.gender eq 'Other'}">selected</c:if>>Other</option>
+                                        </select>
+                                        <i class="fa-solid fa-pen-to-square edit-icon" onclick="editGender()"></i>
+                                    </div>
+                                </div>
+
+                                <div class="col-field field">
+                                    <span class="label">Address</span>
+                                    <div class="ctrl editable">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        <input name="address" value="${staff.address}" placeholder="Street, City, ..." readonly>
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
+                                </div>
+                            </div>
+
+                            <div class="col-field field">
+                                <span class="label">Date of Birth</span>
                                 <div class="ctrl editable">
-                                    <i class="fa-solid fa-location-dot"></i>
-                                    <input name="address" value="${staff.address}" placeholder="Street, City, ..." readonly>
-                                <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
-                            </div>
-                        </div>
-
-                        <!-- Date of Birth -->
-                        <div class="col-6 field">
-                            <span class="label">Date of Birth</span>
-                            <div class="ctrl editable">
-                                <i class="fa-regular fa-calendar"></i>
-                                <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly>
-                                <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
-                            </div>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="col-6 field">
-                            <span class="label">Phone Number</span>
-                            <div class="ctrl editable" id="phoneCtrl">
-                                <i class="fa-solid fa-phone"></i>
-                                <input id="phoneNumber" name="phoneNumber" value="${staff.phoneNumber}"
-                                       placeholder="0xxxxxxxxx hoặc +84xxxxxxxxx" readonly>
-                                <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
-                            </div>
-                            <div class="msg-error hidden" id="errPhone">Phone must be 10 digits starting with 0, or +84 + 9 digits.</div>
-                        </div>
-                    </div>
-
-                    <div class="actions">
-                        <!-- Nút bật/tắt form đổi mật khẩu (mới) -->
-                        <button type="button" id="togglePasswordForm" class="btn btn-secondary">Change Password</button>
-
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fa-regular fa-floppy-disk"></i> Save changes
-                        </button>
-                    </div>
-                </form>
-
-                <div class="divider"></div>
-
-                <!-- Change password (chuẩn hóa theo mẫu) -->
-                <div class="card shadow-sm mt-3 hidden" id="passwordCard">
-                    <div class="body" style="padding-top: 16px;">
-                        <h3 style="margin:0 0 16px 0; font-size:18px;">Change Password</h3>
-
-                        <form method="post" id="passwordForm" action="${pageContext.request.contextPath}/profilestaff" novalidate>
-                            <input type="hidden" name="action" value="changePassword"/>
-
-                            <div class="grid pw-grid">
-                                <!-- Current -->
-                                <div class="col-4 field">
-                                    <span class="label">Current Password</span>
-                                    <div class="ctrl editable password-field" id="ctrlCur">
-                                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Current password"/>
-                                        <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword(this)"></i>
-                                        <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
-                                    </div>
-                                    <div class="msg-error hidden" id="errCur"></div>
-                                </div>
-
-                                <!-- New -->
-                                <div class="col-4 field">
-                                    <span class="label">New Password</span>
-                                    <div class="ctrl editable password-field" id="ctrlNew">
-                                        <input type="password" id="newPassword" name="newPassword" placeholder="New Password"/>
-                                        <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword(this)"></i>
-                                        <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
-                                    </div>
-                                    <div class="msg-error hidden" id="errNew">Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.</div>
-                                </div>
-
-                                <!-- Confirm -->
-                                <div class="col-4 field">
-                                    <span class="label">Confirm Password</span>
-                                    <div class="ctrl editable password-field" id="ctrlConfirm">
-                                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter new password"/>
-                                        <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword(this)"></i>
-                                        <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
-                                    </div>
-                                    <div class="msg-error hidden" id="errConfirm">Passwords do not match.</div>
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly>
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
                                 </div>
                             </div>
 
-                            <div class="actions" style="justify-content:flex-end;">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fa-regular fa-floppy-disk"></i> Update Password
-                                </button>
+                            <div class="col-field field">
+                                <span class="label">Phone Number</span>
+                                <div class="ctrl editable" id="phoneCtrl">
+                                    <i class="fa-solid fa-phone"></i>
+                                    <input id="phoneNumber" name="phoneNumber" value="${staff.phoneNumber}"
+                                           placeholder="0xxxxxxxxx or +84xxxxxxxxx" readonly>
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
+                                </div>
+                                <div class="msg-error hidden" id="errPhone">Phone must be 10 digits starting with 0, or +84 + 9 digits.</div>
                             </div>
-                        </form>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" id="togglePasswordForm" class="btn btn-secondary">
+                                <i class="fa-solid fa-key"></i> Change Password
+                            </button>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa-regular fa-floppy-disk"></i> Save changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="divider"></div>
+
+                    <!-- Change Password - ĐÃ CẬP NHẬT ĐỂ ĐỒNG ĐỀU -->
+                    <div class="card shadow-sm mt-3 hidden" id="passwordCard">
+                        <div class="body">
+                            <div class="password-header">
+                                <i class="fa-solid fa-lock"></i>
+                                <h3>Change Password</h3>
+                            </div>
+
+                            <form method="post" id="passwordForm" action="${pageContext.request.contextPath}/profilestaff" novalidate>
+                                <input type="hidden" name="action" value="changePassword"/>
+
+                                <div class="grid pw-grid">
+                                    <!-- Các trường password - 3 cột đều nhau trên desktop -->
+                                    <div class="pw-field field">
+                                        <span class="label">Current Password</span>
+                                        <div class="ctrl password-field" id="ctrlCur">
+
+                                            <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password"/>
+                                            <button type="button" class="toggle-pass" onclick="togglePassword(this)">
+                                                <i class="fa-solid fa-eye-slash"></i>
+                                            </button>
+                                            <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
+                                        </div>
+                                        <div class="msg-error hidden" id="errCur"></div>
+                                    </div>
+
+                                    <div class="pw-field field">
+                                        <span class="label">New Password</span>
+                                        <div class="ctrl password-field" id="ctrlNew">
+
+                                            <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password"/>
+                                            <button type="button" class="toggle-pass" onclick="togglePassword(this)">
+                                                <i class="fa-solid fa-eye-slash"></i>
+                                            </button>
+                                            <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
+                                        </div>
+                                        <div class="msg-error hidden" id="errNew">Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.</div>
+                                    </div>
+
+                                    <div class="pw-field field">
+                                        <span class="label">Confirm Password</span>
+                                        <div class="ctrl password-field" id="ctrlConfirm">
+
+                                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter new password"/>
+                                            <button type="button" class="toggle-pass" onclick="togglePassword(this)">
+                                                <i class="fa-solid fa-eye-slash"></i>
+                                            </button>
+                                            <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
+                                        </div>
+                                        <div class="msg-error hidden" id="errConfirm">Passwords do not match.</div>
+                                    </div>
+                                </div>
+
+                                <div class="actions">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fa-solid fa-key"></i> Update Password
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
+
                 </div>
-
             </div>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+            // ===== PROFILE FORM =====
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+            profileForm.addEventListener('submit', e => {
+            // ⚠️ Nếu test trước thì giữ lại preventDefault(), nếu submit thật thì bỏ
+            // e.preventDefault();
+
+            const inputs = profileForm.querySelectorAll('.ctrl.editable input, .ctrl.editable select');
+            inputs.forEach(input => {
+            const ctrl = input.closest('.ctrl');
+            if (!ctrl) return;
+            ctrl.classList.add('saved');
+            // Hiệu ứng tick trong 1.5s
+            setTimeout(() => ctrl.classList.remove('saved'), 1500);
+            });
+            });
+            }
+
+            // ===== PASSWORD FORM =====
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+            passwordForm.addEventListener('submit', e => {
+            // e.preventDefault(); // Bỏ nếu submit thật
+            const pwCtrls = passwordForm.querySelectorAll('.ctrl.password-field');
+            pwCtrls.forEach(ctrl => {
+            if (ctrl.classList.contains('invalid')) return; // bỏ qua nếu lỗi
+            ctrl.classList.add('saved');
+            setTimeout(() => ctrl.classList.remove('saved'), 1500);
+            });
+            });
+            }
+            });</script>
+
+
+
 
         <!-- Scripts -->
         <script>
@@ -452,35 +670,26 @@
             const phoneInput = document.getElementById('phoneNumber');
             const phoneCtrl = document.getElementById('phoneCtrl');
             const errPhone = document.getElementById('errPhone');
-            // === CHỌN 1 TRONG 2 REGEX DƯỚI ĐÂY ===
-            // 1) Cho phép 0xxxxxxxxx (10 số) HOẶC +84xxxxxxxxx (9 số):
             const reVN = /^(\+84[0-9]{9}|0[0-9]{9})$/;
-            // Clear lỗi khi user gõ lại
             phoneInput.addEventListener('input', () => {
             phoneCtrl.classList.remove('invalid');
             errPhone.classList.add('hidden');
             });
             form.addEventListener('submit', (e) => {
-            // Nếu đang readonly (chưa bấm bút), bỏ qua check để cho submit bình thường
             if (phoneInput.hasAttribute('readonly')) return;
             const v = (phoneInput.value || '').trim();
             if (!reVN.test(v)) {
             e.preventDefault();
             phoneCtrl.classList.add('invalid');
             errPhone.classList.remove('hidden');
-            // Gợi ý message theo regex đang dùng
             errPhone.textContent = (reVN.toString().includes('\\+84'))
                     ? 'Invalid phone number. Please enter 0xxxxxxxxx (10 digits) or +84xxxxxxxxx (9 digits).'
                     : 'Invalid Phone. Please enter 10 digits starting with 0.';
-            // Focus vào input
             phoneInput.focus();
             return;
             }
-
-            // Hợp lệ -> submit
-            // Không gọi e.preventDefault(), form sẽ submit bình thường
             });
-            // Khi click bút enableEdit, bạn đã có hàm enableEdit(). Thêm xoá lỗi khi bật edit:
+            // hook enableEdit để clear lỗi khi bật edit ô phone
             const __oldEnableEdit = window.enableEdit;
             window.enableEdit = function(icon){
             __oldEnableEdit ? __oldEnableEdit(icon) : (function(){
@@ -491,17 +700,17 @@
             ctrl.classList.add('editing');
             input?.focus();
             })();
-            // nếu đây là ô phone thì clear lỗi ngay khi bật edit
             const ctrl = icon.closest('.ctrl');
             if (ctrl && ctrl.id === 'phoneCtrl') {
             ctrl.classList.remove('invalid');
             errPhone.classList.add('hidden');
             }
             }
-            })();</script>
+            })();
+        </script>
 
         <script>
-            // preview/reset avatar (đơn giản)
+            // preview/reset avatar
             const file = document.getElementById('avatarFile');
             const img = document.getElementById('avatarImg');
             const box = document.getElementById('avatarBox');
@@ -534,33 +743,27 @@
 
         <script>
             function enableEdit(icon){
-            const ctrl = icon.closest('.ctrl');
-            if (!ctrl) return;
-            const input = ctrl.querySelector('input, select');
-            if (!input) return;
+            const ctrl = icon.closest('.ctrl'); if (!ctrl) return;
+            const input = ctrl.querySelector('input, select'); if (!input) return;
             if (input.hasAttribute('readonly')) input.removeAttribute('readonly');
             if (input.disabled) input.disabled = false;
-            ctrl.classList.add('editing');
-            input.focus();
+            ctrl.classList.add('editing'); input.focus();
             }
-            function editGender() {
+            function editGender(){
             const text = document.getElementById('genderText');
             const select = document.getElementById('genderSelect');
             const ctrl = document.getElementById('genderCtrl');
-            text.classList.add('hidden');
-            select.classList.remove('hidden');
-            ctrl.classList.add('editing');
-            select.focus();
+            text.classList.add('hidden'); select.classList.remove('hidden');
+            ctrl.classList.add('editing'); select.focus();
             select.addEventListener('change', () => {
             text.textContent = select.value;
-            select.classList.add('hidden');
-            text.classList.remove('hidden');
+            select.classList.add('hidden'); text.classList.remove('hidden');
             ctrl.classList.remove('editing');
             });
             }
         </script>
 
-        <!-- Toggle card Change Password -->
+        <!-- Toggle Change Password card -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
             const btnToggle = document.getElementById('togglePasswordForm');
@@ -582,8 +785,7 @@
         <!-- Validate Change Password -->
         <script>
             (function(){
-            const form = document.getElementById('passwordForm');
-            if (!form) return;
+            const form = document.getElementById('passwordForm'); if (!form) return;
             const cur = document.getElementById('currentPassword');
             const nw = document.getElementById('newPassword');
             const cf = document.getElementById('confirmPassword');
@@ -595,15 +797,17 @@
             const errCf = document.getElementById('errConfirm');
             function setError(ctrl, errEl, msg){
             ctrl.classList.add('invalid');
-            if (errEl){ errEl.textContent = msg; errEl.classList.remove('hidden');
-            // Hiện icon ❗ nếu có
+            if (errEl){
+            errEl.textContent = msg; errEl.classList.remove('hidden');
             const errIcon = ctrl.querySelector('.error-icon');
             if (errIcon) errIcon.classList.remove('hidden');
             }
             }
             function clearError(ctrl, errEl){
             ctrl.classList.remove('invalid');
-            if (errEl){ errEl.classList.add('hidden'); }
+            if (errEl){
+            errEl.classList.add('hidden');
+            }
             }
             function isStrong(pw){
             return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(pw);
@@ -611,38 +815,23 @@
 
             form.addEventListener('submit', (e) => {
             let ok = true;
-            // Current (nếu chỉ muốn check rỗng thì bỏ nhánh isStrong)
             if (!cur.value.trim()){
-            setError(ctrlCur, errCur, 'Current password cannot be blank.');
-            ok = false;
+            setError(ctrlCur, errCur, 'Current password cannot be blank.'); ok = false;
             } else if (!isStrong(cur.value)){
-            setError(ctrlCur, errCur, 'Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.');
-            ok = false;
-            } else {
-            clearError(ctrlCur, errCur);
-            }
+            setError(ctrlCur, errCur, 'Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.'); ok = false;
+            } else { clearError(ctrlCur, errCur); }
 
-            // New
             if (!nw.value.trim()){
-            setError(ctrlNew, errNew, 'New password cannot be blank.');
-            ok = false;
+            setError(ctrlNew, errNew, 'New password cannot be blank.'); ok = false;
             } else if (!isStrong(nw.value)){
-            setError(ctrlNew, errNew, 'Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.');
-            ok = false;
-            } else {
-            clearError(ctrlNew, errNew);
-            }
+            setError(ctrlNew, errNew, 'Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.'); ok = false;
+            } else { clearError(ctrlNew, errNew); }
 
-            // Confirm
             if (!cf.value.trim()){
-            setError(ctrlCf, errCf, 'Confirm password cannot be blank.');
-            ok = false;
+            setError(ctrlCf, errCf, 'Confirm password cannot be blank.'); ok = false;
             } else if (cf.value !== nw.value){
-            setError(ctrlCf, errCf, 'Passwords do not match.');
-            ok = false;
-            } else {
-            clearError(ctrlCf, errCf);
-            }
+            setError(ctrlCf, errCf, 'Passwords do not match.'); ok = false;
+            } else { clearError(ctrlCf, errCf); }
 
             if (!ok){
             e.preventDefault();
@@ -651,30 +840,32 @@
             });
             })();
         </script>
+
         <script>
-            function togglePassword(el) {
-            const input = el.parentElement.querySelector('input');
+            function togglePassword(el){
+            const icon = el.querySelector('i');
+            const input = el.closest('.password-field').querySelector('input');
             if (!input) return;
-            if (input.type === 'password') {
+            if (input.type === 'password'){
             input.type = 'text';
-            el.classList.remove('fa-eye-slash');
-            el.classList.add('fa-eye');
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
             el.style.color = '#2563eb';
             } else {
             input.type = 'password';
-            el.classList.add('fa-eye-slash');
-            el.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            icon.classList.remove('fa-eye');
             el.style.color = '#6b7280';
             }
             }
-        </script>
-        <script>
+
+            // Ẩn/hiện icon con mắt khi input rỗng/có chữ
             document.querySelectorAll('.password-field input').forEach(input => {
             const field = input.closest('.password-field');
             const toggle = field.querySelector('.toggle-pass');
             const updateEye = () => {
             if (!toggle) return;
-            if (input.value.trim() === '') {
+            if (input.value.trim() === ''){
             toggle.style.opacity = '0';
             toggle.style.pointerEvents = 'none';
             } else {
@@ -686,6 +877,7 @@
             updateEye();
             });
         </script>
-
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script> lucide.createIcons();</script>
     </body>
 </html>

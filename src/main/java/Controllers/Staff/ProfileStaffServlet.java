@@ -64,9 +64,10 @@ public class ProfileStaffServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding(StandardCharsets.UTF_8.name());
-
+        HttpSession session = request.getSession();
         Integer staffId = resolveStaffId(request);
         if (staffId == null) {
+            session.setAttribute("flash_error", "Phiên đăng nhập hết hạn!");
             response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
             return;
         }
@@ -164,8 +165,14 @@ public class ProfileStaffServlet extends HttpServlet {
     }
 
     private static void flash(HttpServletRequest req, String msg, String type) {
-        req.setAttribute("message", msg);
-        req.setAttribute("messageType", type);
+        HttpSession session = req.getSession();
+        if ("success".equals(type)) {
+            session.setAttribute("flash", msg);
+        } else if ("error".equals(type)) {
+            session.setAttribute("flash_error", msg);
+        } else {
+            session.setAttribute("flash_info", msg);
+        }
     }
 
     private void forwardForm(HttpServletRequest req, HttpServletResponse resp, int staffId)
