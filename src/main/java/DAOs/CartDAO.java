@@ -29,8 +29,7 @@ public class CartDAO extends DB.DBContext{
                    + "FROM CartItem c "
                    + "JOIN ProductVariant v ON c.ProductVariantId = v.ProductVariantId "
                    + "JOIN Product p ON v.ProductId = p.ProductID "
-                   + "WHERE c.CustomerID = ? AND v.IsDeleted = 0 AND p.isDeleted = 0"
-                   + "ORDER BY c.CreatedAt DESC";
+                   + "WHERE c.CustomerID = ? AND v.IsDeleted = 0 AND p.isDeleted = 0";
         try (ResultSet rs = execSelectQuery(sql, new Object[]{customerId})) {
             while (rs.next()) {
                 Product p = new Product();
@@ -64,36 +63,14 @@ public class CartDAO extends DB.DBContext{
     }
 
     // Check if the variant product is in the cart
-    public CartItem getExistItem(int customerId, int variantId) {
+    public CartItem findCartItem(int customerId, int variantId) {
         String sql = "SELECT * FROM CartItem WHERE CustomerID=? AND ProductVariantId=?";
         try (ResultSet rs = execSelectQuery(sql, new Object[]{customerId, variantId})) {
-        if (rs.next()) {
-                CartItem c = new CartItem();
-                c.setCartItemId(rs.getInt("CartItemID"));
-                c.setCustomerId(rs.getInt("CustomerID"));
-                c.setProductVariantId(rs.getInt("ProductVariantId"));
-                c.setQuantity(rs.getInt("Quantity"));
-                Timestamp cr = rs.getTimestamp("CreatedAt");
-                c.setCreatedAt(cr == null ? null : cr.toLocalDateTime());
-                return c;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    public CartItem findCartItem(int customerId, int cartItemId) {
-        String sql = "SELECT * FROM CartItem WHERE CustomerID=? AND CartItemId=?";
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{customerId, cartItemId})) {
             if (rs.next()) {
                 CartItem c = new CartItem();
                 c.setCartItemId(rs.getInt("CartItemID"));
                 c.setCustomerId(rs.getInt("CustomerID"));
-                c.setProductVariantId(rs.getInt("ProductVariantId"));
                 c.setQuantity(rs.getInt("Quantity"));
-                Timestamp cr = rs.getTimestamp("CreatedAt");
-                c.setCreatedAt(cr == null ? null : cr.toLocalDateTime());
                 return c;
             }
         } catch (SQLException e) {

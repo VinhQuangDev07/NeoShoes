@@ -6,17 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<!-- Price -->
-<div class="price-section">
-    <c:choose>
-        <c:when test="${product.minPrice != product.maxPrice}">
-            <div id="priceText" class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
-        </c:when>
-        <c:otherwise>
-            <div id="priceText" class="price">$${product.minPrice}</div>
-        </c:otherwise>
-    </c:choose>
-</div>
+
 <div class="variant-content" id="variantContent">
     <h6 class="mb-3 fw-bold">Select variant</h6>
 
@@ -64,19 +54,19 @@
             <div class="mb-3 d-flex align-items-center gap-4">
                 <label class="fw-medium text-secondary mb-0">Quantity:</label>
 
-                <div class="d-flex align-items-center bg-quantity">
+                <div class="d-flex align-items-center border border-1 rounded">
                     <button type="button" id="decreaseQuantityBtn"
-                            class="btn btn-sm px-3 py-2 border-end-0"
+                            class="btn btn-sm px-3 py-2 border-end bg-white"
                             onclick="changeQuantity(-1)">
                         <i class="bi bi-dash text-secondary"></i>
                     </button>
 
                     <input type="number" id="quantityInput"
-                           class="text-center border-0 fw-medium"
+                           class="form-control text-center border-0 fw-medium"
                            value="1" min="1" style="width: 50px;" disabled>
 
                     <button type="button" id="increaseQuantityBtn"
-                            class="btn btn-sm px-3 py-2 border-start-0"
+                            class="btn btn-sm px-3 py-2 border-start bg-white"
                             onclick="changeQuantity(1)">
                         <i class="bi bi-plus text-secondary"></i>
                     </button>
@@ -85,11 +75,11 @@
                 <span id="quantityAvailableText" class="text-muted small"></span>
             </div>
 
+
             <!-- Add to Cart -->
             <div class="text-end mt-3">
                 <button type="submit" class="btn btn-dark" id="addToCartBtn" disabled>Add to Cart</button>
             </div>
-
         </form>
 
         <!-- JSON danh sách variant -->
@@ -139,43 +129,16 @@
         font-size: 14px;
     }
 
-    .bg-quantity {
-        border: 1px solid #dee2e6 !important;
-        border-radius: 4px;
-    }
-
-    #decreaseQuantityBtn,
-    #increaseQuantityBtn {
+    #decreaseQuantityBtn, #increaseQuantityBtn {
+        border: none !important;
         background-color: #fff !important;
-        transition: none !important;
     }
-
-    #decreaseQuantityBtn {
-        border-top-right-radius: 4px;
-        border-bottom-right-radius: 4px;
-    }
-
-    #increaseQuantityBtn {
-        border-top-left-radius: 4px;
-        border-bottom-left-radius: 4px;
-    }
-
-    #decreaseQuantityBtn:hover,
-    #increaseQuantityBtn:hover {
+    #decreaseQuantityBtn:hover, #increaseQuantityBtn:hover {
         background-color: #f8f9fa !important;
     }
-
-    #quantityInput {
-        height: 43px;
-    }
-
     #quantityInput:disabled {
         background-color: #f8f9fa;
     }
-    #quantityInput {
-        background-color: #f8fafb;
-    }
-
 </style>
 
 <script>
@@ -252,7 +215,6 @@
         const addToCartBtn = document.getElementById('addToCartBtn');
         const qtyInput = document.getElementById('quantityInput');
         const variantField = document.getElementById('variantIdField');
-        const priceText = document.getElementById('priceText');
 
         quantityText.textContent = '';
         addToCartBtn.disabled = true;
@@ -267,10 +229,6 @@
         if (variant) {
             variantField.value = variant.variantId;
             const available = variant.quantityAvailable;
-
-            if (priceText) {
-                priceText.textContent = '$' + variant.price.toFixed(2);
-            }
 
             if (available > 0) {
                 qtyInput.max = available;

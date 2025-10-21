@@ -1,7 +1,7 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:set var="pageTitle" value="Purchase - NeoShoes" scope="request"/>
+<c:set var="pageTitle" value="Purchase History - NeoShoes" scope="request"/>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Custom CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-
+        
         <style>
             .purchase-container {
                 background: #f8f9fa;
@@ -70,22 +70,7 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
-                margin-bottom: 1.5rem;
-                position: relative;
-                padding-bottom: 0.5rem;
             }
-
-            .section-title::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 50px;
-                height: 3px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 2px;
-            }
-
             .section-subtitle {
                 color: #666;
                 font-size: 14px;
@@ -363,296 +348,196 @@
         </style>
     </head>
     <body>
-        <jsp:include page="common/header.jsp"/>
-        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
-        
         <div class="purchase-container">
             <div class="container">
                 <!-- Page Header -->
                 <div class="purchase-header">
-                    <c:choose>
-                        <c:when test="${not empty cartItems}">
-                            <h1 class="purchase-title">
-                                <i class="fas fa-shopping-cart"></i>
-                                Purchase Confirmation
-                            </h1>
-                            <p class="purchase-subtitle">Complete your order information</p>
-                        </c:when>
-                        <c:otherwise>
-                            <h1 class="purchase-title">
-                                <i class="fas fa-history"></i>
-                                Purchase History
-                            </h1>
-                            <p class="purchase-subtitle">Your order history and statistics</p>
-                        </c:otherwise>
-                    </c:choose>
+                    <h1 class="purchase-title">
+                        <i class="fas fa-shopping-cart"></i>
+                        Purchase Confirmation
+                    </h1>
+                    <p class="purchase-subtitle">Complete your order information</p>
                 </div>
 
                 <!-- Main Content -->
-                <c:choose>
-                    <c:when test="${not empty cartItems}">
-                        <!-- Checkout Mode -->
-                        <form id="checkoutForm" method="post" action="${pageContext.request.contextPath}/purchase">
-                            <input type="hidden" name="action" value="placeOrder">
+                <div class="purchase-content">
+                    <!-- Left Column -->
+                    <div class="left-column">
+                        <!-- Customer Information -->
+                        <div class="purchase-section">
+                            <div class="section-header">
+                                <div>
+                                    <h3 class="section-title">
+                                        <i class="fas fa-user" style="color: #6f42c1;"></i>
+                                        Customer Information
+                                    </h3>
+                                    <p class="section-subtitle">Your personal and delivery details</p>
+                                </div>
+                                <i class="fas fa-chevron-down" style="color: #666;"></i>
+                            </div>
                             
-                            <div class="purchase-content">
-                                <!-- Left Column -->
-                                <div class="left-column">
-                                    <!-- Customer Information -->
-                                    <div class="purchase-section">
-                                        <div class="section-header">
-                                            <div>
-                                                <h3 class="section-title">
-                                                    <i class="fas fa-user" style="color: #6f42c1;"></i>
-                                                    Customer Information
-                                                </h3>
-                                                <p class="section-subtitle">Your personal and delivery details</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="customer-info">
-                                            <div class="info-item">
-                                                <div class="info-label">Full Name</div>
-                                                <div class="info-value">${customer.name}</div>
-                                            </div>
-                                            <div class="info-item">
-                                                <div class="info-label">Email</div>
-                                                <div class="info-value">${customer.email}</div>
-                                            </div>
-                                            <div class="info-item">
-                                                <div class="info-label">Phone</div>
-                                                <div class="info-value">${customer.phoneNumber}</div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Delivery Address Selection -->
-                                        <div class="delivery-address">
-                                            <div class="address-title mb-3">Select Delivery Address</div>
-                                            <c:choose>
-                                                <c:when test="${empty addresses}">
-                                                    <div class="alert alert-warning">
-                                                        <i class="fas fa-exclamation-triangle"></i>
-                                                        No delivery address found. Please add an address first.
-                                                        <a href="${pageContext.request.contextPath}/address" class="btn btn-sm btn-primary ms-2">Add Address</a>
-                                                    </div>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <c:forEach items="${addresses}" var="address">
-                                                        <div class="form-check mb-3">
-                                                            <input class="form-check-input" type="radio" name="addressId" 
-                                                                   id="address_${address.addressId}" value="${address.addressId}"
-                                                                   ${address.isDefault ? 'checked' : ''}>
-                                                            <label class="form-check-label" for="address_${address.addressId}">
-                                                                <div class="address-card p-3 border rounded">
-                                                                    <div class="fw-bold">${address.addressName}</div>
-                                                                    <div class="text-muted">${address.addressDetails}</div>
-                                                                    <div class="text-muted">Recipient: ${address.recipientName} - ${address.recipientPhone}</div>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                    </c:forEach>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                    </div>
-
-                                    <!-- Order Items -->
-                                    <div class="purchase-section">
-                                        <div class="section-header">
-                                            <div>
-                                                <h3 class="section-title">
-                                                    <i class="fas fa-shopping-bag" style="color: #28a745;"></i>
-                                                    Order Items
-                                                </h3>
-                                                <p class="section-subtitle">${cartItems.size()} items</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="order-items">
-                                            <c:forEach items="${cartItems}" var="item">
-                                                <div class="order-item">
-                                                    <img src="${item.variant.image}" alt="${item.variant.product.name}" class="item-image">
-                                                    <div class="item-details">
-                                                        <div class="item-name">${item.variant.product.name}</div>
-                                                        <div class="item-variant">Size: ${item.variant.size} | Color: ${item.variant.color}</div>
-                                                        <div class="item-price">$${item.variant.price}</div>
-                                                        <div class="item-quantity">Quantity: ${item.quantity}</div>
-                                                    </div>
-                                                    <input type="hidden" name="cartItemIds" value="${item.cartItemId}">
-                                                </div>
-                                            </c:forEach>
-                                        </div>
-                                    </div>
+                            <div class="customer-info">
+                                <div class="info-item">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">Demo Customer</div>
                                 </div>
-
-                                <!-- Right Column -->
-                                <div class="right-column">
-                                    <!-- Voucher Codes -->
-                                    <div class="voucher-section">
-                                        <div class="section-header">
-                                            <div>
-                                                <h3 class="section-title">
-                                                    <i class="fas fa-tag" style="color: #6f42c1;"></i>
-                                                    Voucher Codes
-                                                </h3>
-                                            </div>
-                                        </div>
-
-                                        <div class="voucher-input">
-                                            <div style="position: relative; flex: 1;">
-                                                <input type="text" id="voucherCode" name="voucherCode" class="voucher-field" placeholder="Enter voucher code">
-                                                <button type="button" class="clear-btn" onclick="clearVoucher()">×</button>
-                                            </div>
-                                            <button type="button" class="apply-btn" onclick="applyVoucher()">Apply</button>
-                                        </div>
-
-                                        <div class="available-vouchers">
-                                            <h6>Available vouchers:</h6>
-                                            <div class="voucher-suggestions">
-                                                <c:forEach items="${availableVouchers}" var="voucher">
-                                                    <span class="voucher-tag" onclick="selectVoucher('${voucher.voucherCode}')">
-                                                        ${voucher.voucherCode} (${voucher.displayValue})
-                                                    </span>
-                                                </c:forEach>
-                                            </div>
-                                        </div>
-
-                                        <div id="discountApplied" class="discount-applied">
-                                            <i class="fas fa-check-circle"></i>
-                                            <span id="discountMessage"></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Order Summary -->
-                                    <div class="order-summary">
-                                        <div class="section-header">
-                                            <div>
-                                                <h3 class="section-title">
-                                                    <i class="fas fa-file-alt" style="color: #007bff;"></i>
-                                                    Order Summary
-                                                </h3>
-                                            </div>
-                                        </div>
-
-                                        <div class="summary-item">
-                                            <span class="summary-label">Subtotal:</span>
-                                            <span class="summary-value">$${subtotal}</span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-label">Shipping:</span>
-                                            <span class="summary-value">$${shippingFee}</span>
-                                        </div>
-                                        <div class="summary-item" id="discountRow" style="display: none;">
-                                            <span class="summary-label">Discount:</span>
-                                            <span class="summary-value" style="color: #28a745;">-$<span id="discountAmount">0</span></span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-label">Total Amount:</span>
-                                            <span class="summary-value summary-total">$<span id="totalAmount">${total}</span></span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Action Buttons -->
-                                    <div class="action-buttons">
-                                        <button type="submit" class="place-order-btn">
-                                            <i class="fas fa-credit-card"></i>
-                                            Place Order
-                                        </button>
-                                        <a href="${pageContext.request.contextPath}/cart" class="back-cart-btn text-decoration-none">
-                                            <i class="fas fa-arrow-left"></i>
-                                            Back to Cart
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </c:when>
-                    
-                    <c:otherwise>
-                        <!-- Purchase History Mode -->
-                        <div class="purchase-content">
-                            <!-- Statistics -->
-                            <div class="row mb-4">
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <h5 class="card-title text-primary">${totalOrders}</h5>
-                                            <p class="card-text">Total Orders</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <h5 class="card-title text-success">$${totalSpent}</h5>
-                                            <p class="card-text">Total Spent</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card text-center">
-                                        <div class="card-body">
-                                            <h5 class="card-title text-info">${totalItems}</h5>
-                                            <p class="card-text">Total Items</p>
-                                        </div>
-                                    </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">demo@neoshoes.com</div>
                                 </div>
                             </div>
 
-                            <!-- Order History -->
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Order History</h5>
+                            <div class="delivery-address">
+                                <div class="address-title">123 Main Street</div>
+                                <div class="address-detail">
+                                    <i class="fas fa-phone address-icon" style="color: #007bff;"></i>
+                                    0123456789
                                 </div>
-                                <div class="card-body">
-                                    <c:choose>
-                                        <c:when test="${empty allOrders}">
-                                            <div class="text-center py-5">
-                                                <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                                                <h4>No orders yet</h4>
-                                                <p class="text-muted">Start shopping to see your orders here.</p>
-                                                <a href="${pageContext.request.contextPath}/" class="btn btn-primary">Start Shopping</a>
-                                            </div>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <div class="table-responsive">
-                                                <table class="table table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Order ID</th>
-                                                            <th>Date</th>
-                                                            <th>Items</th>
-                                                            <th>Total</th>
-                                                            <th>Status</th>
-                                                            <th>Actions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <c:forEach items="${allOrders}" var="order">
-                                                            <tr>
-                                                                <td>#${order.orderId}</td>
-                                                                <td>${order.placedAt}</td>
-                                                                <td>${order.items.size()} items</td>
-                                                                <td>$${order.totalAmount}</td>
-                                                                <td>
-                                                                    <span class="badge bg-warning">Pending</span>
-                                                                </td>
-                                                                <td>
-                                                                    <a href="${pageContext.request.contextPath}/order-detail?id=${order.orderId}" 
-                                                                       class="btn btn-sm btn-outline-primary">View Details</a>
-                                                                </td>
-                                                            </tr>
-                                                        </c:forEach>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </c:otherwise>
-                                    </c:choose>
+                                <div class="address-detail">
+                                    <i class="fas fa-user address-icon" style="color: #6f42c1;"></i>
+                                    Demo Customer
+                                </div>
+                                <div class="address-detail">
+                                    <i class="fas fa-map-marker-alt address-icon" style="color: #6f42c1;"></i>
+                                    123 Main Street, Ho Chi Minh City, Vietnam
                                 </div>
                             </div>
                         </div>
-                    </c:otherwise>
-                </c:choose>
+
+                        <!-- Order Items -->
+                        <div class="purchase-section">
+                            <div class="section-header">
+                                <div>
+                                    <h3 class="section-title">
+                                        <i class="fas fa-shopping-bag" style="color: #28a745;"></i>
+                                        Order Items
+                                    </h3>
+                                    <p class="section-subtitle">${totalItems} items</p>
+                                </div>
+                            </div>
+                            
+                            <div class="order-items">
+                                <c:if test="${empty recentOrders}">
+                                    <div class="empty-state">
+                                        <i class="fas fa-shopping-bag"></i>
+                                        <h4>No items in cart</h4>
+                                        <p>Add some items to your cart first.</p>
+                                    </div>
+                                </c:if>
+
+                                <c:if test="${not empty recentOrders}">
+                                    <c:forEach items="${recentOrders}" var="order">
+                                        <c:forEach items="${order.items}" var="item">
+                                            <div class="order-item">
+                                                <c:choose>
+                                                    <c:when test="${item.productName.contains('Vans')}">
+                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Nike')}">
+                                                        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:when test="${item.productName.contains('Adidas')}">
+                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
+                                                             alt="${item.productName}" class="item-image">
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <div class="item-details">
+                                                    <div class="item-name">${item.productName}</div>
+                                                    <div class="item-price">$${item.unitPrice}</div>
+                                                    <div class="item-quantity">Quantity ${item.quantity}</div>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </c:forEach>
+                                </c:if>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="right-column">
+                        <!-- Voucher Codes -->
+                        <div class="voucher-section">
+                            <div class="section-header">
+                                <div>
+                                    <h3 class="section-title">
+                                        <i class="fas fa-tag" style="color: #6f42c1;"></i>
+                                        Voucher Codes
+                                    </h3>
+                                </div>
+                            </div>
+                            
+                            <div class="voucher-input">
+                                <div style="position: relative; flex: 1;">
+                                    <input type="text" id="voucherCode" class="voucher-field" placeholder="Enter voucher code">
+                                    <button class="clear-btn" onclick="clearVoucher()">×</button>
+                                </div>
+                                <button class="apply-btn" onclick="applyVoucher()">Apply</button>
+                            </div>
+                            
+                            <div class="available-vouchers">
+                                <h6>Available vouchers:</h6>
+                                <div class="voucher-suggestions">
+                                    <span class="voucher-tag" onclick="selectVoucher('FIXED15')">FIXED15 (15.000 off)</span>
+                                    <span class="voucher-tag" onclick="selectVoucher('SUMMER20')">FPTUCT (20.000 off)</span>
+                                    <span class="voucher-tag" onclick="selectVoucher('NEOSHOE25')">NEOSHOE25 (25.000 off)</span>
+                                </div>
+                            </div>
+                            
+                            <div id="discountApplied" class="discount-applied">
+                                <i class="fas fa-check-circle"></i>
+                                <span id="discountMessage"></span>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div class="order-summary">
+                            <div class="section-header">
+                                <div>
+                                    <h3 class="section-title">
+                                        <i class="fas fa-file-alt" style="color: #007bff;"></i>
+                                        Order Summary
+                                    </h3>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <span class="summary-label">Items (${totalItems}):</span>
+                                <span class="summary-value">$${totalSpent}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Shipping:</span>
+                                <span class="summary-value">$10.00</span>
+                            </div>
+                            <div class="summary-item" id="discountRow" style="display: none;">
+                                <span class="summary-label">Discount:</span>
+                                <span class="summary-value" style="color: #28a745;">-$<span id="discountAmount">0</span></span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Amount:</span>
+                                <span class="summary-value summary-total">$<span id="totalAmount">${totalSpent + 10}</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="place-order-btn">
+                                <i class="fas fa-equals"></i>
+                                Place Order
+                            </button>
+                            <button class="back-cart-btn">
+                                <i class="fas fa-arrow-left"></i>
+                                Back to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -660,95 +545,81 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Custom JS -->
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
-
-        <script>
-            <c:if test="${not empty cartItems}">
-                let appliedDiscount = 0;
-                let originalTotal = ${total};
-
-                function selectVoucher(code) {
-                    document.getElementById('voucherCode').value = code;
-                }
-
-                function clearVoucher() {
-                    document.getElementById('voucherCode').value = '';
-                    removeDiscount();
-                }
-
-                function applyVoucher() {
-                    const voucherCode = document.getElementById('voucherCode').value.trim().toUpperCase();
-
-                    if (!voucherCode) {
-                        alert('Please enter a voucher code');
-                        return;
-                    }
-
-                    // For now, using hardcoded vouchers. In production, this should be validated server-side
-                    let discount = 0;
-                    let message = '';
-
-                    switch (voucherCode) {
-                        case 'FIXED15':
-                            discount = 15;
-                            message = 'FIXED15 applied! You saved $15.00';
-                            break;
-                        case 'FPTUCT':
-                            discount = 20;
-                            message = 'FPTUCT applied! You saved $20.00';
-                            break;
-                        case 'NEOSHOE25':
-                            discount = 25;
-                            message = 'NEOSHOE25 applied! You saved $25.00';
-                            break;
-                        default:
-                            alert('Invalid voucher code');
-                            return;
-                    }
-
-                    appliedDiscount = discount;
-                    updateTotal();
-                    showDiscountMessage(message);
-                }
-
-                function removeDiscount() {
-                    appliedDiscount = 0;
-                    updateTotal();
-                    hideDiscountMessage();
-                }
-
-                function updateTotal() {
-                    const newTotal = originalTotal - appliedDiscount;
-                    document.getElementById('totalAmount').textContent = newTotal.toFixed(2);
-
-                    if (appliedDiscount > 0) {
-                        document.getElementById('discountRow').style.display = 'flex';
-                        document.getElementById('discountAmount').textContent = appliedDiscount.toFixed(2);
-                    } else {
-                        document.getElementById('discountRow').style.display = 'none';
-                    }
-                }
-
-                function showDiscountMessage(message) {
-                    document.getElementById('discountMessage').textContent = message;
-                    document.getElementById('discountApplied').style.display = 'block';
-                }
-
-                function hideDiscountMessage() {
-                    document.getElementById('discountApplied').style.display = 'none';
-                }
-
-                // Form validation before submission
-                document.getElementById('checkoutForm').addEventListener('submit', function(e) {
-                    const addressSelected = document.querySelector('input[name="addressId"]:checked');
-                    if (!addressSelected) {
-                        e.preventDefault();
-                        alert('Please select a delivery address');
-                        return false;
-                    }
-                });
-            </c:if>
-        </script>
         
-        <jsp:include page="common/footer.jsp"/>
+        <script>
+            let appliedDiscount = 0;
+            let originalTotal = ${totalSpent + 10};
+            
+            function selectVoucher(code) {
+                document.getElementById('voucherCode').value = code;
+            }
+            
+            function clearVoucher() {
+                document.getElementById('voucherCode').value = '';
+                removeDiscount();
+            }
+            
+            function applyVoucher() {
+                const voucherCode = document.getElementById('voucherCode').value.trim().toUpperCase();
+                
+                if (!voucherCode) {
+                    alert('Please enter a voucher code');
+                    return;
+                }
+                
+                // Voucher validation and discount calculation
+                let discount = 0;
+                let message = '';
+                
+                switch(voucherCode) {
+                    case 'FIXED15':
+                        discount = 15;
+                        message = 'FIXED15 applied! You saved $15.00';
+                        break;
+                    case 'FPTUCT':
+                        discount = 20;
+                        message = 'FPTUCT applied! You saved $20.00';
+                        break;
+                    case 'NEOSHOE25':
+                        discount = 25;
+                        message = 'NEOSHOE25 applied! You saved $25.00';
+                        break;
+                    default:
+                        alert('Invalid voucher code');
+                        return;
+                }
+                
+                appliedDiscount = discount;
+                updateTotal();
+                showDiscountMessage(message);
+            }
+            
+            function removeDiscount() {
+                appliedDiscount = 0;
+                updateTotal();
+                hideDiscountMessage();
+            }
+            
+            function updateTotal() {
+                const newTotal = originalTotal - appliedDiscount;
+                document.getElementById('totalAmount').textContent = newTotal.toFixed(2);
+                
+                if (appliedDiscount > 0) {
+                    document.getElementById('discountRow').style.display = 'flex';
+                    document.getElementById('discountAmount').textContent = appliedDiscount.toFixed(2);
+                } else {
+                    document.getElementById('discountRow').style.display = 'none';
+                }
+            }
+            
+            function showDiscountMessage(message) {
+                document.getElementById('discountMessage').textContent = message;
+                document.getElementById('discountApplied').style.display = 'block';
+            }
+            
+            function hideDiscountMessage() {
+                document.getElementById('discountApplied').style.display = 'none';
+            }
+        </script>
     </body>
 </html>

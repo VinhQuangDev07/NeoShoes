@@ -22,7 +22,7 @@
 
             /* Header: solid black */
             .header {
-                background: #0A437F;
+                background: #000;
                 color: #fff;
                 padding: 1rem 0;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -57,7 +57,7 @@
                 color: #333;
             }
             .search-button {
-                background: #28a745;
+                background: #000;
                 color: #fff;
                 border: none;
                 padding: 10px 20px;
@@ -88,45 +88,36 @@
             }
             .categories-list {
                 display: flex;
-                flex-wrap: wrap;
-                justify-content: center; /* căn giữa toàn bộ brand */
-                align-items: center; /* căn giữa theo chiều dọc */
-                gap: 20px 30px; /* khoảng cách đều nhau giữa các dòng và cột */
-                padding: 10px 0;
-                overflow: visible;
+                gap: 15px;
+                overflow-x: auto;
+                padding-bottom: 10px;
             }
-
-
             .category-chip {
-                flex: 0 1 180px; /* chiều rộng đồng đều */
-                justify-content: center;
-                display: flex;
+                display: inline-flex;
                 align-items: center;
                 gap: 10px;
-                padding: 10px 16px;
+                padding: 8px 12px;
                 border: 2px solid #000;
                 border-radius: 999px;
                 text-decoration: none;
                 background: #fff;
                 color: #333;
-                transition: all 0.2s ease-in-out;
+                transition: all .2s;
                 white-space: nowrap;
             }
-
-            .category-chip:hover {
+            .category-chip.active, .category-chip:hover {
                 background: #000;
                 color: #fff;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                border-color: #000;
             }
-
             .category-thumb {
-                width: 30px;
-                height: 30px;
+                width: 28px;
+                height: 28px;
                 border-radius: 50%;
                 object-fit: cover;
+                background: #f0f0f0;
+                border: 1px solid rgba(0,0,0,.06);
             }
-
 
             /* Products */
             .products {
@@ -333,129 +324,6 @@
                     margin: 0 10px;
                 }
             }
-
-
-            /* Video Banner */
-            .video-banner {
-                position: relative;
-                width: 100%;
-                height: 500px;
-                overflow: hidden;
-                margin-bottom: 40px;
-            }
-
-            .video-container {
-                position: relative;
-                width: 100%;
-                height: 100%;
-            }
-
-            .banner-video {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                min-width: 100%;
-                min-height: 100%;
-                width: auto;
-                height: auto;
-                transform: translate(-50%, -50%);
-                object-fit: cover;
-            }
-
-            .video-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.4);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .banner-content {
-                text-align: center;
-                color: white;
-                z-index: 2;
-                padding: 20px;
-            }
-
-            .banner-title {
-                font-size: 56px;
-                font-weight: bold;
-                margin-bottom: 16px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-                animation: fadeInUp 1s ease-out;
-            }
-
-            .banner-subtitle {
-                font-size: 24px;
-                margin-bottom: 32px;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-                animation: fadeInUp 1.2s ease-out;
-            }
-
-            .banner-btn {
-                display: inline-block;
-                padding: 14px 40px;
-                background: #ff6b6b;
-                color: white;
-                text-decoration: none;
-                border-radius: 30px;
-                font-weight: 600;
-                font-size: 18px;
-                transition: all 0.3s ease;
-                animation: fadeInUp 1.4s ease-out;
-                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-            }
-
-            .banner-btn:hover {
-                background: #ff5252;
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
-            }
-
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                .video-banner {
-                    height: 350px;
-                }
-
-                .banner-title {
-                    font-size: 32px;
-                }
-
-                .banner-subtitle {
-                    font-size: 16px;
-                }
-
-                .banner-btn {
-                    padding: 10px 28px;
-                    font-size: 16px;
-                }
-            }
-
-            @media (max-width: 480px) {
-                .video-banner {
-                    height: 280px;
-                }
-
-                .banner-title {
-                    font-size: 24px;
-                }
-            }
         </style>
     </head>
     <body>
@@ -470,23 +338,6 @@
                 </form>
             </div>
         </header>
-
-        <!-- Video Banner Section -->
-        <section class="video-banner">
-            <div class="video-container">
-                <video class="banner-video" autoplay muted loop playsinline>
-                    <source src="${pageContext.request.contextPath}/assets/videos/banner.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                <div class="video-overlay">
-                    <div class="banner-content">
-                        <h1 class="banner-title">NeoShoes Collection</h1>
-                        <p class="banner-subtitle">Step into Style, Walk with Confidence</p>
-                        <a href="${pageContext.request.contextPath}/products" class="banner-btn">Shop Now</a>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Brands -->
         <section class="categories">

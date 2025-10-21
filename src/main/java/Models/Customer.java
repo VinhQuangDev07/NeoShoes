@@ -5,7 +5,6 @@
 package Models;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -129,13 +128,6 @@ public class Customer {
     public void setIsDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
-    
-    public String getFormattedCreatedAt() {
-    if (createdAt != null) {
-        return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-    }
-    return "N/A";
-}
 
     @Override
     public String toString() {

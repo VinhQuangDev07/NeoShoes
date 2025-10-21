@@ -11,102 +11,160 @@
     <head>
         <title>My Profile</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
     </head> 
     <style>
-        /* Global Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-
-        /* Card Styles */
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Button Styles */
-        .btn {
-            border-radius: 6px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        /* Profile Page Styles */
-        .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 15px 15px;
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border: 4px solid #fff;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .profile-info-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-
-        /* Form Styles */
-        .form-control, .form-select {
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-
         /* Validation form */
         .form-floating {
             position: relative;
             margin-bottom: 15px;
         }
 
-        .form-floating.success input,
-        .form-floating.success select {
-            border-color: #28a745;
-            box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
+        .customer-sidebar {
+            height: 326px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-top: 48px;
+            margin-right: 12px;
+            overflow: hidden;
         }
 
-        .form-floating.error input,
-        .form-floating.error select {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.25);
+        .profile-section {
+            padding: 1.5rem 2rem;
+            position: relative;
         }
 
-        .form-floating.error .invalid-feedback {
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #d1d5db;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            color: #1f2937;
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-subtitle {
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+
+        .profile-divider {
+            position: absolute;
+            bottom: 0;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+            transition: transform 0.5s ease;
+            transform-origin: center;
+        }
+
+        .profile-section:hover .profile-divider {
+            transform: scaleX(1.1);
+        }
+
+        /* Sidebar */
+        .nav-menu {
+            padding: 1.5rem 0;
+        }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            color: #374151;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #4b5563;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link-item:hover {
+            color: #000000;
+            background-color: #eff6ff;
+            transform: scale(1.05);
+        }
+
+        .nav-link-item:hover::before {
+            transform: translateX(0);
+        }
+
+        .nav-link-item.active {
+            color: #000000;
+            background-color: #eff6ff;
+        }
+
+        .nav-link-item.active::before {
+            transform: translateX(0);
+            background: #000000;
+        }
+
+        .nav-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-link-item:hover .nav-icon-wrapper {
+            background-color: #eff6ff;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            color: currentColor;
+        }
+
+        .nav-text-wrapper {
+            flex: 1;
+        }
+
+        .nav-title {
+            font-weight: 500;
             display: block;
-            color: #dc3545;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
+            margin-bottom: 0.125rem;
         }
 
+        .nav-description {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin: 0;
+        }
 
+        .nav-link-item:hover .nav-description {
+            color: #1f2937;
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
@@ -114,13 +172,30 @@
                 width: 100%;
                 margin-top: 20px;
                 height: auto;
-                min-height: auto !important;
             }
         }
     </style>
     <body class="bg-light">
-        <jsp:include page="common/header.jsp"/>
-        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+        <c:if test="${not empty sessionScope.flash}">
+            <script>
+                showNotification("${sessionScope.flash}", "success");
+            </script>
+            <c:remove var="flash" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_info}">
+            <script>
+                showNotification("${sessionScope.flash_info}", "info");
+            </script>
+            <c:remove var="flash_info" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_error}">
+            <script>
+                showNotification("${sessionScope.flash_error}", "error");
+            </script>
+            <c:remove var="flash_error" scope="session"/>
+        </c:if>
 
         <div class="d-flex justify-content-center">
             <div class="container">
@@ -128,7 +203,7 @@
                     <!-- Sidebar -->
                     <jsp:include page="common/customer-sidebar.jsp"/>
                     <!-- Main Content -->
-                    <div id="main-content" class="main-content-wrapper mt-2 mb-5">
+                    <div id="main-content" class="main-content-wrapper mt-5 mb-5">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
@@ -397,57 +472,6 @@
                                                                 });
                                                             });
 
-                                                            // avatar upload preview
-                                                            const avatarUpload = document.getElementById('avatarUpload');
-                                                            const avatarInput = document.getElementById('avatarInput');
-                                                            const avatarPreview = document.getElementById('avatarPreview');
-
-                                                            avatarUpload.addEventListener('click', () => {
-                                                                avatarInput.click();
-                                                            });
-
-                                                            avatarInput.addEventListener('change', (e) => {
-                                                                if (e.target.files.length > 0) {
-                                                                    const file = e.target.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            });
-
-                                                            // Handle drag and drop for avatar
-                                                            avatarUpload.addEventListener('dragover', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#0d6efd';
-                                                            });
-
-                                                            avatarUpload.addEventListener('dragleave', () => {
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-                                                            });
-
-                                                            avatarUpload.addEventListener('drop', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-
-                                                                if (e.dataTransfer.files.length > 0) {
-                                                                    avatarInput.files = e.dataTransfer.files;
-                                                                    const file = e.dataTransfer.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            });
-
                                                             // PROFILE FORM
                                                             const profileForm = document.getElementById("profileForm");
                                                             const nameInput = document.getElementById("name");
@@ -603,11 +627,11 @@
                                                                 if (confirm('Are you sure you want to delete this address?')) {
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
-                                                                    form.action = '<%= request.getContextPath()%>/profile';
+                                                                    form.action = '<%= request.getContextPath()%>/address';
 
                                                                     const actionInput = document.createElement('input');
                                                                     actionInput.type = 'hidden';
-                                                                    actionInput.name = 'action';
+                                                                    actionInput.name = 'addressAction';
                                                                     actionInput.value = 'deleteAddress';
 
                                                                     const idInput = document.createElement('input');
@@ -616,9 +640,9 @@
                                                                     idInput.value = addressId;
 
                                                                     const customeridInput = document.createElement('input');
-                                                                    customeridInput.type = 'hidden';
-                                                                    customeridInput.name = 'id';
-                                                                    customeridInput.value = '${customer.id}';
+                                                                    idInput.type = 'hidden';
+                                                                    idInput.name = 'customerId';
+                                                                    idInput.value = customerId;
 
                                                                     form.appendChild(actionInput);
                                                                     form.appendChild(idInput);

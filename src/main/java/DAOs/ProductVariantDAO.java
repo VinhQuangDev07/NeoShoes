@@ -15,11 +15,9 @@ import java.util.List;
  *
  * @author Le Huu Nghia - CE181052
  */
-public class ProductVariantDAO extends DB.DBContext {
-
+public class ProductVariantDAO extends DB.DBContext{
     /**
      * Get all variants of a specific product
-     *
      * @param productId Product ID
      * @return List of ProductVariant
      */
@@ -27,7 +25,7 @@ public class ProductVariantDAO extends DB.DBContext {
         List<ProductVariant> variants = new ArrayList<>();
         String sql = "SELECT * FROM ProductVariant WHERE ProductId=? AND IsDeleted=0";
 
-        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
+        try (ResultSet rs = execSelectQuery(sql, new Object[]{productId})) {
             while (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
@@ -52,7 +50,6 @@ public class ProductVariantDAO extends DB.DBContext {
 
     /**
      * Get a product variant by product ID, color, and size
-     *
      * @param productId Product ID
      * @param color Color value
      * @param size Size value
@@ -61,7 +58,7 @@ public class ProductVariantDAO extends DB.DBContext {
     public ProductVariant findByProductColorSize(int productId, String color, String size) {
         String sql = "SELECT * FROM ProductVariant WHERE ProductId=? AND Color=? AND Size=? AND IsDeleted=0";
 
-        try ( ResultSet rs = execSelectQuery(sql, new Object[]{productId, color, size})) {
+        try (ResultSet rs = execSelectQuery(sql, new Object[]{productId, color, size})) {
             if (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
@@ -83,17 +80,16 @@ public class ProductVariantDAO extends DB.DBContext {
         }
         return null;
     }
-
+    
     /**
      * Get a product variant by product variant ID
-     *
      * @param variantId Product Variant ID
      * @return ProductVariant or null if not found
      */
     public ProductVariant findById(int variantId) {
         String sql = "SELECT * FROM ProductVariant WHERE ProductVariantId=? AND IsDeleted=0";
 
-        try ( ResultSet rs = execSelectQuery(sql, new Object[]{variantId})) {
+        try (ResultSet rs = execSelectQuery(sql, new Object[]{variantId})) {
             if (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setProductVariantId(rs.getInt("ProductVariantId"));
