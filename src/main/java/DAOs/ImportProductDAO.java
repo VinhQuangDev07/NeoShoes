@@ -17,8 +17,8 @@ import java.util.List;
  *
  * @author Le Huu Nghia - CE181052
  */
-public class ImportProductDAO extends DB.DBContext{
-    
+public class ImportProductDAO extends DB.DBContext {
+
     /**
      * Insert import product header - returns generated ID
      */
@@ -39,7 +39,7 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return 0;
     }
-    
+
     /**
      * Insert import product detail
      */
@@ -61,38 +61,122 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return 0;
     }
-    
+
     /**
      * Update import product header
      */
-    public void updateImportProduct(ImportProduct importRecord) {
-        String sql = "UPDATE dbo.ImportProduct SET SupplierName = ?, ImportDate = ?, Note = ? "
+    public boolean updateImportProduct(ImportProduct importRecord) {
+        String sql = "UPDATE dbo.ImportProduct "
+                + "SET SupplierName = ?, ImportDate = ?, Note = ? "
                 + "WHERE ImportProductId = ? AND IsDeleted = 0";
+
         Object[] params = {
             importRecord.getSupplierName(),
             Timestamp.valueOf(importRecord.getImportDate()),
             importRecord.getNote(),
             importRecord.getImportProductId()
         };
+
         try {
-            execQuery(sql, params);
+            int rowsAffected = execQuery(sql, params);
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
-    
+
+    /**
+     * Update import product detail
+     */
+    public boolean updateImportProductDetail(ImportProductDetail detail) {
+        String sql = "UPDATE dbo.ImportProductDetail "
+                + "SET ProductVariantId = ?, Quantity = ?, CostPrice = ?, UpdatedAt = GETDATE() "
+                + "WHERE ImportProductDetailId = ?";
+
+        Object[] params = {
+            detail.getProductVariantId(),
+            detail.getQuantity(),
+            detail.getCostPrice(),
+            detail.getImportProductDetailId()
+        };
+
+        try {
+            int rowsAffected = execQuery(sql, params); // ✅ dùng hàm từ DBContext
+            return rowsAffected > 0; // trả về true nếu có dòng bị ảnh hưởng
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // false nếu lỗi hoặc không update được
+        }
+    }
+
     /**
      * Delete import details by import ID
      */
-    public void deleteImportDetails(int importProductId) {
+    public boolean deleteImportDetails(int importProductId) {
         String sql = "DELETE FROM dbo.ImportProductDetail WHERE ImportProductId = ?";
         try {
-            execQuery(sql, new Object[]{importProductId});
+            int rowsAffected = execQuery(sql, new Object[]{importProductId});
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
-    
+
+    /**
+     * Delete import product detail (hard delete)
+     */
+    public boolean deleteImportProductDetail(int detailId) {
+        String sql = "DELETE FROM dbo.ImportProductDetail WHERE ImportProductDetailId = ?";
+
+        Object[] params = {detailId};
+
+        try {
+            int rowsAffected = execQuery(sql, params);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Hard delete import product (permanently remove record)
+     */
+    public boolean deleteImportProduct(int importProductId) {
+        String sql = "DELETE FROM dbo.ImportProduct WHERE ImportProductId = ?";
+
+        Object[] params = {importProductId};
+
+        try {
+            int rowsAffected = execQuery(sql, params);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Soft delete import product (set IsDeleted = 1)
+     */
+    public boolean softDeleteImportProduct(int importProductId) {
+        String sql = "UPDATE dbo.ImportProduct "
+                + "SET IsDeleted = 1, UpdatedAt = GETDATE() "
+                + "WHERE ImportProductId = ? AND IsDeleted = 0";
+
+        Object[] params = {importProductId};
+
+        try {
+            int rowsAffected = execQuery(sql, params); 
+            return rowsAffected > 0; 
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Get import product by ID with staff name
      */
@@ -101,7 +185,7 @@ public class ImportProductDAO extends DB.DBContext{
                 + "FROM dbo.ImportProduct ip "
                 + "JOIN dbo.Staff s ON s.StaffId = ip.StaffId AND s.IsDeleted = 0 "
                 + "WHERE ip.ImportProductId = ? AND ip.IsDeleted = 0";
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{importId})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{importId})) {
             if (rs.next()) {
                 ImportProduct record = new ImportProduct();
                 record.setImportProductId(rs.getInt("ImportProductId"));
@@ -117,20 +201,20 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return null;
     }
-    
+
     /**
      * Get import details with variant info
      */
     public List<ImportProductDetail> getImportDetails(int importProductId) {
         List<ImportProductDetail> details = new ArrayList<>();
         String sql = "SELECT ipd.ImportProductDetailId, ipd.ProductVariantId, pv.Image, pv.Color, pv.Size, "
-                + "        ipd.Quantity, ipd.CostPrice, ipd.CreatedAt, ipd.UpdatedAt, p.Name AS ProductName "
+                + "        ipd.Quantity, ipd.CostPrice, ipd.CreatedAt, ipd.UpdatedAt, p.ProductId, p.Name AS ProductName "
                 + "FROM dbo.ImportProductDetail ipd "
                 + "JOIN dbo.ProductVariant pv ON pv.ProductVariantId = ipd.ProductVariantId AND pv.IsDeleted = 0 "
                 + "JOIN dbo.Product p ON p.ProductId = pv.ProductId AND p.IsDeleted = 0 "
                 + "WHERE ipd.ImportProductId = ? "
                 + "ORDER BY ipd.ImportProductDetailId";
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{importProductId})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{importProductId})) {
             while (rs.next()) {
                 ImportProductDetail detail = new ImportProductDetail();
                 detail.setImportProductDetailId(rs.getInt("ImportProductDetailId"));
@@ -142,6 +226,7 @@ public class ImportProductDAO extends DB.DBContext{
                 detail.setCostPrice(rs.getBigDecimal("CostPrice"));
                 detail.setCreatedAt(rs.getTimestamp("CreatedAt").toLocalDateTime());
                 detail.setUpdatedAt(rs.getTimestamp("UpdatedAt").toLocalDateTime());
+                detail.setProductId(rs.getInt("ProductId"));
                 detail.setProductName(rs.getString("ProductName"));
                 details.add(detail);
             }
@@ -150,7 +235,7 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return details;
     }
-    
+
     /**
      * Get import detail objects for delta calculation
      */
@@ -159,7 +244,7 @@ public class ImportProductDAO extends DB.DBContext{
         String sql = "SELECT ImportProductDetailId, ImportProductId, ProductVariantId, Quantity, CostPrice, CreatedAt, UpdatedAt "
                 + "FROM dbo.ImportProductDetail "
                 + "WHERE ImportProductId = ?";
-        try (ResultSet rs = execSelectQuery(sql, new Object[]{importProductId})) {
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{importProductId})) {
             while (rs.next()) {
                 ImportProductDetail detail = new ImportProductDetail();
                 detail.setImportProductDetailId(rs.getInt("ImportProductDetailId"));
@@ -176,22 +261,22 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return details;
     }
-    
+
     /**
      * Search imports with filters
      */
-    public List<ImportProduct> searchImports(String phrase, LocalDateTime fromDate, 
-                                             LocalDateTime toDate, int offset, int pageSize) {
+    public List<ImportProduct> searchImports(String phrase, LocalDateTime fromDate,
+            LocalDateTime toDate, int offset, int pageSize) {
         List<ImportProduct> records = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT ip.ImportProductId, ip.ImportDate, ip.SupplierName, ip.Note, s.StaffId, s.Name AS StaffName "
-            + "FROM dbo.ImportProduct ip "
-            + "JOIN dbo.Staff s ON s.StaffId = ip.StaffId AND s.IsDeleted = 0 "
-            + "WHERE ip.IsDeleted = 0"
+                "SELECT ip.ImportProductId, ip.ImportDate, ip.SupplierName, ip.Note, s.StaffId, s.Name AS StaffName "
+                + "FROM dbo.ImportProduct ip "
+                + "JOIN dbo.Staff s ON s.StaffId = ip.StaffId AND s.IsDeleted = 0 "
+                + "WHERE ip.IsDeleted = 0"
         );
-        
+
         List<Object> paramsList = new ArrayList<>();
-        
+
         if (phrase != null && !phrase.isEmpty()) {
             sql.append(" AND (ip.SupplierName LIKE ? OR ip.Note LIKE ? OR s.Name LIKE ?)");
             String searchPattern = "%" + phrase + "%";
@@ -199,23 +284,23 @@ public class ImportProductDAO extends DB.DBContext{
             paramsList.add(searchPattern);
             paramsList.add(searchPattern);
         }
-        
+
         if (fromDate != null) {
             sql.append(" AND ip.ImportDate >= ?");
             paramsList.add(Timestamp.valueOf(fromDate));
         }
-        
+
         if (toDate != null) {
             sql.append(" AND ip.ImportDate < ?");
             paramsList.add(Timestamp.valueOf(toDate));
         }
-        
+
         sql.append(" ORDER BY ip.ImportDate DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         paramsList.add(offset);
         paramsList.add(pageSize);
-        
+
         Object[] params = paramsList.toArray();
-        try (ResultSet rs = execSelectQuery(sql.toString(), params)) {
+        try ( ResultSet rs = execSelectQuery(sql.toString(), params)) {
             while (rs.next()) {
                 ImportProduct record = new ImportProduct();
                 record.setImportProductId(rs.getInt("ImportProductId"));
@@ -231,19 +316,19 @@ public class ImportProductDAO extends DB.DBContext{
         }
         return records;
     }
-    
+
     /**
      * Count imports with filters
      */
     public int countImports(String phrase, LocalDateTime fromDate, LocalDateTime toDate) {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) as cnt FROM dbo.ImportProduct ip "
-            + "JOIN dbo.Staff s ON s.StaffId = ip.StaffId AND s.IsDeleted = 0 "
-            + "WHERE ip.IsDeleted = 0"
+                "SELECT COUNT(*) as cnt FROM dbo.ImportProduct ip "
+                + "JOIN dbo.Staff s ON s.StaffId = ip.StaffId AND s.IsDeleted = 0 "
+                + "WHERE ip.IsDeleted = 0"
         );
-        
+
         List<Object> paramsList = new ArrayList<>();
-        
+
         if (phrase != null && !phrase.isEmpty()) {
             sql.append(" AND (ip.SupplierName LIKE ? OR ip.Note LIKE ? OR s.Name LIKE ?)");
             String searchPattern = "%" + phrase + "%";
@@ -251,19 +336,19 @@ public class ImportProductDAO extends DB.DBContext{
             paramsList.add(searchPattern);
             paramsList.add(searchPattern);
         }
-        
+
         if (fromDate != null) {
             sql.append(" AND ip.ImportDate >= ?");
             paramsList.add(Timestamp.valueOf(fromDate));
         }
-        
+
         if (toDate != null) {
             sql.append(" AND ip.ImportDate < ?");
             paramsList.add(Timestamp.valueOf(toDate));
         }
-        
+
         Object[] params = paramsList.toArray();
-        try (ResultSet rs = execSelectQuery(sql.toString(), params)) {
+        try ( ResultSet rs = execSelectQuery(sql.toString(), params)) {
             if (rs.next()) {
                 return rs.getInt("cnt");
             }

@@ -17,10 +17,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -98,7 +100,7 @@ public class ImportProductServlet extends HttpServlet {
             if ("create".equals(action)) {
                 createImport(request, response);
             } else if ("update".equals(action)) {
-//                updateImport(request, response);
+                updateImport(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,38 +146,28 @@ public class ImportProductServlet extends HttpServlet {
             // 1. Lấy tất cả variants
             List<ProductVariant> allVariants = variantDAO.getAllActiveVariants();
 
-            // 2. Group variants theo productId và tạo products
-            List<Product> products = new ArrayList<>();
-            List<Integer> processedProducts = new ArrayList<>();
+            // 2. Tạo Map để group
+            Map<Integer, Product> productMap = new HashMap<>();
 
+            // 3. Loop và build map
             for (ProductVariant variant : allVariants) {
                 int productId = variant.getProductId();
 
-                // Tạo ProductInfo cho product (chỉ tạo 1 lần)
-                if (!processedProducts.contains(productId)) {
-                    Product productInfo = new Product();
-                    productInfo.setProductId(productId);
-                    productInfo.setName(variant.getProductName());
-                    productInfo.setDefaultImageUrl(variant.getImage());
+                Product product = productMap.computeIfAbsent(productId, k -> {
+                    Product p = new Product();
+                    p.setProductId(productId);
+                    p.setName(variant.getProductName());
+                    p.setDefaultImageUrl(variant.getImage());
+                    return p;
+                });
 
-                    products.add(productInfo);
-                    processedProducts.add(productId);
-                }
+                product.addVariant(variant);
             }
 
-            // 3. Load variants cho từng product
-            for (Product product : products) {
-                List<ProductVariant> productVariants = new ArrayList<>();
-                for (ProductVariant variant : allVariants) {
-                    if (variant.getProductId() == product.getProductId()) {
-                        productVariants.add(variant);
-                    }
-                }
-                product.setVariants(productVariants);
-                product.setVariantCount(productVariants.size());
-            }
+            // 4. Chuyển Map thành List
+            List<Product> products = new ArrayList<>(productMap.values());
 
-            // 4. Gửi data sang JSP
+            // 5. Gửi sang JSP
             request.setAttribute("products", products);
 
             request.getRequestDispatcher("/WEB-INF/views/staff/import-product.jsp").forward(request, response);
@@ -210,23 +202,58 @@ public class ImportProductServlet extends HttpServlet {
     private void showUpdateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            int id = Integer.parseInt(request.getParameter("id"));
-
-            ImportProduct importRecord = importDAO.getImportById(id);
-            List<ImportProductDetail> details = importDAO.getImportDetails(id);
-            List<ProductVariant> variants = variantDAO.getAllActiveVariants();
-
-            if (importRecord == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            // 1. Lấy importId từ URL parameter
+            String importIdStr = request.getParameter("id");
+            if (importIdStr == null || importIdStr.isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/staff/import-records");
                 return;
             }
 
-            request.setAttribute("importRecord", importRecord);
-            request.setAttribute("importDetails", details);
-            request.setAttribute("productVariants", variants);
+            int importId = Integer.parseInt(importIdStr);
 
-            request.getRequestDispatcher("/WEB-INF/views/staff/update-import-record.jsp")
-                    .forward(request, response);
+            // 2. Lấy import record từ database
+            ImportProduct importRecord = importDAO.getImportById(importId);
+            if (importRecord == null) {
+                response.sendRedirect(request.getContextPath() + "/staff/import-records");
+                return;
+            }
+
+            // 3. Lấy danh sách import details cho import này
+            List<ImportProductDetail> importLines = importDAO.getImportDetails(importId);
+            importRecord.setImportProductDetails(importLines);
+
+            // 6. Lấy tất cả variants để load vào modal
+            List<ProductVariant> allVariants = variantDAO.getAllActiveVariants();
+
+            // 2. Tạo Map để group
+            Map<Integer, Product> productMap = new HashMap<>();
+
+            // 3. Loop và build map
+            for (ProductVariant variant : allVariants) {
+                int productId = variant.getProductId();
+
+                Product product = productMap.computeIfAbsent(productId, k -> {
+                    Product p = new Product();
+                    p.setProductId(productId);
+                    p.setName(variant.getProductName());
+                    p.setDefaultImageUrl(variant.getImage());
+                    return p;
+                });
+
+                product.addVariant(variant);
+            }
+
+            // 4. Chuyển Map thành List
+            List<Product> products = new ArrayList<>(productMap.values());
+
+            // 9. Gửi data sang JSP
+            request.setAttribute("importRecord", importRecord);
+            request.setAttribute("importLines", importLines);
+            request.setAttribute("products", products);
+            request.getRequestDispatcher("/WEB-INF/views/staff/update-import-record.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -284,7 +311,11 @@ public class ImportProductServlet extends HttpServlet {
                 }
 
                 // Create and insert import detail
-                ImportProductDetail detail = new ImportProductDetail(importId, variantId, quantity, costPrice);
+                ImportProductDetail detail = new ImportProductDetail();
+                detail.setImportProductId(importId);
+                detail.setProductVariantId(variantId);
+                detail.setQuantity(quantity);
+                detail.setCostPrice(costPrice);
                 importDAO.insertImportProductDetail(detail);
 
                 // Increase inventory
@@ -305,103 +336,144 @@ public class ImportProductServlet extends HttpServlet {
         }
     }
 
-//    private void updateImport(HttpServletRequest request, HttpServletResponse response) 
-//            throws ServletException, IOException {
-//        try {
-//            int importId = Integer.parseInt(request.getParameter("importProductId"));
-//            String supplierName = request.getParameter("supplierName");
-//            String importDateStr = request.getParameter("importDate");
-//            String note = request.getParameter("note");
-//            
-//            LocalDateTime importDate = LocalDateTime.parse(importDateStr);
-//            
-//            // Get line data
-//            String[] variantIds = request.getParameterValues("variantIds[]");
-//            String[] oldQuantities = request.getParameterValues("oldQuantities[]");
-//            String[] quantities = request.getParameterValues("quantities[]");
-//            String[] costPrices = request.getParameterValues("costPrices[]");
-//            
-//            if (variantIds == null || variantIds.length == 0) {
-//                request.getSession().setAttribute("flash_error", "Please keep at least one product variant");
-//                response.sendRedirect(request.getContextPath() + "/staff/update-import-record?id=" + importId);
+    private void updateImport(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            // 1. Lấy thông tin import cơ bản
+            int importProductId = Integer.parseInt(request.getParameter("importProductId"));
+            String supplierName = request.getParameter("supplierName");
+            String note = request.getParameter("note");
+
+            // 2. Lấy staff ID từ session
+            HttpSession session = request.getSession();
+//            User currentUser = (User) session.getAttribute("user");
+//            if (currentUser == null) {
+//                response.sendRedirect(request.getContextPath() + "/login");
 //                return;
 //            }
-//            
-//            // Get old details for delta calculation
-//            List<ImportProductDetail> oldDetails = importDAO.getImportDetailObjects(importId);
-//            Map<Integer, Integer> oldQtyMap = new HashMap<>();
-//            for (ImportProductDetail detail : oldDetails) {
-//                oldQtyMap.put(detail.getProductVariantId(), detail.getQuantity());
-//            }
-//            
-//            // Update header
-//            ImportProduct importRecord = importDAO.getImportById(importId);
-//            importRecord.setSupplierName(supplierName);
-//            importRecord.setImportDate(importDate);
-//            importRecord.setNote(note);
-//            importDAO.updateImportProduct(importRecord);
-//            
-//            // Delete old details
-//            importDAO.deleteImportDetails(importId);
-//            
-//            // Map for new quantities
-//            Map<Integer, Integer> newQtyMap = new HashMap<>();
-//            
-//            // Process each line
-//            for (int i = 0; i < variantIds.length; i++) {
-//                int variantId = Integer.parseInt(variantIds[i]);
-//                int quantity = Integer.parseInt(quantities[i]);
-//                double costPrice = Double.parseDouble(costPrices[i]);
-//                
-//                // Check if variant exists, if not create new one
-//                ProductVariant variant = variantDAO.getVariantById(variantId);
-//                if (variant == null) {
-//                    variant = new ProductVariant();
-//                    variant.setProductId(1);
-//                    variant.setColor("Unknown");
-//                    variant.setSize("Unknown");
-//                    variant.setPrice(costPrice);
-//                    variant.setQuantityAvailable(0);
-//                    variantId = variantDAO.createVariant(variant);
-//                }
-//                
-//                // Insert new detail
-//                ImportProductDetail detail = new ImportProductDetail(importId, variantId, quantity, costPrice);
-//                importDAO.insertImportProductDetail(detail);
-//                
-//                newQtyMap.put(variantId, quantity);
-//            }
-//            
-//            // Calculate and apply inventory deltas
-//            Set<Integer> allVariantIds = new HashSet<>();
-//            allVariantIds.addAll(oldQtyMap.keySet());
-//            allVariantIds.addAll(newQtyMap.keySet());
-//            
-//            for (Integer variantId : allVariantIds) {
-//                int oldQty = oldQtyMap.getOrDefault(variantId, 0);
-//                int newQty = newQtyMap.getOrDefault(variantId, 0);
-//                int delta = newQty - oldQty;
-//                
-//                if (delta > 0) {
-//                    variantDAO.increaseQuantityAvailable(variantId, delta);
-//                } else if (delta < 0) {
-//                    variantDAO.decreaseQuantityAvailable(variantId, Math.abs(delta));
-//                }
-//            }
-//            
-//            request.getSession().setAttribute("flash", "Import record updated successfully!");
-//            response.sendRedirect(request.getContextPath() + "/staff/import-record-details?id=" + importId);
-//            
-//        } catch (NumberFormatException e) {
-//            e.printStackTrace();
-//            request.getSession().setAttribute("flash_error", "Invalid number format");
-//            response.sendRedirect(request.getContextPath() + "/staff/import-records");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            request.getSession().setAttribute("flash_error", "Error updating import record: " + e.getMessage());
-//            response.sendRedirect(request.getContextPath() + "/staff/import-records");
-//        }
-//    }
+            int staffId = 1;
+
+            // 3. Kiểm tra import record có tồn tại không
+            ImportProduct existingImport = importDAO.getImportById(importProductId);
+            if (existingImport == null) {
+                session.setAttribute("flash_error", "Import record not found");
+                response.sendRedirect(request.getContextPath() + "/staff/import-records");
+                return;
+            }
+
+            // 4. Update import header
+            ImportProduct importProduct = new ImportProduct();
+            importProduct.setImportProductId(importProductId);
+            importProduct.setStaffId(staffId);
+            importProduct.setImportDate(existingImport.getImportDate()); // Keep original import date
+            importProduct.setSupplierName(supplierName);
+            importProduct.setNote(note);
+
+            boolean headerUpdated = importDAO.updateImportProduct(importProduct);
+            if (!headerUpdated) {
+                session.setAttribute("flash_error", "Failed to update import record");
+                response.sendRedirect(request.getContextPath() + "/staff/update-import-record?id=" + importProductId);
+                return;
+            }
+
+            // 5. Xử lý import details
+            String[] lineIds = request.getParameterValues("lineIds[]");
+            String[] productIds = request.getParameterValues("productIds[]");
+            String[] variantIds = request.getParameterValues("variantIds[]");
+            String[] quantities = request.getParameterValues("quantities[]");
+            String[] costPrices = request.getParameterValues("costPrices[]");
+
+            if (productIds == null || productIds.length == 0) {
+                session.setAttribute("flash_error", "Please add at least one product line");
+                response.sendRedirect(request.getContextPath() + "/staff/update-import-record?id=" + importProductId);
+                return;
+            }
+
+            // 6. Lấy danh sách line IDs hiện tại từ database
+            List<ImportProductDetail> existingDetails = importDAO.getImportDetails(importProductId);
+            Set<Integer> existingLineIds = new HashSet<>();
+            for (ImportProductDetail detail : existingDetails) {
+                existingLineIds.add(detail.getImportProductDetailId());
+            }
+
+            // 7. Track các line IDs được submit
+            Set<Integer> submittedLineIds = new HashSet<>();
+
+            // 8. Process từng line
+            for (int i = 0; i < productIds.length; i++) {
+                if (productIds[i] == null || productIds[i].isEmpty()) {
+                    continue; // Skip empty lines
+                }
+
+                int variantId = Integer.parseInt(variantIds[i]);
+                int quantity = Integer.parseInt(quantities[i]);
+                BigDecimal costPrice = new BigDecimal(costPrices[i]);
+
+                ImportProductDetail detail = new ImportProductDetail();
+                detail.setImportProductId(importProductId);
+                detail.setProductVariantId(variantId);
+                detail.setQuantity(quantity);
+                detail.setCostPrice(costPrice);
+
+                // Kiểm tra xem đây là line mới hay line cũ
+                if (lineIds != null && i < lineIds.length && lineIds[i] != null && !lineIds[i].isEmpty()) {
+                    // Line cũ - update
+                    int lineId = Integer.parseInt(lineIds[i]);
+                    detail.setImportProductDetailId(lineId);
+                    importDAO.updateImportProductDetail(detail);
+                    submittedLineIds.add(lineId);
+                } else {
+                    // Line mới - insert
+                    importDAO.insertImportProductDetail(detail);
+                }
+            }
+
+            // 9. Xóa các lines không còn trong form (đã bị remove)
+            for (Integer existingLineId : existingLineIds) {
+                if (!submittedLineIds.contains(existingLineId)) {
+                    importDAO.deleteImportProductDetail(existingLineId);
+                }
+            }
+
+            // 10. Update quantity available cho tất cả variants trong import này
+            List<ImportProductDetail> updatedDetails = importDAO.getImportDetails(importProductId);
+            for (ImportProductDetail detail : updatedDetails) {
+                int variantId = detail.getProductVariantId();
+
+                // Tìm quantity cũ (nếu có)
+                int oldQuantity = 0;
+                for (ImportProductDetail existing : existingDetails) {
+                    if (existing.getProductVariantId() == variantId) {
+                        oldQuantity = existing.getQuantity();
+                        break;
+                    }
+                }
+
+                // Tính delta = new - old
+                int delta = detail.getQuantity() - oldQuantity;
+
+                // Nếu delta = 0, không cần update
+                if (delta == 0) {
+                    continue;
+                }
+
+                // Update stock
+                variantDAO.adjustQuantityAvailable(variantId, delta);
+            }
+
+            // 11. Success message và redirect
+            session.setAttribute("flash", "Import record updated successfully");
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
+
+        } catch (NumberFormatException e) {
+            request.getSession().setAttribute("flash_error", "Invalid number format");
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
+        } catch (Exception e) {
+            request.getSession().setAttribute("flash_error", "Error updating import: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
+        }
+    }
+
     /**
      * Returns a short description of the servlet.
      *

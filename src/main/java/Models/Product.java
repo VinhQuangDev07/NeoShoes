@@ -178,6 +178,13 @@ public class Product {
     public void setVariants(List<ProductVariant> variants) {
         this.variants = variants;
     }
+    
+    public void addVariant(ProductVariant variant) {
+        if (this.variants == null) {
+            this.variants = new ArrayList<>();
+        }
+        this.variants.add(variant);
+    }
 
     public List<String> getColors() {
         return colors;

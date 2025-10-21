@@ -252,7 +252,7 @@
                             </div>
                             <div class="info-card-label">Import Date</div>
                             <p class="info-card-value mb-1">
-                                ${record.formattedImportDate}
+                                ${importRecord.formattedImportDate}
                             </p>
                         </div>
                     </div>

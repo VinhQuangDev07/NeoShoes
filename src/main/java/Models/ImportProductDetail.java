@@ -22,6 +22,7 @@ public class ImportProductDetail {
     private LocalDateTime updatedAt;
     
     // Additional fields for display (joined from ProductVariant & Product)
+    private int productId;
     private String productName;
     private String color;
     private String size;
@@ -29,15 +30,8 @@ public class ImportProductDetail {
 
     public ImportProductDetail() {
     }
-
-    public ImportProductDetail(int importProductId, int productVariantId, int quantity, BigDecimal costPrice) {
-        this.importProductId = importProductId;
-        this.productVariantId = productVariantId;
-        this.quantity = quantity;
-        this.costPrice = costPrice;
-    }
     
-    public ImportProductDetail(int importProductDetailId, int importProductId, int productVariantId, int quantity, BigDecimal costPrice, LocalDateTime createdAt, LocalDateTime updatedAt, String productName, String color, String size, String variantImage) {
+    public ImportProductDetail(int importProductDetailId, int importProductId, int productVariantId, int quantity, BigDecimal costPrice, LocalDateTime createdAt, LocalDateTime updatedAt, int productId, String productName, String color, String size, String variantImage) {
         this.importProductDetailId = importProductDetailId;
         this.importProductId = importProductId;
         this.productVariantId = productVariantId;
@@ -45,6 +39,7 @@ public class ImportProductDetail {
         this.costPrice = costPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.productId = productId;
         this.productName = productName;
         this.color = color;
         this.size = size;
@@ -106,8 +101,16 @@ public class ImportProductDetail {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+    
+    public int getProductId() {
+        return productId;
+    }
 
     // Getters & Setters - Display fields
+    public void setProductId(int productId) {    
+        this.productId = productId;
+    }
+
     public String getProductName() {
         return productName;
     }

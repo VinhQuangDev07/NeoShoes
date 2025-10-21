@@ -18,12 +18,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -77,7 +71,7 @@ public class CartServlet extends HttpServlet {
             // Chỉ load nếu variants chưa được set
             if (product.getVariants() == null || product.getVariants().isEmpty()) {
                 // Product already has variants, colors, and sizes loaded from ProductDAO
-                List<ProductVariant> variants = variantDAO.getByProductId(productId);
+                List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
                 List<String> colors = variantDAO.getColorsByProductId(productId);
                 List<String> sizes = variantDAO.getSizesByProductId(productId);
 

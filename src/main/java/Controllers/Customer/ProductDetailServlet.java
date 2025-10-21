@@ -61,7 +61,7 @@ public class ProductDetailServlet extends HttpServlet {
             }
 
             // Product already has variants, colors, and sizes loaded from ProductDAO
-            List<ProductVariant> variants = variantDAO.getByProductId(productId);
+            List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
             List<String> colors = variantDAO.getColorsByProductId(productId);
             List<String> sizes = variantDAO.getSizesByProductId(productId);
             

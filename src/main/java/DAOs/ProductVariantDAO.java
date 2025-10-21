@@ -4,15 +4,12 @@
  */
 package DAOs;
 
-import Models.Product;
 import Models.ProductVariant;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -26,7 +23,7 @@ public class ProductVariantDAO extends DB.DBContext {
      * @param productId Product ID
      * @return List of ProductVariant
      */
-    public List<ProductVariant> getByProductId(int productId) {
+    public List<ProductVariant> getVariantListByProductId(int productId) {
         List<ProductVariant> variants = new ArrayList<>();
         String sql = "SELECT * FROM ProductVariant WHERE ProductId=? AND IsDeleted=0";
 
@@ -246,4 +243,45 @@ public class ProductVariantDAO extends DB.DBContext {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Get current quantity available for a product variant
+     */
+    public int getQuantityAvailable(int variantId) {
+        String sql = "SELECT QuantityAvailable FROM dbo.ProductVariant WHERE ProductVariantId = ?";
+        Object[] params = {variantId};
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                return rs.getInt("QuantityAvailable");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    /**
+     * Adjust quantity available (delta > 0 => increase, delta < 0 => decrease)
+     */
+    public boolean adjustQuantityAvailable(int variantId, int delta) {
+        String sql = "UPDATE dbo.ProductVariant "
+                + "SET QuantityAvailable = CASE "
+                + "WHEN QuantityAvailable + ? < 0 THEN 0 " // đảm bảo không âm tồn
+                + "ELSE QuantityAvailable + ? END, "
+                + "UpdatedAt = GETDATE() "
+                + "WHERE ProductVariantId = ? AND IsDeleted = 0";
+
+        Object[] params = {delta, delta, variantId};
+
+        try {
+            int rowsAffected = execQuery(sql, params);
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

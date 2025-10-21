@@ -6,6 +6,7 @@ package Models;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  *
@@ -22,6 +23,7 @@ public class ImportProduct {
 
     // Additional fields for display
     private String staffName;
+    private List<ImportProductDetail> importProductDetails;
 
     public ImportProduct() {
     }
@@ -99,6 +101,14 @@ public class ImportProduct {
         return "N/A";
     }
 
+    public List<ImportProductDetail> getImportProductDetails() {
+        return importProductDetails;
+    }
+
+    public void setImportProductDetails(List<ImportProductDetail> importProductDetails) {
+        this.importProductDetails = importProductDetails;
+    }
+    
     @Override
     public String toString() {
         return "ImportProduct{" + "importProductId=" + importProductId
