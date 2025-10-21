@@ -369,28 +369,11 @@
         }
     </style>
     <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <div class="nav-links">
-                    <a href="${pageContext.request.contextPath}/home" class="nav-link">Home</a>
-                    <a href="${pageContext.request.contextPath}/products" class="nav-link">Products</a>
-                </div>
-            </div>
-        </header>
-
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="${pageContext.request.contextPath}/home">Home</a> &gt;
-            <a href="${pageContext.request.contextPath}/products">Products</a> &gt;
-            <span>${product.name}</span>
-        </div>
+        <jsp:include page="common/header.jsp"/>
+        
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <!-- Product Detail -->
         <main class="product-detail">
-            <a href="javascript:history.back()" class="back-button">← Back</a>
-
             <div class="product-container">
                 <!-- Product Images -->
                 <div class="product-images">

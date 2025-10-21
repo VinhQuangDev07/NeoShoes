@@ -1,26 +1,27 @@
 package Controllers.Customer;
 
-import DAOs.OrderDAO;
-import DAOs.CartDAO;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import DAOs.AddressDAO;
-import DAOs.VoucherDAO;
+import DAOs.CartDAO;
 import DAOs.CustomerDAO;
-import Models.Order;
-import Models.Customer;
+import DAOs.OrderDAO;
+import DAOs.VoucherDAO;
 import Models.Address;
-import Models.Voucher;
 import Models.CartItem;
+import Models.Customer;
+import Models.Order;
+import Models.Voucher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.math.BigDecimal;
-import java.sql.SQLException;
 
 @WebServlet(name = "PurchaseServlet", urlPatterns = {"/purchase"})
 public class PurchaseServlet extends HttpServlet {
@@ -184,7 +185,7 @@ public class PurchaseServlet extends HttpServlet {
             String[] cartItemIdsStr = request.getParameterValues("cartItemIds");
             String addressIdStr = request.getParameter("addressId");
             String voucherCode = request.getParameter("voucherCode");
-            
+            //validate inputs
             if (cartItemIdsStr == null || cartItemIdsStr.length == 0) {
                 session.setAttribute("flash_error", "No items selected for order");
                 response.sendRedirect(request.getContextPath() + "/cart");
@@ -211,7 +212,9 @@ public class PurchaseServlet extends HttpServlet {
                 Voucher voucher = voucherDAO.getVoucherByCode(voucherCode.trim(), customer.getId());
                 if (voucher != null && voucher.canUseVoucher()) {
                     voucherId = voucher.getVoucherId();
+                    System.out.println("Voucher validated: " + voucher.getVoucherCode() + " (ID: " + voucherId + ")");
                 } else {
+                    System.out.println("Voucher invalid: "+ voucherCode);
                     session.setAttribute("flash_error", "Invalid or expired voucher code");
                     response.sendRedirect(request.getContextPath() + "/purchase?action=checkout");
                     return;
@@ -225,13 +228,22 @@ public class PurchaseServlet extends HttpServlet {
             if (orderId > 0) {
                 // Increment voucher usage if voucher was used
                 if (voucherId != null) {
-                    voucherDAO.incrementVoucherUsage(voucherId, customer.getId());
+                    try {
+                        voucherDAO.incrementVoucherUsage(voucherId, customer.getId());
+                        System.out.println("Voucher usage incremented for voucherId: " + voucherId);  // ✅ THÊM log
+                    } catch (Exception e) {
+                        System.err.println("Error incrementing voucher usage: " + e.getMessage());  // ✅ THÊM error handling
+                    }
                 }
                 
                 // Update cart quantity in session
                 int itemCount = cartDAO.countItems(customer.getId());
                 session.setAttribute("cartQuantity", itemCount);
-                
+                // ✅ THÊM: Clear session voucher data
+    session.removeAttribute("appliedVoucherCode");
+    session.removeAttribute("appliedVoucherId");
+    session.removeAttribute("voucherDiscount");
+    
                 session.setAttribute("flash", "Order placed successfully! Order ID: " + orderId);
                 response.sendRedirect(request.getContextPath() + "/orders");
             } else {

@@ -4,8 +4,7 @@
  */
 package DAOs;
 
-import Models.Order;
-import Models.OrderDetail;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +13,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.math.BigDecimal;
+
+import Models.Order;
+import Models.OrderDetail;
 
 /**
  * Data access for customer orders
@@ -564,4 +565,136 @@ public class OrderDAO extends DB.DBContext {
         }
     }
 
+    // ================================
+// ✅ NEW METHODS - VOUCHER SUPPORT
+// ================================
+
+/**
+ * Get order with voucher information
+ * Use this when displaying order details to customer
+ */
+public Order findWithItemsAndVoucher(int orderId) {
+    String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, " +
+                 "o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, " +
+                 "o.PlacedAt, o.UpdatedAt, " +
+                 "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone, " +
+                 "v.VoucherCode, v.Type as VoucherType, v.Value as VoucherValue, " +
+                 "v.MaxValue as VoucherMaxValue " +
+                 "FROM [Order] o " +
+                 "LEFT JOIN Address a ON o.AddressId = a.AddressId " +
+                 "LEFT JOIN Voucher v ON o.VoucherId = v.VoucherId " +
+                 "WHERE o.OrderId = ?";
+    
+    try (Connection con = getConnection(); 
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        
+        ps.setInt(1, orderId);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                // Create order using existing method
+                Order order = createOrderFromResultSet(rs);
+                
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
+                
+                // ✅ Load voucher info if exists
+                Integer voucherId = order.getVoucherId();
+                if (voucherId != null) {
+                    String voucherCode = rs.getString("VoucherCode");
+                    if (voucherCode != null) {
+                        Models.Voucher voucher = new Models.Voucher();
+                        voucher.setVoucherId(voucherId);
+                        voucher.setVoucherCode(voucherCode);
+                        voucher.setType(rs.getString("VoucherType"));
+                        voucher.setValue(rs.getBigDecimal("VoucherValue"));
+                        
+                        BigDecimal maxValue = rs.getBigDecimal("VoucherMaxValue");
+                        if (maxValue != null) {
+                            voucher.setMaxValue(maxValue);
+                        }
+                        
+                        order.setVoucher(voucher);
+                    }
+                }
+                
+                // Load order items using existing method
+                order.setItems(getOrderItems(order.getOrderId()));
+                
+                return order;
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+/**
+ * Get customer orders with voucher information
+ * Use this for order history page
+ */
+public List<Order> listByCustomerWithVoucher(int customerId) {
+    String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, " +
+                 "o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, " +
+                 "o.PlacedAt, o.UpdatedAt, " +
+                 "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone, " +
+                 "v.VoucherCode, v.Type as VoucherType, v.Value as VoucherValue " +
+                 "FROM [Order] o " +
+                 "LEFT JOIN Address a ON o.AddressId = a.AddressId " +
+                 "LEFT JOIN Voucher v ON o.VoucherId = v.VoucherId " +
+                 "WHERE o.CustomerId = ? " +
+                 "ORDER BY o.PlacedAt DESC";
+    
+    List<Order> orders = new ArrayList<>();
+    
+    try (Connection con = getConnection(); 
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        
+        ps.setInt(1, customerId);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                // Create order using existing method
+                Order order = createOrderFromResultSet(rs);
+                
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
+                
+                // ✅ Load voucher info if exists
+                Integer voucherId = order.getVoucherId();
+                if (voucherId != null) {
+                    String voucherCode = rs.getString("VoucherCode");
+                    if (voucherCode != null) {
+                        Models.Voucher voucher = new Models.Voucher();
+                        voucher.setVoucherId(voucherId);
+                        voucher.setVoucherCode(voucherCode);
+                        voucher.setType(rs.getString("VoucherType"));
+                        voucher.setValue(rs.getBigDecimal("VoucherValue"));
+                        order.setVoucher(voucher);
+                    }
+                }
+                
+                // Load order items using existing method
+                order.setItems(getOrderItems(order.getOrderId()));
+                
+                orders.add(order);
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    
+    return orders;
+}
+
+// ================================
+// END - NEW METHODS
+// ================================
 }
