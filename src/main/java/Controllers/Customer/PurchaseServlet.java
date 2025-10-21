@@ -243,7 +243,7 @@ if (voucherCode != null && !voucherCode.trim().isEmpty()) {
     
     if (voucher == null || !voucher.canUseVoucher()) {
         System.err.println("Voucher re-validation FAILED");
-        session.setAttribute("flash_error", "Voucher không còn hợp lệ");
+        session.setAttribute("flash_error", "Invalid voucher");
         response.sendRedirect(request.getContextPath() + "/purchase?action=checkout");
         return;
     }
