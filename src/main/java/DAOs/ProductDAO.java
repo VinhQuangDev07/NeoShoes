@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,8 @@ public class ProductDAO extends DBContext {
     private static final String PRODUCT_COLUMNS
             = "p.ProductId, p.BrandId, p.CategoryId, p.Name, "
             + "p.Description, p.DefaultImageUrl, p.Material, "
+            + "p.CreatedAt, p.UpdatedAt, "
             + "b.Name AS BrandName, c.Name AS CategoryName";
-
     private static final String PRICE_AGGREGATION
             = "MIN(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MinPrice, "
             + "MAX(CASE WHEN pv.IsDeleted = 0 THEN pv.Price END) AS MaxPrice, "
@@ -47,7 +48,10 @@ public class ProductDAO extends DBContext {
 
     private static final String GROUP_BY
             = "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
-            + "p.Description, p.DefaultImageUrl, p.Material, b.Name, c.Name, "
+            + "p.Description, p.DefaultImageUrl, p.Material, "
+            + "p.CreatedAt, p.UpdatedAt, "
+            + 
+            "b.Name, c.Name, "
             + "Colors.AvailableColors, Sizes.AvailableSizes";
 
     public ProductDAO() {
@@ -96,7 +100,10 @@ public class ProductDAO extends DBContext {
         // Total quantity
         int totalQty = rs.getInt("TotalQuantity");
         product.setTotalQuantity(rs.wasNull() ? 0 : totalQty);
-
+        Timestamp cr = rs.getTimestamp("CreatedAt");
+        product.setCreatedAt(cr.toLocalDateTime());
+        Timestamp up = rs.getTimestamp("UpdatedAt");
+        product.setUpdatedAt(up.toLocalDateTime());
         return product;
     }
 
@@ -123,12 +130,9 @@ public class ProductDAO extends DBContext {
             System.err.println("Error in getLatestProducts: " + e.getMessage());
             e.printStackTrace();
         }
-
-        System.out.println("Retrieved " + products.size() + " latest products");
+        System.out.println("✅ Retrieved " + products.size() + " latest products");
         return products;
     }
-
-    // ========== GET PRODUCTS BY CATEGORY ==========
     public List<Product> getProductsByCategory(int categoryId) {
         List<Product> products = new ArrayList<>();
 
@@ -150,7 +154,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("Found " + products.size() + " products for category " + categoryId);
+        System.out.println("✅ Found " + products.size() + " products for category " + categoryId);
         return products;
     }
 
@@ -177,7 +181,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
+        System.out.println("✅ Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
         return products;
     }
 
@@ -203,7 +207,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("Found " + products.size() + " products for brand " + brandId);
+        System.out.println("✅ Found " + products.size() + " products for brand " + brandId);
         return products;
     }
 
@@ -212,13 +216,14 @@ public class ProductDAO extends DBContext {
         List<Product> products = new ArrayList<>();
 
         String query = buildBaseQuery()
-                + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + "WHERE (p.Name LIKE ? OR p.Description LIKE ?) AND p.IsActive = 1 AND p.IsDeleted = 0 "
                 + GROUP_BY + " ORDER BY p.ProductId ASC";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -230,43 +235,64 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("Found " + products.size() + " products matching '" + keyword + "'");
+        System.out.println("✅ Found " + products.size() + " products matching '" + keyword + "'");
         return products;
     }
 
-    // ========== GET PRODUCT BY ID ==========
-    public Product getById(int productId) {
-        if (productId <= 0) {
-            System.err.println("Invalid productId: " + productId);
-            return null;
-        }
-
-        String query = "SELECT * FROM Product WHERE ProductId = ? AND IsDeleted = 0";
-
-        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, productId);
-
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Product product = new Product();
-                    product.setProductId(rs.getInt("ProductId"));
-                    product.setName(rs.getString("Name"));
-                    product.setDescription(rs.getString("Description"));
-                    product.setCategoryId(rs.getInt("CategoryId"));
-                    product.setBrandId(rs.getInt("BrandId"));
-                    product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
-                    product.setMaterial(rs.getString("Material"));
-                    return product;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error in getById: " + e.getMessage());
-            e.printStackTrace();
-        }
-
+   public Product getById(int productId) {
+    if (productId <= 0) {
+        System.err.println("❌ Invalid productId: " + productId);
         return null;
     }
+
+    String query = "SELECT p.*, " +
+                   "b.Name AS BrandName, " +
+                   "c.Name AS CategoryName " +
+                   "FROM Product p " +
+                   "INNER JOIN Brand b ON p.BrandId = b.BrandId " +
+                   "INNER JOIN Category c ON p.CategoryId = c.CategoryId " +
+                   "WHERE p.ProductId = ? AND p.IsDeleted = 0";
+
+    try (Connection conn = getConnection();
+         PreparedStatement ps = conn.prepareStatement(query)) {
+
+        ps.setInt(1, productId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Product product = new Product();
+                product.setProductId(rs.getInt("ProductId"));
+                product.setName(rs.getString("Name"));
+                product.setDescription(rs.getString("Description"));
+                product.setCategoryId(rs.getInt("CategoryId"));
+                product.setBrandId(rs.getInt("BrandId"));
+                product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
+                product.setMaterial(rs.getString("Material"));
+                
+                // ⭐ Thêm BrandName và CategoryName
+                product.setBrandName(rs.getString("BrandName"));
+                product.setCategoryName(rs.getString("CategoryName"));
+                
+                Timestamp cr = rs.getTimestamp("CreatedAt");
+                if (cr != null) {
+                    product.setCreatedAt(cr.toLocalDateTime());
+                }
+                
+                Timestamp up = rs.getTimestamp("UpdatedAt");
+                if (up != null) {
+                    product.setUpdatedAt(up.toLocalDateTime());
+                }
+
+                return product;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error in getById: " + e.getMessage());
+        e.printStackTrace();
+    }
+
+    return null;
+}
 
     // ========== COUNT TOTAL PRODUCTS ==========
     public int getTotalProducts() {

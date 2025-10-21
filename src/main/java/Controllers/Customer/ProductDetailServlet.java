@@ -78,17 +78,49 @@ public class ProductDetailServlet extends HttpServlet {
                 }
             }
             
-            // Load reviews for the product
-            List<Review> reviews = reviewDAO.getReviewsByProduct(productId);
+            // Get filter parameters for reviews
+            String ratingParam = request.getParameter("rating");
+            String timeParam = request.getParameter("time");
             
-            // Calculate review statistics
-            int totalReviews = reviews.size();
+            // Parse rating filter
+            Integer rating = null;
+            if (ratingParam != null && !ratingParam.trim().isEmpty() && !"all".equals(ratingParam)) {
+                try {
+                    rating = Integer.parseInt(ratingParam);
+                    if (rating < 1 || rating > 5) {
+                        rating = null;
+                    }
+                } catch (NumberFormatException e) {
+                    rating = null;
+                }
+            }
+            
+            // Load reviews for the product (filtered or all)
+            List<Review> reviews;
+            if (rating != null) {
+                // Get filtered reviews by rating
+                reviews = reviewDAO.getReviewsByFilter(productId, rating, null);
+            } else {
+                // Get all reviews for the product
+                reviews = reviewDAO.getReviewsByProduct(productId);
+            }
+            
+            // Apply time filter if specified
+            if (timeParam != null && !timeParam.trim().isEmpty() && !"all".equals(timeParam)) {
+                reviews = filterReviewsByTime(reviews, timeParam);
+            }
+            
+            // Load all reviews for statistics calculation (unfiltered)
+            List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
+            
+            // Calculate review statistics from all reviews
+            int totalReviews = allReviews.size();
             double averageRating = 0.0;
             int[] ratingCounts = new int[6]; // 0-5 stars
             
             if (totalReviews > 0) {
                 int totalStars = 0;
-                for (Review review : reviews) {
+                for (Review review : allReviews) {
                     int star = review.getStar();
                     totalStars += star;
                     ratingCounts[star]++;
@@ -106,6 +138,10 @@ public class ProductDetailServlet extends HttpServlet {
             request.setAttribute("averageRating", averageRating);
             request.setAttribute("formattedRating", formatRating(averageRating));
             request.setAttribute("ratingCounts", ratingCounts);
+            
+            // Set filter attributes for JSP
+            request.setAttribute("selectedRating", rating);
+            request.setAttribute("selectedTime", timeParam);
 
             // Forward to JSP
             request.getRequestDispatcher("/WEB-INF/views/customer/product-detail.jsp").forward(request, response);
@@ -137,6 +173,39 @@ public class ProductDetailServlet extends HttpServlet {
      */
     private String formatRating(double rating) {
         return String.format("%.1f", rating);
+    }
+    
+    /**
+     * Filter reviews by time period
+     * @param reviews List of reviews to filter
+     * @param timeParam Time filter parameter (today, week, month)
+     * @return Filtered list of reviews
+     */
+    private List<Review> filterReviewsByTime(List<Review> reviews, String timeParam) {
+        if (reviews == null || reviews.isEmpty()) {
+            return reviews;
+        }
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime cutoff;
+        
+        switch (timeParam.toLowerCase()) {
+            case "today":
+                cutoff = now.minusDays(1);
+                break;
+            case "week":
+                cutoff = now.minusWeeks(1);
+                break;
+            case "month":
+                cutoff = now.minusMonths(1);
+                break;
+            default:
+                return reviews; // No filtering for unknown time periods
+        }
+        
+        return reviews.stream()
+                .filter(review -> review.getCreatedAt().isAfter(cutoff))
+                .collect(java.util.stream.Collectors.toList());
     }
     
 

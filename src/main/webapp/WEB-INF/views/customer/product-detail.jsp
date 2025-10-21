@@ -250,22 +250,6 @@
             color: white !important;
         }
 
-        .view-reviews-btn {
-            background-color: #000 !important;
-            border-color: #000 !important;
-            color: white !important;
-            border-radius: 0 !important;
-            padding: 0.5rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-size: 0.875rem;
-        }
-
-        .view-reviews-btn:hover {
-            background-color: #333 !important;
-            border-color: #333 !important;
-            color: white !important;
-        }
         .btn {
             padding: 12px 24px;
             border: none;
@@ -366,47 +350,6 @@
             text-decoration: underline;
         }
 
-        /* Reviews Section */
-        .review-summary {
-            font-size: 0.9rem;
-            color: #666;
-            margin-left: 1rem;
-        }
-        .rating-summary {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .average-rating {
-            background: white !important;
-            border: 2px solid #e9ecef;
-        }
-        .stars {
-            color: #ffc107;
-        }
-        .review-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .no-reviews {
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #dee2e6;
-        }
-        .progress-bar {
-            background-color: #667eea;
-        }
-        .btn-outline-primary {
-            border-color: #667eea;
-            color: #667eea;
-        }
-        .btn-outline-primary:hover {
-            background-color: #667eea;
-            border-color: #667eea;
-        }
 
         @media (max-width: 768px) {
             .product-container {
@@ -490,117 +433,6 @@
                             </div>
                         </div>
 
-                        <!-- Reviews Section -->
-                        <div class="details-section">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h3 class="details-title mb-0">
-                                    Product Reviews
-                                    <c:if test="${totalReviews > 0}">
-                                        <span class="review-summary">
-                                            <i class="fas fa-star text-warning"></i>
-                                            ${formattedRating}/5 (${totalReviews} reviews)
-                                        </span>
-                                    </c:if>
-                                </h3>
-                                <a href="${pageContext.request.contextPath}/reviews?productId=${product.productId}" 
-                                   class="btn view-reviews-btn">
-                                    <i class="fas fa-comments me-2"></i>
-                                    <c:choose>
-                                        <c:when test="${totalReviews > 0}">
-                                            View All (${totalReviews})
-                                        </c:when>
-                                        <c:otherwise>
-                                            View Reviews
-                                        </c:otherwise>
-                                    </c:choose>
-                                </a>
-                            </div>
-
-                            <c:choose>
-                                <c:when test="${totalReviews > 0}">
-                                    <!-- Rating Summary -->
-                                    <div class="rating-summary mb-3">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="average-rating text-center p-3 bg-light rounded">
-                                                    <h2 class="text-primary mb-1">${formattedRating}</h2>
-                                                    <div class="stars mb-2">
-                                                        <c:forEach var="i" begin="1" end="5">
-                                                            <i class="fas fa-star ${i <= averageRating ? 'text-warning' : 'text-muted'}"></i>
-                                                        </c:forEach>
-                                                    </div>
-                                                    <small class="text-muted">${totalReviews} reviews</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="rating-breakdown">
-                                                    <c:forEach var="i" begin="5" end="1" step="-1">
-                                                        <div class="rating-bar d-flex align-items-center mb-1">
-                                                            <span class="me-2" style="width: 20px;">${i}★</span>
-                                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                                                <div class="progress-bar" role="progressbar" 
-                                                                     style="width: ${ratingCounts[i] > 0 ? (ratingCounts[i] * 100.0 / totalReviews) : 0}%"></div>
-                                                            </div>
-                                                            <span class="text-muted" style="width: 30px; font-size: 0.8rem;">${ratingCounts[i]}</span>
-                                                        </div>
-                                                    </c:forEach>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Recent Reviews -->
-                                    <div class="recent-reviews">
-                                        <h5 class="mb-3">Recent Reviews</h5>
-                                        <c:forEach var="review" items="${reviews}" end="2">
-                                            <div class="review-item border-bottom pb-3 mb-3">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <div>
-                                                        <strong>${review.customerName}</strong>
-                                                        <c:if test="${not empty review.color}">
-                                                            <span class="text-muted"> - ${review.color}</span>
-                                                        </c:if>
-                                                    </div>
-                                                    <div class="stars">
-                                                        <c:forEach var="i" begin="1" end="5">
-                                                            <i class="fas fa-star ${i <= review.star ? 'text-warning' : 'text-muted'}"></i>
-                                                        </c:forEach>
-                                                    </div>
-                                                </div>
-                                                <c:if test="${not empty review.reviewContent}">
-                                                    <p class="mb-2">${review.reviewContent}</p>
-                                                </c:if>
-                                                <small class="text-muted">
-                                                    <fmt:formatDate value="${review.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                                </small>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-
-                                    <!-- View All Reviews Button -->
-                                    <div class="text-center mt-3">
-                                        <a href="${pageContext.request.contextPath}/reviews?productId=${product.productId}" 
-                                           class="btn btn-outline-primary">
-                                            <i class="fas fa-comments me-2"></i>
-                                            View All Reviews (${totalReviews})
-                                        </a>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div class="no-reviews text-center py-4">
-                                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
-                                        <h5 class="text-muted">No Reviews Yet</h5>
-                                        <p class="text-muted">Be the first to review this product!</p>
-                                        <a href="${pageContext.request.contextPath}/reviews?productId=${product.productId}" 
-                                           class="btn btn-outline-primary">
-                                            <i class="fas fa-star me-2"></i>
-                                            Write Review
-                                        </a>
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-
-                        </div>
                     </div>
                 </div>
             </div>
@@ -629,6 +461,12 @@
                                                      firstSize.classList.add('selected');
                                              });
         </script>
+        
+        <!-- Include Reviews Section -->
+        <div id="reviews-section">
+            <jsp:include page="reviews.jsp"/>
+        </div>
+        
         <jsp:include page="common/footer.jsp"/>
     </body>
 </html>

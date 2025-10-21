@@ -4,10 +4,12 @@
  */
 package Controllers.Customer;
 
-import java.io.IOException;
-
-import DAOs.CustomerDAO;
 import DAOs.OrderDAO;
+import DAOs.ReturnRequestDAO;
+
+import Models.ReturnRequest;
+import DAOs.CustomerDAO;
+
 import Models.Customer;
 import Models.Order;
 import jakarta.servlet.ServletException;
@@ -15,6 +17,12 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "OrderDetailServlet", urlPatterns = {"/orders/detail"})
 public class OrderDetailServlet extends HttpServlet {
@@ -25,89 +33,82 @@ public class OrderDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // For now, using hardcoded customer ID. In production, get from session
-        int customerId = 2;
-        Customer customer = customerDAO.findById(customerId);
-
         try {
-            // Get order ID from parameter
-        String orderIdParam = request.getParameter("id");
-        if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/orders");
-            return;
-        }
+            // For now, using hardcoded customer ID. In production, get from session
+            int customerId = 2;
+            Customer customer = customerDAO.findById(customerId);
 
-        //int orderId = Integer.parseInt(request.getParameter("id"));
-        //Order order = orderDAO.findWithItems(orderId);
+            int orderId = Integer.parseInt(request.getParameter("id"));
+            int requestId = 0;
+            try {
 
-        int orderId = Integer.parseInt(orderIdParam);
-            
-            // ✅ THAY ĐỔI: Dùng method MỚI để lấy order WITH VOUCHER
-            Order order = orderDAO.findWithItemsAndVoucher(orderId);
-        
-        if (order == null) {
-            response.sendError(404, "Order not found");
-            return;
-        }
+                Order order = orderDAO.findWithItems(orderId);
+                request.setAttribute("order", order);
 
-        // For demo purposes, allow access to any order
-        // In production, you should check: order.getCustomerId() != customerId
-        request.setAttribute("order", order);
-        request.setAttribute("customer", customer);
-        request.getRequestDispatcher("/WEB-INF/views/customer/order-detail.jsp").forward(request, response);
-            
+                ReturnRequestDAO rrDAO = new ReturnRequestDAO();
+                boolean hasRequest = rrDAO.existsByOrderId(orderId);
+
+                if (hasRequest) {
+                    requestId = rrDAO.getRequestIdByOrderId(orderId);
+                }
+                request.setAttribute("hasRequest", hasRequest);
+                request.setAttribute("requestId", requestId);
+                if (order == null) {
+                    response.sendError(404);
+                    return;
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(OrderDetailServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            // For demo purposes, allow access to any order
+            // In production, you should check: order.getCustomerId() != customerId
+            request.setAttribute("customer", customer);
+            request.getRequestDispatcher("/WEB-INF/views/customer/order-detail.jsp").forward(request, response);
+
         } catch (NumberFormatException e) {
             System.err.println("Invalid order ID format: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/orders");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Error loading order detail: " + e.getMessage());
             e.printStackTrace();
             response.sendError(500, "Internal Server Error");
         }
 
     }
-    
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
         try {
             String action = request.getParameter("action");
-        
-        if ("cancel".equals(action)) {
-            String orderIdParam = request.getParameter("orderId");
 
-            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/orders?error=invalid_order");
-                return;
-            }
+            if ("cancel".equals(action)) {
+                int orderId = Integer.parseInt(request.getParameter("orderId"));
 
-            int orderId = Integer.parseInt(orderIdParam);
-            
-            boolean success = orderDAO.deleteOrder(orderId);
-            
-            if (success) {
-                // Redirect to orders page with success message
-                // response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
-                System.out.println("Order " + orderId + " cancelled successfully");
-                response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
-            } else {
-                // Redirect to orders page with error message
-                //response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
-                System.err.println("Failed to cancel order " + orderId);
+                boolean success = orderDAO.deleteOrder(orderId);
+
+                if (success) {
+                    // Redirect to orders page with success message
+                    // response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
+                    System.out.println("Order " + orderId + " cancelled successfully");
+                    response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
+                } else {
+                    // Redirect to orders page with error message
+                    //response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
+                    System.err.println("Failed to cancel order " + orderId);
                     response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
+                }
+            } else {
+                // Unknown action
+                //response.sendRedirect(request.getContextPath() + "/orders");
+                System.err.println("Unknown action: " + action);
+                response.sendRedirect(request.getContextPath() + "/orders");
             }
-        } else {
-            // Unknown action
-            //response.sendRedirect(request.getContextPath() + "/orders");
-            System.err.println("Unknown action: " + action);
-            response.sendRedirect(request.getContextPath() + "/orders");
-        }
         } catch (NumberFormatException e) {
             System.err.println("Invalid order ID format: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/orders?error=invalid_order");
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Error processing order action: " + e.getMessage());
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/orders?error=unknown");
