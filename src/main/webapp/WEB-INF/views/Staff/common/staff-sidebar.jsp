@@ -128,7 +128,7 @@
                         <i data-lucide="users"></i>
                         Customer
                     </a>
-                    <a id="staff" data-page="profile" href="${pageContext.request.contextPath}/profile" class="nav-link">
+                    <a id="staff" data-page="profile" href="${pageContext.request.contextPath}/profilestaff" class="nav-link">
                         <i data-lucide="user-cog"></i>
                         Profile
                     </a>
