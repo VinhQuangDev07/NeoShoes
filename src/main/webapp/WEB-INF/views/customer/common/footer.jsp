@@ -74,7 +74,7 @@
                     <li class="mb-2">CE18____ - Tang Minh Vinh Quang</li>
                     <li class="mb-2">CE18____ - Tran Hien Dieu</li>
                     <li class="mb-2">CE19____ - Nguyen Huynh Thien An</li>
-                    <li class="mb-2">CE19____ - Chau Gia Huy</li>
+                    <li class="mb-2">CE190386 - Chau Gia Huy</li>
                     <li class="mb-2">CE181052 - Le Huu Nghia</li>
                 </ul>
             </div>

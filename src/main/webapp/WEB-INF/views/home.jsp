@@ -6,6 +6,13 @@
 <html>
     <head>
         <title>NeoShoes - Home</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+
+
+
         <style>
             /* Reset & base */
             * {
@@ -22,7 +29,7 @@
 
             /* Header: solid black */
             .header {
-                background: #000;
+                background: #0A437F;
                 color: #fff;
                 padding: 1rem 0;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -57,7 +64,7 @@
                 color: #333;
             }
             .search-button {
-                background: #000;
+                background: #28a745;
                 color: #fff;
                 border: none;
                 padding: 10px 20px;
@@ -88,36 +95,45 @@
             }
             .categories-list {
                 display: flex;
-                gap: 15px;
-                overflow-x: auto;
-                padding-bottom: 10px;
+                flex-wrap: wrap;
+                justify-content: center; /* căn giữa toàn bộ brand */
+                align-items: center; /* căn giữa theo chiều dọc */
+                gap: 20px 30px; /* khoảng cách đều nhau giữa các dòng và cột */
+                padding: 10px 0;
+                overflow: visible;
             }
+
+
             .category-chip {
-                display: inline-flex;
+                flex: 0 1 180px; /* chiều rộng đồng đều */
+                justify-content: center;
+                display: flex;
                 align-items: center;
                 gap: 10px;
-                padding: 8px 12px;
+                padding: 10px 16px;
                 border: 2px solid #000;
                 border-radius: 999px;
                 text-decoration: none;
                 background: #fff;
                 color: #333;
-                transition: all .2s;
+                transition: all 0.2s ease-in-out;
                 white-space: nowrap;
             }
-            .category-chip.active, .category-chip:hover {
+
+            .category-chip:hover {
                 background: #000;
                 color: #fff;
-                border-color: #000;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             }
+
             .category-thumb {
-                width: 28px;
-                height: 28px;
+                width: 30px;
+                height: 30px;
                 border-radius: 50%;
                 object-fit: cover;
-                background: #f0f0f0;
-                border: 1px solid rgba(0,0,0,.06);
             }
+
 
             /* Products */
             .products {
@@ -324,20 +340,163 @@
                     margin: 0 10px;
                 }
             }
+
+
+            /* Video Banner */
+            .video-banner {
+                position: relative;
+                width: 100%;
+                height: 500px;
+                overflow: hidden;
+                margin-bottom: 40px;
+            }
+
+            .video-container {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            .banner-video {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                min-width: 100%;
+                min-height: 100%;
+                width: auto;
+                height: auto;
+                transform: translate(-50%, -50%);
+                object-fit: cover;
+            }
+
+            .video-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .banner-content {
+                text-align: center;
+                color: white;
+                z-index: 2;
+                padding: 20px;
+            }
+
+            .banner-title {
+                font-size: 56px;
+                font-weight: bold;
+                margin-bottom: 16px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+                animation: fadeInUp 1s ease-out;
+            }
+
+            .banner-subtitle {
+                font-size: 24px;
+                margin-bottom: 32px;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+                animation: fadeInUp 1.2s ease-out;
+            }
+
+            .banner-btn {
+                display: inline-block;
+                padding: 14px 40px;
+                background: #ff6b6b;
+                color: white;
+                text-decoration: none;
+                border-radius: 30px;
+                font-weight: 600;
+                font-size: 18px;
+                transition: all 0.3s ease;
+                animation: fadeInUp 1.4s ease-out;
+                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            }
+
+            .banner-btn:hover {
+                background: #ff5252;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .video-banner {
+                    height: 350px;
+                }
+
+                .banner-title {
+                    font-size: 32px;
+                }
+
+                .banner-subtitle {
+                    font-size: 16px;
+                }
+
+                .banner-btn {
+                    padding: 10px 28px;
+                    font-size: 16px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .video-banner {
+                    height: 280px;
+                }
+
+                .banner-title {
+                    font-size: 24px;
+                }
+            }
         </style>
     </head>
     <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
-                    <input type="hidden" name="action" value="search">
-                    <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                    <button type="submit" class="search-button">Search</button>
-                </form>
+        
+       <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <!--         Header 
+                <header class="header">
+                    <div class="header-container">
+                        <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
+                        <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
+                            <input type="hidden" name="action" value="search">
+                            <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
+                            <button type="submit" class="search-button">Search</button>
+                        </form>
+                    </div>
+                </header>-->
+
+
+        <!-- Video Banner Section -->
+        <section class="video-banner">
+            <div class="video-container">
+                <video class="banner-video" autoplay muted loop playsinline>
+                    <source src="${pageContext.request.contextPath}/assets/videos/banner.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-overlay">
+                    <div class="banner-content">
+                        <h1 class="banner-title">NeoShoes Collection</h1>
+                        <p class="banner-subtitle">Step into Style, Walk with Confidence</p>
+                        <a href="${pageContext.request.contextPath}/products" class="banner-btn">Shop Now</a>
+                    </div>
+                </div>
             </div>
-        </header>
+        </section>
 
         <!-- Brands -->
         <section class="categories">
@@ -350,7 +509,7 @@
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
-                                 onerror="this.src='https://via.placeholder.com/56?text=Brand'">
+                                 onerror="this.src='https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png'">
                             <span>${brand.name}</span>
                         </a>
                     </c:forEach>
@@ -377,10 +536,7 @@
                     <c:otherwise>Newest Products</c:otherwise> 
                 </c:choose>
             </h2>
-            <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
-                <!-- Correct route: /products -->
-                <a href="${pageContext.request.contextPath}/products" class="view-all-btn">View All →</a>
-            </c:if>
+
         </div>
 
         <c:choose>
@@ -390,7 +546,7 @@
                         <div class="product-card">
                             <div class="product-media">
                                 <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                     onerror="this.src='https://via.placeholder.com/360x270?text=No+Image'">
+                                     onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                             </div>
                             <div class="product-info">
                                 <h3 class="product-name">${product.name}</h3>
@@ -442,5 +598,6 @@
             </c:otherwise>
         </c:choose>
     </section>
+    <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
 </body>
 </html>

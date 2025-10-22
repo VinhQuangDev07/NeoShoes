@@ -1,8 +1,4 @@
-<%-- 
-    Document   : manage-customer
-    Created on : Oct 16, 2025, 10:32:31 PM
-    Author     : Le Huu Nghia - CE181052
---%>
+
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>

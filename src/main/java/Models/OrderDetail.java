@@ -16,6 +16,7 @@ public class OrderDetail {
     private int detailQuantity;
     private BigDecimal detailPrice;
     private String addressDetail; // Store address info to prevent data loss when customer deletes address
+    private Review review; // Existing review for this product variant by current customer
 
     public int getOrderDetailId() {
         return orderDetailId;
@@ -79,5 +80,13 @@ public class OrderDetail {
 
     public void setAddressDetail(String addressDetail) {
         this.addressDetail = addressDetail;
+    }
+
+    public Review getReview() {
+        return review;
+    }
+
+    public void setReview(Review review) {
+        this.review = review;
     }
 }

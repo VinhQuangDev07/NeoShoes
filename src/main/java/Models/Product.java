@@ -2,6 +2,8 @@ package Models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Product {
 
@@ -27,6 +29,9 @@ public class Product {
     // Available colors and sizes as lists
     private List<String> colors;
     private List<String> sizes;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+   
 
     public Product() {
         this.variants = new ArrayList<>();
@@ -34,7 +39,7 @@ public class Product {
         this.sizes = new ArrayList<>();
     }
 
-    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName) {
+    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.productId = productId;
         this.brandId = brandId;
         this.categoryId = categoryId;
@@ -49,6 +54,8 @@ public class Product {
         this.availableSizes = availableSizes;
         this.brandName = brandName;
         this.categoryName = categoryName;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getProductId() {
@@ -201,6 +208,34 @@ public class Product {
     public void setSizes(List<String> sizes) {
         this.sizes = sizes;
     }
-    
-    
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
+
+    public String getFormattedUpdatedAt() {
+        if (updatedAt != null) {
+            return updatedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
 }

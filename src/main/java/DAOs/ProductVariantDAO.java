@@ -5,11 +5,14 @@
 package DAOs;
 
 import Models.ProductVariant;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -215,6 +218,21 @@ public class ProductVariantDAO extends DB.DBContext {
         }
         return 0;
     }
+    
+    public int getTotalQuantityAvailable() {
+        try {
+            String sql = "SELECT SUM(QuantityAvailable) AS TotalQuantity FROM ProductVariant";
+            ResultSet rs = execSelectQuery(sql);
+            int total = 0;
+            if (rs.next()) {
+                total = rs.getInt("TotalQuantity");
+            }
+            return total;
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductVariantDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
+    }
 
     /**
      * Increase quantity available
@@ -282,6 +300,24 @@ public class ProductVariantDAO extends DB.DBContext {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public BigDecimal getTotalInventoryValue() {
+        try {
+            String sql = "SELECT SUM(QuantityAvailable * Price) AS TotalPrice FROM ProductVariant";
+            ResultSet rs = execSelectQuery(sql);
+            BigDecimal totalPrice = BigDecimal.ZERO;
+            if (rs.next()) {
+                totalPrice = rs.getBigDecimal("TotalPrice");
+                if (totalPrice == null) {
+                    totalPrice = BigDecimal.ZERO;
+                }
+            }
+            return totalPrice;
+        } catch (SQLException ex) {
+            Logger.getLogger(ProductVariantDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
 }
