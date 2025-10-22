@@ -598,5 +598,6 @@
             </c:otherwise>
         </c:choose>
     </section>
+    <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
 </body>
 </html>

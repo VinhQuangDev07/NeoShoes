@@ -5,8 +5,10 @@
 package Controllers.Customer;
 
 import DAOs.CartDAO;
+import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.CartItem;
+import Models.Product;
 import Models.ProductVariant;
 import java.io.IOException;
 import java.util.List;
@@ -16,12 +18,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -32,12 +28,14 @@ public class CartServlet extends HttpServlet {
 
     private CartDAO cartDAO;
     private ProductVariantDAO variantDAO;
+    private ProductDAO productDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         cartDAO = new CartDAO();
         variantDAO = new ProductVariantDAO();
+        productDAO = new ProductDAO();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -66,29 +64,21 @@ public class CartServlet extends HttpServlet {
         // Get cart items for the customer
         List<CartItem> cartItems = cartDAO.getItemsByCustomerId(customerId);
 
-        // For each cart item, load variant list for its product
-        Map<Integer, List<ProductVariant>> variantsByProduct = new HashMap<>();
-        Map<Integer, Set<String>> colorsByProduct = new HashMap<>();
-        Map<Integer, Set<String>> sizesByProduct = new HashMap<>();
-
         for (CartItem item : cartItems) {
             int productId = item.getVariant().getProduct().getProductId();
+            Product product = item.getVariant().getProduct();
 
-            if (!variantsByProduct.containsKey(productId)) {
-                List<ProductVariant> variants = variantDAO.getByProductId(productId);
-                variantsByProduct.put(productId, variants);
+            // Chỉ load nếu variants chưa được set
+            if (product.getVariants() == null || product.getVariants().isEmpty()) {
+                // Product already has variants, colors, and sizes loaded from ProductDAO
+                List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
+                List<String> colors = variantDAO.getColorsByProductId(productId);
+                List<String> sizes = variantDAO.getSizesByProductId(productId);
 
-                // Extract unique colors và sizes
-                Set<String> colors = variants.stream()
-                        .map(ProductVariant::getColor)
-                        .collect(Collectors.toSet());
-
-                Set<String> sizes = variants.stream()
-                        .map(ProductVariant::getSize)
-                        .collect(Collectors.toSet());
-
-                colorsByProduct.put(productId, colors);
-                sizesByProduct.put(productId, sizes);
+                // Set trực tiếp vào product hiện tại, KHÔNG thay thế product
+                product.setVariants(variants);
+                product.setColors(colors);
+                product.setSizes(sizes);
             }
         }
 
@@ -98,9 +88,6 @@ public class CartServlet extends HttpServlet {
 
         // Set attributes for JSP
         request.setAttribute("cartItems", cartItems);
-        request.setAttribute("variantsByProduct", variantsByProduct);
-        request.setAttribute("colorsByProduct", colorsByProduct);
-        request.setAttribute("sizesByProduct", sizesByProduct);
 
         request.setAttribute("itemCount", itemCount);
 //        request.setAttribute("totalPrice", totalPrice);

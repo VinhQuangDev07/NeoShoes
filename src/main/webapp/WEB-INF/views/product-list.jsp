@@ -648,5 +648,6 @@
                 </c:choose>
             </main>
         </div>
+        <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
     </body>
 </html>
