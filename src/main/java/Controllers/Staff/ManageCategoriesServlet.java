@@ -2,6 +2,7 @@ package Controllers.Staff;
 
 import DAOs.CategoryDAO;
 import Models.Category;
+import Utils.CloudinaryConfig;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -11,6 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet(name = "ManageCategoriesServlet", urlPatterns = {"/managecategoriesforstaff", "/managecategoriesforstaff/*"})
+@MultipartConfig
 public class ManageCategoriesServlet extends HttpServlet {
     private CategoryDAO categoryDAO;
 
@@ -163,7 +165,11 @@ public class ManageCategoriesServlet extends HttpServlet {
         }
         
         String name = request.getParameter("name");
-        String image = request.getParameter("image");
+        
+        Part imagePart = request.getPart("image");
+        String imageUrl = null;
+        imageUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+        
         String isActiveStr = request.getParameter("isActive");
         boolean isActive = "on".equals(isActiveStr) || "true".equals(isActiveStr);
         
@@ -177,7 +183,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             request.setAttribute("error", "Category name already exists");
             Category category = new Category();
             category.setName(name);
-            category.setImage(image);
+            category.setImage(imageUrl);
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "add");
@@ -188,7 +194,7 @@ public class ManageCategoriesServlet extends HttpServlet {
         
         Category category = new Category();
         category.setName(name.trim());
-        category.setImage(image);
+        category.setImage(imageUrl);
         category.setIsActive(isActive);
         
         boolean success = categoryDAO.addCategory(category);
@@ -213,7 +219,11 @@ public class ManageCategoriesServlet extends HttpServlet {
         
         int id = Integer.parseInt(request.getParameter("id"));
         String name = request.getParameter("name");
-        String image = request.getParameter("image");
+        
+        Part imagePart = request.getPart("image");
+        String imageUrl = null;
+        imageUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+        
         String isActiveStr = request.getParameter("isActive");
         boolean isActive = "on".equals(isActiveStr) || "true".equals(isActiveStr);
         
@@ -222,7 +232,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             Category category = new Category();
             category.setCategoryId(id);
             category.setName(name);
-            category.setImage(image);
+            category.setImage(imageUrl);
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "update");
@@ -235,7 +245,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             request.setAttribute("error", "Category name already exists");
             Category category = categoryDAO.getCategoryById(id);
             category.setName(name);
-            category.setImage(image);
+            category.setImage(imageUrl);
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "update");
@@ -247,7 +257,7 @@ public class ManageCategoriesServlet extends HttpServlet {
         Category category = new Category();
         category.setCategoryId(id);
         category.setName(name.trim());
-        category.setImage(image);
+        category.setImage(imageUrl);
         category.setIsActive(isActive);
         
         boolean success = categoryDAO.updateCategory(category);
