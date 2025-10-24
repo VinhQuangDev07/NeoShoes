@@ -19,6 +19,11 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
         <style>
             * {
@@ -263,7 +268,7 @@
 
             .stat-value {
                 color: #1e293b;
-                font-size: 24px;
+                font-size: 20px;
                 font-weight: 700;
             }
 
@@ -384,6 +389,120 @@
                 font-size: 16px;
                 font-weight: 500;
             }
+
+            /* Alert Styles */
+            .alert {
+                border-radius: 8px;
+                border: none;
+                font-weight: 500;
+            }
+
+            .alert-success {
+                background-color: #d1fae5;
+                color: #065f46;
+                border-left: 4px solid #10b981;
+            }
+
+            .alert-danger {
+                background-color: #fee2e2;
+                color: #dc2626;
+                border-left: 4px solid #ef4444;
+            }
+
+            /* Review Styles */
+            .review-item {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                background-color: #ffffff;
+            }
+
+            .review-item:hover {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .customer-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #f1f5f9;
+            }
+
+            .rating {
+                display: flex;
+                align-items: center;
+            }
+
+            .rating .fas.fa-star {
+                font-size: 14px;
+            }
+
+            .staff-reply {
+                border-left: 3px solid #3b82f6;
+                background-color: #f8fafc;
+            }
+
+            .reply-form {
+                background-color: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 16px;
+            }
+
+            .review-actions .btn {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
+            /* Reviews Section */
+            .reviews-summary {
+                margin-bottom: 20px;
+            }
+
+            .review-stats {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f8fafc;
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid #e2e8f0;
+            }
+
+            .review-count {
+                text-align: center;
+            }
+
+            .count-number {
+                font-size: 32px;
+                font-weight: 700;
+                color: #3b82f6;
+                line-height: 1;
+            }
+
+            .count-label {
+                font-size: 14px;
+                color: #64748b;
+                font-weight: 500;
+                margin-top: 4px;
+            }
+
+            .review-actions {
+                display: flex;
+                gap: 12px;
+            }
+
+            .review-actions .btn {
+                font-size: 16px;
+                padding: 12px 24px;
+                font-weight: 600;
+                border-radius: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
         </style>
     </head>
     <body>
@@ -398,6 +517,23 @@
                 </div>
 
             </div>
+
+            <!-- Success/Error Messages -->
+            <c:if test="${not empty param.success}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${param.success}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </c:if>
+            
+            <c:if test="${not empty param.error}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${param.error}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </c:if>
 
             <!-- Main Content -->
             <div class="content-grid">
@@ -429,51 +565,58 @@
                 <!-- Right Column: Product Info -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Product information</h2>
+                        <h2 class="card-title">Product Information</h2>
                     </div>
                     <div class="card-body">
                         <div class="info-row">
-                            <div class="info-label">Product Id:</div>
+                            <div class="info-label">Product ID:</div>
                             <div class="info-value"><strong>#${product.productId}</strong></div>
                         </div>
 
                         <div class="info-row">
-                            <div class="info-label">Category: </div>
+                            <div class="info-label">Product Name:</div>
+                            <div class="info-value"><strong>${product.name}</strong></div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Brand:</div>
                             <div class="info-value">
-                                <span class="tag blue">${product.categoryName}</span>
+                                <span class="tag blue">${product.brandName}</span>
                             </div>
                         </div>
 
                         <div class="info-row">
-                            <div class="info-label">Material: </div>
+                            <div class="info-label">Category:</div>
+                            <div class="info-value">
+                                <span class="tag green">${product.categoryName}</span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Material:</div>
                             <div class="info-value">${product.material}</div>
                         </div>
 
-                        <!--                        
-                        
-                        -->                                                <div class="info-row">
-                            <div class="info-label">Status: </div>
+                        <div class="info-row">
+                            <div class="info-label">Status:</div>
                             <div class="info-value">
                                 <span class="tag green">Active</span>
                             </div>
                         </div>
 
-
                         <div class="info-row">
-                            <div class="info-label">Create Date: </div>
+                            <div class="info-label">Created Date:</div>
                             <div class="info-value">
-                                ${product.formattedCreatedAt}
+                                <i class="fas fa-calendar-alt me-1"></i>${product.formattedCreatedAt}
                             </div>
                         </div>
 
-
                         <div class="info-row">
-                            <div class="info-label">Last Update: </div>
+                            <div class="info-label">Last Updated:</div>
                             <div class="info-value">
-                                ${product.formattedUpdatedAt}
+                                <i class="fas fa-clock me-1"></i>${product.formattedUpdatedAt}
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -497,10 +640,38 @@
                     </div>
                 </div>
 
-                <!-- Statistics -->
+                <!-- Reviews Section -->
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Statistics</h2>
+                        <h2 class="card-title">
+                            <i class="fas fa-star me-2"></i>Product Reviews
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="reviews-summary">
+                            <div class="review-stats">
+                                <div class="review-count">
+                                    <div class="count-number">${reviews.size()}</div>
+                                    <div class="count-label">Total Reviews</div>
+                                </div>
+                                <div class="review-actions">
+                                    <a href="<c:url value='/reviews?productId=${product.productId}&showReplyButton=true'/>" 
+                                       class="btn btn-primary btn-lg" target="_blank">
+                                        <i class="fas fa-eye me-2"></i>View All Reviews
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card" style="grid-column: 1 / -1;">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-bar me-2"></i>Product Statistics
+                        </h2>
                     </div>
                     <div class="card-body">
                         <div class="stats-row">
@@ -509,20 +680,19 @@
                                 <div class="stat-value">${totalQuantity}</div>
                             </div>
                             <div class="stat-box">
-                                <div class="stat-label">Number of variants</div>
+                                <div class="stat-label">Variants</div>
                                 <div class="stat-value">${fn:length(productVariants)}</div>
                             </div>
                             <div class="stat-box">
-                                <div class="stat-label">Min price</div>
+                                <div class="stat-label">Price Range</div>
                                 <div class="stat-value">
-                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/>
+                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/> - 
+                                    <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
                                 </div>
                             </div>
                             <div class="stat-box">
-                                <div class="stat-label">Max price</div>
-                                <div class="stat-value">
-                                    <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
-                                </div>
+                                <div class="stat-label">Reviews</div>
+                                <div class="stat-value">${reviews.size()} reviews</div>
                             </div>
                         </div>
                     </div>
@@ -641,5 +811,22 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            // Auto-hide success/error messages after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    if (alert.classList.contains('alert-success') || alert.classList.contains('alert-danger')) {
+                        alert.style.transition = 'opacity 0.5s';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 500);
+                    }
+                });
+            }, 5000);
+        </script>
+        
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

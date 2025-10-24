@@ -8,10 +8,10 @@ import DAOs.OrderDAO;
 import DAOs.CustomerDAO;
 import DAOs.ReviewDAO;
 import Models.Order;
-import Models.OrderStatusHistory;
 import Models.OrderDetail;
 import Models.Customer;
 import Models.Review;
+import java.util.ArrayList;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,13 +36,48 @@ public class OrdersServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Hardcode customerId = 2 for testing (no login functionality yet)
-        int customerId = 1;
+        int customerId = 2;
 
+        // Pagination
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        int recordsPerPage = 5; // 5 orders per page
         List<Order> orders;
         try {
             orders = orderDAO.listByCustomer(customerId);
-            request.setAttribute("orders", orders);
-            for (Order order : orders) {
+            
+            int totalRecords = orders.size();
+            
+            // Calculate start and end positions
+            int startIndex = (currentPage - 1) * recordsPerPage;
+            int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+            
+            // Get data for current page
+            List<Order> pageData;
+            if (startIndex < totalRecords) {
+                pageData = orders.subList(startIndex, endIndex);
+            } else {
+                pageData = new ArrayList<>();
+            }
+            
+            // Calculate pagination info
+            int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
+            
+            request.setAttribute("orders", pageData);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("totalRecords", totalRecords);
+            request.setAttribute("recordsPerPage", recordsPerPage);
+            request.setAttribute("baseUrl", request.getRequestURI());
+            for (Order order : pageData) {
                 if (order.getItems() != null) {
                     for (OrderDetail item : order.getItems()) {
                         Review existingReview = reviewDAO.getExistingReview(item.getProductVariantId(), customerId);
@@ -57,13 +92,10 @@ public class OrdersServlet extends HttpServlet {
         Customer customer = customerDAO.findById(customerId);
         // Load existing reviews for each order item
 
-        // Check for success/error messages
-        String cancelled = request.getParameter("cancelled");
+        // Check for error messages only
         String error = request.getParameter("error");
 
-        if ("true".equals(cancelled)) {
-            request.setAttribute("successMessage", "Order has been cancelled successfully!");
-        } else if ("cancel_failed".equals(error)) {
+        if ("cancel_failed".equals(error)) {
             request.setAttribute("errorMessage", "Failed to cancel order. Please try again.");
         }
 

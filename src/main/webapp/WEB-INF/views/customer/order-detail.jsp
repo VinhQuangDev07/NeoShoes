@@ -2,6 +2,24 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<c:set var="approvedTime" value="" />
+<c:set var="shippedTime" value="" />
+<c:set var="deliveredTime" value="" />
+
+<c:forEach items="${statusHistory}" var="history">
+    <c:choose>
+        <c:when test="${history.orderStatus == 'APPROVED'}">
+            <c:set var="approvedTime" value="${history.changedAt}" />
+        </c:when>
+        <c:when test="${history.orderStatus == 'SHIPPED'}">
+            <c:set var="shippedTime" value="${history.changedAt}" />
+        </c:when>
+        <c:when test="${history.orderStatus == 'COMPLETED'}">
+            <c:set var="deliveredTime" value="${history.changedAt}" />
+        </c:when>
+    </c:choose>
+</c:forEach>
+
 <c:set var="pageTitle" value="Order Detail - NeoShoes" scope="request"/>
 
 <!DOCTYPE html>
@@ -78,11 +96,8 @@
             }
             
             .status-badge {
-                padding: 6px 16px;
-                border-radius: 20px;
-                font-size: 14px;
-                font-weight: 600;
-                text-transform: capitalize;
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
             }
             
             .status-PENDING {
@@ -257,15 +272,35 @@
                 color: white;
             }
             
+            .payment-cancelled {
+                background: #dc3545;
+                color: white;
+            }
+            
             .shipping-section {
-                padding: 20px;
+                padding: 15px 20px;
                 border-bottom: 1px solid #e0e0e0;
             }
             
             .shipping-section h6 {
                 font-weight: 600;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
                 color: #333;
+                font-size: 16px;
+            }
+            
+            .address-info {
+                line-height: 1.4;
+            }
+            
+            .address-line {
+                margin-bottom: 4px;
+                color: #555;
+                font-size: 14px;
+            }
+            
+            .address-line:last-child {
+                margin-bottom: 0;
             }
             
             .products-section {
@@ -593,27 +628,41 @@
                             <div class="order-meta">
                                 <div class="order-date">
                                     <i class="fas fa-calendar"></i>
-                                    <span>
-                                        <c:choose>
-                                            <c:when test="${not empty order.placedAt}">
-                                                <c:out value="${order.placedAt}"/>
-                                            </c:when>
-                                            <c:otherwise>
-                                                N/A
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </span>
+                                    <span class="order-date" data-date="${order.placedAt}"></span>
                                 </div>
-                                <span class="status-badge status-${order.status}">
-                                    <c:out value="${order.status}"/>
+                                <span class="order-status">
+                                    <c:choose>
+                                        <c:when test="${empty order.status}">
+                                            <span class="badge bg-secondary status-badge">No Status</span>
+                                        </c:when>
+                                        <c:when test="${order.status == 'PENDING'}">
+                                            <span class="badge bg-warning status-badge">Pending</span>
+                                        </c:when>
+                                        <c:when test="${order.status == 'APPROVED'}">
+                                            <span class="badge bg-info status-badge">Approved</span>
+                                        </c:when>
+                                        <c:when test="${order.status == 'SHIPPED'}">
+                                            <span class="badge bg-primary status-badge">Shipped</span>
+                                        </c:when>
+                                        <c:when test="${order.status == 'COMPLETED'}">
+                                            <span class="badge bg-success status-badge">Completed</span>
+                                        </c:when>
+                                        <c:when test="${order.status == 'CANCELLED'}">
+                                            <span class="badge bg-danger status-badge">Cancelled</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge bg-secondary status-badge">${order.status}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </span>
                             </div>
                         </div>
 
                         <!-- Order Progress Timeline -->
-                        <div class="progress-section">
-                            <h6>Order Progress</h6>
-                            <div class="progress-timeline">
+                        <c:if test="${order.status != 'CANCELLED'}">
+                            <div class="progress-section">
+                                <h6>Order Progress</h6>
+                                <div class="progress-timeline">
                                 <!-- Step 1: Order Placed -->
                                 <div class="progress-step completed">
                                     <div class="step-circle completed">
@@ -621,19 +670,17 @@
                                     </div>
                                     <div class="step-info">
                                         <div class="step-text">
-                                            <div>Order Placed</div>
-                                            <div class="step-date">
-                                                <c:out value="${order.placedAt}"/>
-                                            </div>
+                                            <div>Pending</div>
+                                            <div class="step-date" data-date="${order.placedAt}"></div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Step 2: Approved -->
-                                <div class="progress-step ${order.status == 'APPROVED' || order.status == 'SHIPPING' || order.status == 'DELIVERED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'APPROVED' || order.status == 'SHIPPING' || order.status == 'DELIVERED' ? 'completed' : (order.status == 'PENDING' ? '' : 'current')}">
+                                <div class="progress-step ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
+                                    <div class="step-circle ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'PENDING' ? '' : 'current')}">
                                         <c:choose>
-                                            <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPING' || order.status == 'DELIVERED'}">
+                                            <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
                                             <c:when test="${order.status == 'PENDING'}">
@@ -652,14 +699,14 @@
                                             <div>Approved</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPING' || order.status == 'DELIVERED'}">
-                                                        <c:out value="${order.placedAt}"/>
+                                                    <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
+                                                        <span data-date="${approvedTime}"></span>
                                                     </c:when>
                                                     <c:when test="${order.status == 'CANCELED'}">
                                                         Canceled
                                                     </c:when>
                                                     <c:otherwise>
-                                                        Pending
+                                                        Not yet
                                                     </c:otherwise>
                                                 </c:choose>
                                             </div>
@@ -668,10 +715,10 @@
                                 </div>
                                 
                                 <!-- Step 3: Shipping -->
-                                <div class="progress-step ${order.status == 'SHIPPING' || order.status == 'DELIVERED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'SHIPPING' || order.status == 'DELIVERED' ? 'completed' : (order.status == 'APPROVED' ? 'current' : '')}">
+                                <div class="progress-step ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
+                                    <div class="step-circle ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'APPROVED' ? 'current' : '')}">
                                         <c:choose>
-                                            <c:when test="${order.status == 'SHIPPING' || order.status == 'DELIVERED'}">
+                                            <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
                                             <c:otherwise>
@@ -684,11 +731,11 @@
                                             <div>Shipping</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${order.status == 'SHIPPING' || order.status == 'DELIVERED'}">
-                                                        In Transit
+                                                    <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
+                                                        <span data-date="${shippedTime}"></span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        Pending
+                                                        Not yet
                                                     </c:otherwise>
                                                 </c:choose>
                                             </div>
@@ -697,10 +744,10 @@
                                 </div>
                                 
                                 <!-- Step 4: Delivered -->
-                                <div class="progress-step ${order.status == 'DELIVERED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'DELIVERED' ? 'completed' : (order.status == 'SHIPPING' ? 'current' : '')}">
+                                <div class="progress-step ${order.status == 'COMPLETED' ? 'completed' : ''}">
+                                    <div class="step-circle ${order.status == 'COMPLETED' ? 'completed' : (order.status == 'SHIPPED' ? 'current' : '')}">
                                         <c:choose>
-                                            <c:when test="${order.status == 'DELIVERED'}">
+                                            <c:when test="${order.status == 'COMPLETED'}">
                                                 <i class="fas fa-check"></i>
                                             </c:when>
                                             <c:otherwise>
@@ -713,8 +760,8 @@
                                             <div>Delivered</div>
                                             <div class="step-date">
                                                 <c:choose>
-                                                    <c:when test="${order.status == 'DELIVERED'}">
-                                                        Completed
+                                                    <c:when test="${order.status == 'COMPLETED'}">
+                                                        <span data-date="${deliveredTime}"></span>
                                                     </c:when>
                                                     <c:otherwise>
                                                         Not yet
@@ -726,6 +773,7 @@
                                 </div>
                             </div>
                         </div>
+                        </c:if>
 
                         <!-- Order Summary -->
                         <div class="order-summary">
@@ -746,36 +794,48 @@
                             </div>
                             <div class="summary-section">
                                 <h6>Payment Method</h6>
-                                <div class="mb-3">
-                                    <span class="payment-badge payment-cod">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                        Cash on Delivery
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="payment-badge payment-completed">
-                                        <i class="fas fa-check-circle"></i>
-                                        Completed
-                                    </span>
-                                </div>
+                                <c:choose>
+                                    <c:when test="${order.status == 'CANCELLED'}">
+                                        <div class="mb-3">
+                                            <span class="payment-badge payment-cancelled">
+                                                <i class="fas fa-times-circle"></i>
+                                                Cancelled
+                                            </span>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="mb-3">
+                                            <span class="payment-badge payment-cod">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                                <c:out value="${order.paymentMethodName}" default="Cash on Delivery"/>
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="payment-badge payment-completed">
+                                                <i class="fas fa-check-circle"></i>
+                                                <c:out value="${order.paymentStatusName}" default="Completed"/>
+                                            </span>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
 
                         <!-- Shipping Info -->
                         <div class="shipping-section">
                             <h6><i class="fas fa-shipping-fast"></i> Delivery Address</h6>
-                            <p class="mb-0">
+                            <div class="address-info">
                                 <c:choose>
                                     <c:when test="${not empty order.recipientName}">
-                                        <strong><c:out value="${order.recipientName}"/></strong><br>
-                                        <c:out value="${order.addressDetails}"/><br>
-                                        <i class="fas fa-phone"></i> Phone: <c:out value="${order.recipientPhone}"/>
+                                        <div class="address-line"><strong><c:out value="${order.recipientName}"/></strong></div>
+                                        <div class="address-line"><c:out value="${order.addressDetails}"/></div>
+                                        <div class="address-line"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></div>
                                     </c:when>
                                     <c:otherwise>
-                                        Default Address
+                                        <div class="address-line">Default Address</div>
                                     </c:otherwise>
                                 </c:choose>
-                            </p>
+                            </div>
                         </div>
 
                         <!-- Products --> 
@@ -848,6 +908,14 @@
                                             aria-label="Cancel Order">
                                         <i class="fas fa-times"></i>
                                         Cancel Order
+                                    </button>
+                                </c:when>
+                                <c:when test="${order.status == 'CANCELLED'}">
+                                    <!-- Order is cancelled -->
+                                    <button class="btn-action cancel-btn" disabled 
+                                            aria-label="Order Cancelled">
+                                        <i class="fas fa-ban"></i>
+                                        Order Cancelled
                                     </button>
                                 </c:when>
                                 <c:when test="${order.status == 'DELIVERED'}">
@@ -1042,9 +1110,8 @@
                     // Submit the form
                     document.body.appendChild(form);
                     form.submit();
-                },
-                
-               
+                }
+            };
             
             // Initialize when DOM is ready
             document.addEventListener('DOMContentLoaded', function() {
@@ -1079,10 +1146,46 @@
             window.OrderDetailManager = OrderDetailManager;
             window.showCancelModal = () => OrderDetailManager.showCancelModal();
             window.hideCancelModal = () => OrderDetailManager.hideCancelModal();
+            
+            // Format datetime like in orders.jsp
+            document.querySelectorAll('.order-date[data-date]').forEach(element => {
+                const dateStr = element.getAttribute('data-date');
+                if (dateStr) {
+                    try {
+                        const date = new Date(dateStr);
+                        element.textContent = date.toLocaleString('vi-VN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                    } catch (e) {
+                        element.textContent = dateStr;
+                    }
+                }
+            });
+            
+            // Format step dates
+            document.querySelectorAll('.step-date[data-date]').forEach(element => {
+                const dateStr = element.getAttribute('data-date');
+                if (dateStr) {
+                    try {
+                        const date = new Date(dateStr);
+                        const formattedDate = date.toLocaleString('vi-VN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        element.textContent = formattedDate;
+                    } catch (e) {
+                        element.textContent = dateStr;
+                    }
+                }
+            });
         </script>
     </body>
-</html> ID:</span>
-                            <span class="cancel-info-value">#<c:out value="${order.orderId}"/></span>
-                        </div>
-                        <div class="cancel-info-item">
-                            <span class="cancel-info-label">Order
+</html>
