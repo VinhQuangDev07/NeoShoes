@@ -6,6 +6,7 @@ package Models;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -109,5 +110,22 @@ public class ReturnRequestDetail {
     public void setRefundDate(LocalDateTime refundDate) {
         this.refundDate = refundDate;
     }
-
+public String getFormattedRefundDate() {
+        if (refundDate != null) {
+            return refundDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
+public String getFormattedUpdatedAt() {
+        if (updatedAt != null) {
+            return updatedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
+public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
 }

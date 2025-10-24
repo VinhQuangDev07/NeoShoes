@@ -45,7 +45,7 @@ public class PurchaseServlet extends HttpServlet {
         
         
         // Using Customer ID = ? for testing 
-        int customerId = 2;
+        int customerId = 1;
         CustomerDAO customerDAO = new CustomerDAO();
         Customer customer = customerDAO.findById(customerId);
 
@@ -65,7 +65,7 @@ public class PurchaseServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // Using Customer ID = ? for testing 
-        int customerId = 2;
+        int customerId = 1;
         CustomerDAO customerDAO = new CustomerDAO();
         Customer customer = customerDAO.findById(customerId);
 

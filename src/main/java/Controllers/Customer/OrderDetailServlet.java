@@ -7,7 +7,6 @@ package Controllers.Customer;
 import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
 import Models.Order;
-import Models.ReturnRequest;
 import DAOs.CustomerDAO;
 import Models.Customer;
 import jakarta.servlet.ServletException;
@@ -15,7 +14,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -32,7 +30,7 @@ public class OrderDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // For now, using hardcoded customer ID. In production, get from session
-        int customerId = 2;
+        int customerId = 1;
         Customer customer = customerDAO.findById(customerId);
 
         int orderId = Integer.parseInt(request.getParameter("id"));
