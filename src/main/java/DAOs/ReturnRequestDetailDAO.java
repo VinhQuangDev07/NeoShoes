@@ -2,11 +2,15 @@ package DAOs;
 
 import Models.ReturnRequestDetail;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ReturnRequestDetailDAO extends DB.DBContext {
 
@@ -57,8 +61,7 @@ public class ReturnRequestDetailDAO extends DB.DBContext {
      * @return
      * @throws java.sql.SQLException
      */
-    public List<ReturnRequestDetail> getDetailsByReturnRequestId(int returnRequestId)
-            throws SQLException {
+    public List<ReturnRequestDetail> getDetailsByReturnRequestId(int returnRequestId) {
         List<ReturnRequestDetail> list = new ArrayList<>();
         String sql = "SELECT * FROM [ReturnRequestDetail] WHERE ReturnRequestId = ?";
         Object[] params = {returnRequestId};
@@ -90,6 +93,8 @@ public class ReturnRequestDetailDAO extends DB.DBContext {
 
                 list.add(detail);
             }
+        } catch (SQLException ex) {
+            Logger.getLogger(ReturnRequestDetailDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return list;
     }
@@ -117,5 +122,58 @@ public class ReturnRequestDetailDAO extends DB.DBContext {
         String sql = "DELETE FROM [ReturnRequestDetail] WHERE ReturnRequestId = ?";
         Object[] params = {returnRequestId};
         return execQuery(sql, params);
+    }
+
+    /**
+     * Admin marks detail as refunded (updates RefundDate)
+     */
+    public int updateRefundDate(int returnRequestDetailId) throws SQLException {
+        String sql = "UPDATE [ReturnRequestDetail] "
+                + "SET RefundDate = GETDATE(), UpdatedAt = GETDATE() "
+                + "WHERE ReturnRequestDetailId = ?";
+        Object[] params = {returnRequestDetailId};
+        return execQuery(sql, params);
+    }
+
+    /**
+     * Admin marks all details in a request as refunded
+     */
+    public int updateRefundDateByRequestId(int returnRequestId) {
+
+        try {
+            String sql = "UPDATE [ReturnRequestDetail] "
+                    + "SET RefundDate = GETDATE(), UpdatedAt = GETDATE() "
+                    + "WHERE ReturnRequestId = ?";
+            Object[] params = {returnRequestId};
+            return execQuery(sql, params);
+        } catch (SQLException ex) {
+            Logger.getLogger(ReturnRequestDetailDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return 0;
+    }
+
+    /**
+     * Insert multiple return request details in batch (for transaction support)
+     */
+    public void insertDetailsBatch(Connection conn, int returnRequestId, List<ReturnRequestDetail> details) throws SQLException {
+        if (details == null || details.isEmpty()) {
+            return;
+        }
+
+        String sql = "INSERT INTO [ReturnRequestDetail] (ReturnRequestId, ProductVariantId, "
+                + "Quantity, Amount, Note, CreatedAt, UpdatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+
+        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (ReturnRequestDetail detail : details) {
+                ps.setInt(1, returnRequestId);
+                ps.setInt(2, detail.getProductVariantId());
+                ps.setInt(3, detail.getQuantity());
+                ps.setBigDecimal(4, detail.getAmount());
+                ps.setString(5, detail.getNote());
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
     }
 }

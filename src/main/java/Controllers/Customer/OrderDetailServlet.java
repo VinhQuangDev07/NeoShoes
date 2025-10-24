@@ -6,6 +6,7 @@ package Controllers.Customer;
 
 import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
+import Models.Order;
 
 import Models.ReturnRequest;
 import DAOs.CustomerDAO;
@@ -38,6 +39,9 @@ public class OrderDetailServlet extends HttpServlet {
             int customerId = 2;
             Customer customer = customerDAO.findById(customerId);
 
+        // For now, using hardcoded customer ID. In production, get from session
+        int customerId = 1;
+        Customer customer = customerDAO.findById(customerId);
             int orderId = Integer.parseInt(request.getParameter("id"));
             int requestId = 0;
             try {
