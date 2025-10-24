@@ -413,7 +413,7 @@
                                                         function proceedToCheckout() {
                                                             const selectedItems = document.querySelectorAll('.checkbox-black:checked');
                                                             if (selectedItems.length === 0) {
-                                                                alert('Vui lòng chọn ít nhất một sản phẩm để thanh toán!\n\nHướng dẫn:\n1. Tick vào ô vuông bên cạnh sản phẩm muốn mua\n2. Kiểm tra số lượng và giá tiền\n3. Nhấn nút Purchase để thanh toán');
+                                                                alert('Please select at least one product to checkout!\n\nInstructions:\n1. Check the box next to the product you want to buy\n2. Check the quantity and price\n3. Click the Buy button to checkout ');
                                                                 return;
                                                             }
                                                             

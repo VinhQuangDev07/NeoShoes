@@ -110,29 +110,15 @@
                 text-transform: capitalize;
             }
             
-            .status-APPROVED, .status-delivered {
-                background: #d4edda;
-                color: #155724;
+            
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
             }
             
-            .status-PENDING {
-                background: #fff3cd;
-                color: #856404;
-            }
-            
-            .status-processing {
-                background: #d1ecf1;
-                color: #0c5460;
-            }
-            
-            .status-shipped, .status-shipping {
-                background: #cce7ff;
-                color: #004085;
-            }
-            
-            .status-canceled, .status-cancelled {
-                background: #f8d7da;
-                color: #721c24;
+            .badge.bg-secondary {
+                background-color: #6c757d !important;
+                color: white;
             }
             
             .order-actions {
@@ -446,19 +432,41 @@
                                     <div class="order-header">
                                         <div class="order-info">
                                             <span class="order-number">Order: #<c:out value="${order.orderId}"/></span>
-                                            <span class="order-date"><c:out value="${order.placedAt}"/></span>
-                                            <span class="order-status status-${order.status}">
-                                                <c:out value="${order.status}"/>
+                                            <span class="order-date" data-date="${order.placedAt}"></span>
+                                            <span class="order-status">
+                                                <c:choose>
+                                                    <c:when test="${empty order.status}">
+                                                        <span class="badge bg-secondary status-badge">No Status</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'PENDING'}">
+                                                        <span class="badge bg-warning status-badge">Pending</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'APPROVED'}">
+                                                        <span class="badge bg-info status-badge">Approved</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'SHIPPED'}">
+                                                        <span class="badge bg-primary status-badge">Shipped</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'COMPLETED'}">
+                                                        <span class="badge bg-success status-badge">Completed</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'CANCELLED'}">
+                                                        <span class="badge bg-danger status-badge">Cancelled</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary status-badge">${order.status}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </span>
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$<c:out value="${order.totalAmount}"/></span>
                                             <div class="action-buttons">
                                                 <c:choose>
-                                                    <c:when test="${order.paymentStatusId == completeStatusId && not empty order.items}">
+                                                    <c:when test="${(order.paymentStatusId == completeStatusId || order.status == 'COMPLETED') && not empty order.items && order.status != null && order.status != ''}">
                                                         <!-- Order is completed/delivered -->
                                                         <c:choose>
-                                                            <c:when test="${order.items[0].review != null}">
+                                                            <c:when test="${not empty order.items[0].review}">
                                                                 <!-- Review exists -->
                                                                 <button type="button" 
                                                                         class="btn btn-sm btn-warning"
@@ -488,6 +496,20 @@
                                                                 </button>
                                                             </c:otherwise>
                                                         </c:choose>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'CANCELLED'}">
+                                                        <!-- Order is cancelled -->
+                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                title="Cannot review cancelled orders">
+                                                            <i class="fas fa-ban"></i> Cancelled
+                                                        </button>
+                                                    </c:when>
+                                                    <c:when test="${order.paymentStatusId == 4}">
+                                                        <!-- Payment is cancelled -->
+                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                title="Payment cancelled - cannot review">
+                                                            <i class="fas fa-ban"></i> Payment Cancelled
+                                                        </button>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <!-- Order not completed -->
@@ -568,6 +590,9 @@
                                                 <c:out value="${order.addressDetails}"/> | 
                                                 <c:out value="${order.recipientPhone}"/>
                                             </c:when>
+                                            <c:when test="${not empty order.addressDetails}">
+                                                Delivery to: <c:out value="${order.addressDetails}"/>
+                                            </c:when>
                                             <c:otherwise>
                                                 Delivery to: Default Address
                                             </c:otherwise>
@@ -576,6 +601,9 @@
                                 </div>
                             </c:forEach>
                         </c:if>
+                        
+                        <!-- Pagination -->
+                        <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
                     </div>
                 </div>
             </div>
@@ -842,6 +870,26 @@
                         ordersLink.classList.add('active');
                     }
                 }
+                
+                // Format datetime like in staff orders
+                document.querySelectorAll('.order-date[data-date]').forEach(element => {
+                    const dateStr = element.getAttribute('data-date');
+                    if (dateStr) {
+                        try {
+                            const date = new Date(dateStr);
+                            element.textContent = date.toLocaleString('vi-VN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                        } catch (e) {
+                            element.textContent = dateStr;
+                        }
+                    }
+                });
                 
                 // Auto-hide alerts after 5 seconds
                 const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');

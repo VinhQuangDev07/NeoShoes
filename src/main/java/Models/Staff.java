@@ -121,4 +121,8 @@ public class Staff {
     public void setDeleted(boolean v) {
         isDeleted = v;
     }
+    
+    public String getRoleName() {
+        return role ? "Admin" : "Staff";
+    }
 }

@@ -4,7 +4,6 @@
  */
 package Models;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 
 /**
@@ -17,6 +16,7 @@ public class OrderStatusHistory {
     private int changedBy;
     private String orderStatus;
     private LocalDateTime changedAt;
+    private String changedByName; // Staff name who made the change
 
     public OrderStatusHistory() {
     }
@@ -67,6 +67,14 @@ public class OrderStatusHistory {
 
     public void setChangedAt(LocalDateTime changedAt) {
         this.changedAt = changedAt;
+    }
+
+    public String getChangedByName() {
+        return changedByName;
+    }
+
+    public void setChangedByName(String changedByName) {
+        this.changedByName = changedByName;
     }
     
 }

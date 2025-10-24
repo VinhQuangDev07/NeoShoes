@@ -86,9 +86,31 @@ public class ReviewServlet extends HttpServlet {
             request.setAttribute("selectedRating", rating);
             request.setAttribute("selectedTime", timeParam);
             
+            // Load all reviews for statistics calculation (unfiltered)
+            List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
+            
+            // Calculate review statistics from all reviews
+            int totalReviews = allReviews.size();
+            double averageRating = 0.0;
+            
+            if (totalReviews > 0) {
+                int totalStars = 0;
+                for (Review review : allReviews) {
+                    int star = review.getStar();
+                    totalStars += star;
+                }
+                averageRating = (double) totalStars / totalReviews;
+            }
+            
+            // Format rating to 1 decimal place
+            String formattedRating = String.format("%.1f", averageRating);
+            
             // Set attributes for JSP
             request.setAttribute("productId", productId);
             request.setAttribute("reviews", reviews);
+            request.setAttribute("totalReviews", totalReviews);
+            request.setAttribute("averageRating", averageRating);
+            request.setAttribute("formattedRating", formattedRating);
             request.setAttribute("reviewCount", reviews.size());
             
             // Check if no matching reviews (for filtered results)
@@ -110,6 +132,83 @@ public class ReviewServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("errorMessage", "Unable to load reviews. Please try again later.");
             request.getRequestDispatcher("/WEB-INF/views/customer/reviews.jsp").forward(request, response);
+        }
+    }
+    
+    /**
+     * Handles POST requests for staff replies
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        
+        if ("reply-review".equals(action)) {
+            // Handle staff reply to review
+            try {
+                int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+                int productId = Integer.parseInt(request.getParameter("productId"));
+                String replyContent = request.getParameter("replyContent");
+                
+                if (replyContent == null || replyContent.trim().isEmpty()) {
+                    response.sendRedirect("reviews?productId=" + productId + "&error=Reply content cannot be empty");
+                    return;
+                }
+                
+                // Get staff ID from session (for staff users)
+                Integer staffId = (Integer) request.getSession().getAttribute("staffId");
+                if (staffId == null) {
+                    // For testing: set staffId = 1 (first staff in database)
+                    staffId = 1;
+                    System.out.println("Testing mode: Using staffId = 1");
+                }
+                
+                boolean success = reviewDAO.addStaffReply(reviewId, replyContent, staffId);
+                
+                if (success) {
+                    response.sendRedirect("reviews?productId=" + productId + "&success=Reply sent successfully");
+                } else {
+                    response.sendRedirect("reviews?productId=" + productId + "&error=Failed to send reply");
+                }
+                
+            } catch (NumberFormatException e) {
+                response.sendRedirect("reviews?error=Invalid review ID");
+            }
+        } else if ("edit-reply".equals(action)) {
+            // Handle edit staff reply
+            try {
+                int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+                int productId = Integer.parseInt(request.getParameter("productId"));
+                int replyId = Integer.parseInt(request.getParameter("replyId"));
+                String replyContent = request.getParameter("replyContent");
+                
+                if (replyContent == null || replyContent.trim().isEmpty()) {
+                    response.sendRedirect("reviews?productId=" + productId + "&error=Reply content cannot be empty");
+                    return;
+                }
+                
+                // Get staff ID from session (for staff users)
+                Integer staffId = (Integer) request.getSession().getAttribute("staffId");
+                if (staffId == null) {
+                    // For testing: set staffId = 1 (first staff in database)
+                    staffId = 1;
+                    System.out.println("Testing mode: Using staffId = 1");
+                }
+                
+                boolean success = reviewDAO.updateStaffReply(replyId, replyContent, staffId);
+                
+                if (success) {
+                    response.sendRedirect("reviews?productId=" + productId + "&success=Reply updated successfully");
+                } else {
+                    response.sendRedirect("reviews?productId=" + productId + "&error=Failed to update reply");
+                }
+                
+            } catch (NumberFormatException e) {
+                response.sendRedirect("reviews?error=Invalid reply ID");
+            }
+        } else {
+            // Default behavior for other POST requests
+            doGet(request, response);
         }
     }
     

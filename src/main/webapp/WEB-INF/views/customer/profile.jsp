@@ -6,6 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -108,6 +109,19 @@
 
 
 
+        /* Orders Container - Same as orders page */
+        .orders-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        /* Customer Sidebar - Simple Fix */
+        .customer-sidebar {
+            max-height: 500px; /* Giới hạn chiều cao */
+            overflow-y: auto; /* Cuộn khi cần */
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .customer-sidebar {
@@ -115,6 +129,7 @@
                 margin-top: 20px;
                 height: auto;
                 min-height: auto !important;
+                max-height: none;
             }
         }
     </style>
@@ -122,13 +137,16 @@
         <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-        <div class="d-flex justify-content-center">
+        <div class="orders-container">
             <div class="container">
-                <div class="d-flex profile-layout">
+                <div class="row">
                     <!-- Sidebar -->
-                    <jsp:include page="common/customer-sidebar.jsp"/>
+                    <div class="col-lg-3">
+                        <jsp:include page="common/customer-sidebar.jsp"/>
+                    </div>
                     <!-- Main Content -->
-                    <div id="main-content" class="main-content-wrapper mt-2 mb-5">
+                    <div class="col-lg-9">
+                        <div id="main-content" class="main-content-wrapper mt-2 mb-5">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
@@ -344,14 +362,19 @@
                                         <div class="d-flex justify-content-end gap-2">
                                             <div id="viewButtons-${addr.addressId}">
                                                 <button type="button" class="btn btn-primary btn-sm" 
-                                                        onclick="enableEdit(${addr.addressId})">Edit</button>
+                                                        onclick="enableEdit(<c:out value='${addr.addressId}'/>)">Edit</button>
                                                 <button type="button" class="btn btn-danger btn-sm" 
-                                                        onclick="deleteAddress(${addr.addressId})">Delete</button>
+                                                        onclick="deleteAddress(<c:out value='${addr.addressId}'/>)">Delete</button>
                                             </div>
 
                                             <div id="editButtons-${addr.addressId}" class="d-none">
                                                 <button type="button" class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEdit(${addr.addressId}, '${addr.addressName}', '${addr.recipientName}', '${addr.recipientPhone}', '${addr.addressDetails}')">Cancel</button>
+                                                        data-address-id="${addr.addressId}"
+                                                        data-address-name="${fn:escapeXml(addr.addressName)}"
+                                                        data-recipient-name="${fn:escapeXml(addr.recipientName)}"
+                                                        data-recipient-phone="${fn:escapeXml(addr.recipientPhone)}"
+                                                        data-address-details="${fn:escapeXml(addr.addressDetails)}"
+                                                        onclick="cancelEditFromData(this)">Cancel</button>
                                                 <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
                                             </div>
                                         </div>
@@ -583,7 +606,13 @@
                                                                 document.getElementById('editButtons-' + addressId).classList.remove('d-none');
                                                             }
 
-                                                            function cancelEdit(addressId, originalName, originalRecipient, originalPhone, originalDetails) {
+                                                            function cancelEditFromData(button) {
+                                                                const addressId = button.getAttribute('data-address-id');
+                                                                const originalName = button.getAttribute('data-address-name');
+                                                                const originalRecipient = button.getAttribute('data-recipient-name');
+                                                                const originalPhone = button.getAttribute('data-recipient-phone');
+                                                                const originalDetails = button.getAttribute('data-address-details');
+                                                                
                                                                 document.getElementById('addressName-' + addressId).value = originalName;
                                                                 document.getElementById('recipientName-' + addressId).value = originalRecipient;
                                                                 document.getElementById('recipientPhone-' + addressId).value = originalPhone;
@@ -628,5 +657,9 @@
                                                                 }
                                                             }
         </script>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

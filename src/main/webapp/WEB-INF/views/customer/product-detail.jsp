@@ -8,6 +8,7 @@
         <title>${product.name} - NeoShoes</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     </head>
 
     <style>
@@ -462,9 +463,17 @@
                                              });
         </script>
         
-        <!-- Include Reviews Section -->
-        <div id="reviews-section">
-            <jsp:include page="reviews.jsp"/>
+        <!-- Reviews Section -->
+        <div id="reviews-section" class="container mt-5">
+            <jsp:include page="reviews.jsp">
+                <jsp:param name="productId" value="${product.productId}"/>
+                <jsp:param name="reviews" value="${reviews}"/>
+                <jsp:param name="totalReviews" value="${totalReviews}"/>
+                <jsp:param name="formattedRating" value="${formattedRating}"/>
+                <jsp:param name="averageRating" value="${averageRating}"/>
+                <jsp:param name="showReplyButton" value="false"/>
+                <jsp:param name="skipCSS" value="true"/>
+            </jsp:include>
         </div>
         
         <jsp:include page="common/footer.jsp"/>
