@@ -150,17 +150,29 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Product</th>
+                                    <th>Product Variant ID</th>
                                     <th>Quantity</th>
-                                    <th>Unit price</th>
+                                    <th>Amount</th>
+                                    <c:if test="${not empty returnRequestDetails[0].note}">
+                                        <th>Note</th>
+                                    </c:if>
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach var="item" items="${order.items}">
+                                <!-- ✅ ĐÚNG: Loop qua returnRequestDetails -->
+                                <c:forEach var="detail" items="${returnRequestDetails}">
                                     <tr>
-                                        <td><c:out value="${item.productName}"/></td>
-                                        <td><c:out value="${item.detailQuantity}"/></td>
-                                        <td><fmt:formatNumber value="${item.detailPrice}" type="currency" currencySymbol="$" maxFractionDigits="2"/></td>
+                                        <td>${detail.productVariantId}</td>
+                                        <td>${detail.quantity}</td>
+                                        <td>
+                                            <fmt:formatNumber value="${detail.amount}" 
+                                                            type="currency" 
+                                                            currencySymbol="$" 
+                                                            maxFractionDigits="2"/>
+                                        </td>
+                                        <c:if test="${not empty detail.note}">
+                                            <td><c:out value="${detail.note}"/></td>
+                                        </c:if>
                                     </tr>
                                 </c:forEach>
                             </tbody>
@@ -168,8 +180,14 @@
                                 <tr>
                                     <th colspan="2" style="text-align: right;">Total Refund:</th>
                                     <th>
-                                        <fmt:formatNumber value="${totalRefund}" type="currency" currencySymbol="$" maxFractionDigits="2"/>
+                                        <fmt:formatNumber value="${totalRefund}" 
+                                                        type="currency" 
+                                                        currencySymbol="$" 
+                                                        maxFractionDigits="2"/>
                                     </th>
+                                    <c:if test="${not empty returnRequestDetails[0].note}">
+                                        <th></th>
+                                    </c:if>
                                 </tr>
                             </tfoot>
                         </table>
@@ -180,18 +198,17 @@
                 </c:choose>
             </div>
 
-
             <!-- Return Reason -->
             <div class="section">
                 <h3>Return Reason</h3>
-                <p>${returnRequest.reason}</p>
+                <p><c:out value="${returnRequest.reason}"/></p>
             </div>
 
             <!-- Bank Account Info -->
             <c:if test="${not empty returnRequest.bankAccountInfo}">
                 <div class="section">
                     <h3>Bank Account Information</h3>
-                    <p>${returnRequest.bankAccountInfo}</p>
+                    <p><c:out value="${returnRequest.bankAccountInfo}"/></p>
                 </div>
             </c:if>
 
@@ -199,10 +216,9 @@
             <c:if test="${not empty returnRequest.note}">
                 <div class="section">
                     <h3>Additional Note</h3>
-                    <p>${returnRequest.note}</p>
+                    <p><c:out value="${returnRequest.note}"/></p>
                 </div>
             </c:if>
-
 
             <!-- Action Buttons -->
             <div class="section">
@@ -210,8 +226,10 @@
                     Back to List
                 </a>
 
-                <c:if test="${returnRequest.returnStatus == 'PENDING'}">
-                    <a href="${pageContext.request.contextPath}/return-request?action=edit&requestId=${returnRequest.returnRequestId}" class="btn" style="background-color: #007bff; color: white;">
+                <c:if test="${returnRequest.returnStatus == 'Pending' || returnRequest.returnStatus == 'PENDING'}">
+                    <a href="${pageContext.request.contextPath}/return-request?action=edit&requestId=${returnRequest.returnRequestId}" 
+                       class="btn" 
+                       style="background-color: #007bff; color: white;">
                         Edit Request
                     </a>
                     <button onclick="confirmCancel()" class="btn btn-cancel">
@@ -223,10 +241,17 @@
 
         <script>
             function confirmCancel() {
-                if (confirm('Are you sure you want to cancel this return request?')) {
-                    window.location.href = '${pageContext.request.contextPath}/return-request?action=delete&requestId=${returnRequest.returnRequestId}';
-                            }
-                        }
+                if (!confirm('Are you sure you want to cancel this return request?'))
+                    return;
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/return-request';
+                form.appendChild(Object.assign(document.createElement('input'), {type: 'hidden', name: 'action', value: 'delete'}));
+                form.appendChild(Object.assign(document.createElement('input'), {type: 'hidden', name: 'requestId', value: '${returnRequest.returnRequestId}'}));
+                form.appendChild(Object.assign(document.createElement('input'), {type: 'hidden', name: 'customerId', value: '${returnRequest.customerId}'}));
+                document.body.appendChild(form);
+                form.submit();
+            }
         </script>
     </body>
 </html>

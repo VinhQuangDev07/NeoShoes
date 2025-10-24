@@ -2,14 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package Controllers.Staff;
+package Controller.Admin;
 
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
-import DAOs.ReviewDAO;
 import Models.Product;
 import Models.ProductVariant;
-import Models.Review;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -27,7 +25,7 @@ import java.util.Map;
  *
  * @author Nguyen Huynh Thien An - CE190979
  */
-@WebServlet(name = "ProductServlet", urlPatterns = {"/staff/product"})
+@WebServlet(name = "ManageProductServlet", urlPatterns = {"/admin-manage-product"})
 public class ManageProductServlet extends HttpServlet {
 
     /**
@@ -47,10 +45,10 @@ public class ManageProductServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet ProductServlet</title>");
+            out.println("<title>Servlet ManageProductServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet ProductServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ManageProductServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -92,7 +90,7 @@ public class ManageProductServlet extends HttpServlet {
                     return;
                 }
 
-                List<ProductVariant> productVariants = pvDAO.getVariantListByProductId(productId);
+                List<ProductVariant> productVariants = pvDAO.getByProductId(productId);
 
                 // Tính toán thống kê...
                 int totalQuantity = 0;
@@ -109,16 +107,11 @@ public class ManageProductServlet extends HttpServlet {
                     }
                 }
 
-                // Get reviews count for display
-                ReviewDAO reviewDAO = new ReviewDAO();
-                List<Review> reviews = reviewDAO.getReviewsByProduct(productId);
-
                 request.setAttribute("product", product);
                 request.setAttribute("productVariants", productVariants);
                 request.setAttribute("totalQuantity", totalQuantity);
                 request.setAttribute("minPrice", minPrice != null ? minPrice : BigDecimal.ZERO);
                 request.setAttribute("maxPrice", maxPrice != null ? maxPrice : BigDecimal.ZERO);
-                request.setAttribute("reviews", reviews);
 
                 request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/product-detail.jsp")
                         .forward(request, response);
@@ -133,7 +126,7 @@ public class ManageProductServlet extends HttpServlet {
             Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
 
             for (Product p : listProduct) {
-                List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
+                List<ProductVariant> variants = pvDAO.getByProductId(p.getProductId());
                 productVariantsMap.put(p.getProductId(), variants);
             }
 
@@ -186,42 +179,7 @@ public class ManageProductServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        if ("reply-review".equals(action)) {
-            // Handle staff reply to review
-            try {
-                int reviewId = Integer.parseInt(request.getParameter("reviewId"));
-                int productId = Integer.parseInt(request.getParameter("productId"));
-                String replyContent = request.getParameter("replyContent");
-                
-                if (replyContent == null || replyContent.trim().isEmpty()) {
-                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Reply content cannot be empty");
-                    return;
-                }
-                
-                // Get staff ID from session (you may need to adjust this based on your session management)
-                Integer staffId = (Integer) request.getSession().getAttribute("staffId");
-                if (staffId == null) {
-                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Staff not logged in");
-                    return;
-                }
-                
-                ReviewDAO reviewDAO = new ReviewDAO();
-                boolean success = reviewDAO.addStaffReply(reviewId, replyContent, staffId);
-                
-                if (success) {
-                    response.sendRedirect("product?action=detail&productId=" + productId + "&success=Reply sent successfully");
-                } else {
-                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Failed to send reply");
-                }
-                
-            } catch (NumberFormatException e) {
-                response.sendRedirect("product?action=detail&error=Invalid review ID");
-            }
-        } else {
-            processRequest(request, response);
-        }
+        processRequest(request, response);
     }
 
     /**

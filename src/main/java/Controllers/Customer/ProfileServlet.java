@@ -58,7 +58,7 @@ public class ProfileServlet extends HttpServlet {
 //        int customerId = (int) session.getAttribute("customerId");
 
 //        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 2;
+        int customerId = 1;
 
         Customer customer = customerDAO.findById(customerId);
 

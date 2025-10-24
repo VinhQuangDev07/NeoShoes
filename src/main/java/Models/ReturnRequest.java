@@ -6,6 +6,7 @@ package Models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -108,6 +109,20 @@ public class ReturnRequest {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getFormattedRequestDate() {
+        if (requestDate != null) {
+            return requestDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
+
+    public String getFormattedDecideDate() {
+        if (decideDate != null) {
+            return decideDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
     }
 
 }

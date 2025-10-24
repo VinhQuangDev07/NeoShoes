@@ -1,12 +1,18 @@
-<%-- 
-    Document   : edit
-    Created on : Oct 17, 2025, 12:09:01 AM
-    Author     : Nguyen Huynh Thien An - CE190979
---%>
-
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<%-- Parse bank account info: format is "BANK_ACCOUNT_HOLDER" --%>
+<c:if test="${not empty returnRequest.bankAccountInfo}">
+    <c:set var="bankParts" value="${fn:split(returnRequest.bankAccountInfo, '_')}" />
+    <c:if test="${fn:length(bankParts) >= 3}">
+        <c:set var="savedBankName" value="${bankParts[0]}" />
+        <c:set var="savedAccountNumber" value="${bankParts[1]}" />
+        <c:set var="savedAccountHolder" value="${bankParts[2]}" />
+    </c:if>
+</c:if>
+
 <html>
     <head>
         <title>Edit Return Request</title>
@@ -171,12 +177,9 @@
                         </thead>
                         <tbody>
                             <c:forEach var="item" items="${order.items}">
-                                <c:set var="isSelected" value="false"/>
-                                <c:forEach var="detail" items="${returnRequestDetail}">
-                                    <c:if test="${detail.orderDetailId == item.orderDetailId}">
-                                        <c:set var="isSelected" value="true"/>
-                                    </c:if>
-                                </c:forEach>
+                                <%-- FIXED: Check using Set from servlet --%>
+                                <c:set var="isSelected" value="${selectedOrderDetailIds.contains(item.orderDetailId)}" />
+                                
                                 <tr>
                                     <td class="checkbox-cell">
                                         <input type="checkbox" 
@@ -226,35 +229,42 @@
                                   name="note" 
                                   placeholder="Please provide more details about your return request...">${returnRequest.note}</textarea>
                         <p class="help-text">Optional: Provide additional details about your return</p>
-
                     </div>
 
-                    <label>Bank:</label><br>
-                    <select name="bankName" required>
-                        <option value="">-- Select Bank --</option>
-                        <option value="VCB">Vietcombank</option>
-                        <option value="ACB">ACB</option>
-                        <option value="VTB">VietinBank</option>
-                        <option value="TCB">Techcombank</option>
-                        <option value="MB">MB Bank</option>
-                        <option value="BIDV">BIDV</option>
-                        <option value="AGR">Agribank</option>
-                    </select>
-                    <br><br>
+                    <!-- Bank Information -->
+                    <div class="form-group">
+                        <label>Bank <span class="required">*</span></label>
+                        <select name="bankName" required>
+                            <option value="">-- Select Bank --</option>
+                            <option value="VCB" ${savedBankName == 'VCB' ? 'selected' : ''}>Vietcombank</option>
+                            <option value="ACB" ${savedBankName == 'ACB' ? 'selected' : ''}>ACB</option>
+                            <option value="VTB" ${savedBankName == 'VTB' ? 'selected' : ''}>VietinBank</option>
+                            <option value="TCB" ${savedBankName == 'TCB' ? 'selected' : ''}>Techcombank</option>
+                            <option value="MB" ${savedBankName == 'MB' ? 'selected' : ''}>MB Bank</option>
+                            <option value="BIDV" ${savedBankName == 'BIDV' ? 'selected' : ''}>BIDV</option>
+                            <option value="AGR" ${savedBankName == 'AGR' ? 'selected' : ''}>Agribank</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group">
+                        <label>Account Number <span class="required">*</span></label>
+                        <input type="text" name="accountNumber" required 
+                               placeholder="Enter account number" 
+                               value="${savedAccountNumber}">
+                    </div>
 
-                    <label>Account Number:</label><br>
-                    <input type="text" name="accountNumber" required placeholder="Enter account number">
-                    <br><br>
-
-                    <label>Account Holder Name:</label><br>
-                    <input type="text" name="accountHolder" required placeholder="Enter account holder name">
-                    <br><br>
+                    <div class="form-group">
+                        <label>Account Holder Name <span class="required">*</span></label>
+                        <input type="text" name="accountHolder" required 
+                               placeholder="Enter account holder name" 
+                               value="${savedAccountHolder}">
+                    </div>
                 </div>
+                
                 <!-- Action Buttons -->
                 <div class="section">
                     <button type="submit" class="btn btn-submit">Update Request</button>
-                    <a href="${pageContext.request.contextPath}/return-request?action=confirmEdit&requestId=${returnRequest.returnRequestId}" 
+                    <a href="${pageContext.request.contextPath}/return-request?action=detail&requestId=${returnRequest.returnRequestId}" 
                        class="btn btn-cancel">Cancel</a>
                 </div>
             </form>
@@ -275,13 +285,6 @@
                 const reason = document.getElementById('reason').value;
                 if (!reason || reason.trim() === '') {
                     alert('Please select a return reason');
-                    return false;
-                }
-
-                // Validate bank account info
-                const bankAccountInfo = document.getElementById('bankAccountInfo').value;
-                if (!bankAccountInfo || bankAccountInfo.trim() === '') {
-                    alert('Please provide bank account information');
                     return false;
                 }
 

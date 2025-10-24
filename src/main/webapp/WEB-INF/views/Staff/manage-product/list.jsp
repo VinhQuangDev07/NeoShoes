@@ -23,17 +23,40 @@
                 box-sizing: border-box;
             }
 
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                background-color: #f5f7fa;
-                padding: 20px;
-            }
+          body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f7fa;
+    padding: 0;
+    margin: 0;
+}
 
-            .container {
-                max-width: 1400px;
-                margin: 0 auto;
-            }
+/* Wrapper cho content chính */
+.main-wrapper {
+    margin-left: 300px; /* Chiều rộng của sidebar */
+    margin-top: 74px;   /* Chiều cao của header */
+    padding: 20px;
+    min-height: calc(100vh - 74px);
+}
 
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Responsive: ẩn sidebar trên mobile */
+@media (max-width: 768px) {
+    .main-wrapper {
+        margin-left: 0;
+    }
+    
+    #sidebar {
+        transform: translateX(-100%);
+    }
+    
+    #sidebar.show {
+        transform: translateX(0);
+    }
+}
             /* Stats Cards */
             .stats-grid {
                 display: grid;
@@ -262,15 +285,18 @@
                 font-size: 12px;
                 font-weight: 500;
             }
-            
+
             .price-range {
                 font-size: 13px;
                 color: #1e293b;
             }
         </style>
+
     </head>
     <body>
-        <div class="container">
+     
+        <div class="container">        
+          
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
@@ -374,7 +400,7 @@
                                                     <c:set var="maxPrice" value="${v.price}" />
                                                 </c:if>
                                             </c:forEach>
-                                            
+
                                             <%-- Hiển thị price range --%>
                                             <div class="price-range">
                                                 <c:choose>
@@ -414,7 +440,7 @@
                                                     <c:set var="hasStock" value="true" />
                                                 </c:if>
                                             </c:forEach>
-                                            
+
                                             <c:choose>
                                                 <c:when test="${hasStock}">
                                                     <span class="status-badge">Active</span>
