@@ -60,7 +60,7 @@ public class ManageCustomerServlet extends HttpServlet {
         staff.setGender("Male");
         staff.setCreatedAt(LocalDateTime.now().minusMonths(6));
         staff.setUpdatedAt(LocalDateTime.now());
-        staff.setIsDeleted(false);
+        staff.setDeleted(false);
 
         // Set vào session
         session.setAttribute("staff", staff);

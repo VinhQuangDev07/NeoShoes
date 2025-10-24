@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
  * @author Le Huu Nghia - CE181052
  */
 public class Customer {
-    
+
     private int id;
     private String email;
     private String passwordHash;
@@ -28,7 +28,7 @@ public class Customer {
     public Customer() {
     }
 
-        public Customer(int id, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isBlock, boolean isDeleted) {
+    public Customer(int id, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isBlock, boolean isDeleted) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -129,17 +129,17 @@ public class Customer {
     public void setIsDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
-    
+
     public String getFormattedCreatedAt() {
-    if (createdAt != null) {
-        return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
     }
-    return "N/A";
-}
 
     @Override
     public String toString() {
         return "Customer{" + "id=" + id + ", email=" + email + ", passwordHash=" + passwordHash + ", name=" + name + ", phoneNumber=" + phoneNumber + ", avatar=" + avatar + ", gender=" + gender + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", isBlock=" + isBlock + ", isDeleted=" + isDeleted + '}';
-    }  
-    
+    }
+
 }

@@ -189,14 +189,14 @@
                                                             <div class="mb-3">
                                                                 <div class="section-title">Color:</div>
                                                                 <div class="d-flex flex-wrap gap-2">
-                                                                    <c:forEach var="color" items="${colorsByProduct[productId]}">
+                                                                    <c:forEach var="color" items="${item.variant.product.colors}">
                                                                         <button class="option-btn color-option"
                                                                                 data-value="${color}">
                                                                             ${color}
                                                                         </button>
                                                                     </c:forEach>
-                                                                    <c:if test="${empty colorsByProduct[productId]}">
-                                                                        < p style ="color:red;">No colors for product ${productId}</p>
+                                                                    <c:if test="${empty item.variant.product.colors}">
+                                                                        <p style ="color:red;">No colors for product ${productId}</p>
                                                                     </c:if>
                                                                 </div>
                                                             </div>
@@ -205,7 +205,7 @@
                                                             <div class="mb-3">
                                                                 <div class="section-title">Size:</div>
                                                                 <div class="d-flex flex-wrap gap-2">
-                                                                    <c:forEach var="size" items="${sizesByProduct[productId]}">
+                                                                    <c:forEach var="size" items="${item.variant.product.sizes}">
                                                                         <button class="option-btn size-option"
                                                                                 data-value="${size}">
                                                                             ${size}
@@ -216,7 +216,7 @@
 
                                                             <script>
                                                                 var variants_${productId} = [
-                                                                <c:forEach items="${variantsByProduct[productId]}" var="v" varStatus="loop">
+                                                                <c:forEach items="${item.variant.product.variants}" var="v" varStatus="loop">
                                                                 {
                                                                 variantId: ${v.productVariantId},
                                                                         color: '${v.color}',

@@ -4,12 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 import DB.DBContext;
 import Models.Product;
-import java.sql.Timestamp;
 
 public class ProductDAO extends DBContext {
 
@@ -127,15 +127,12 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getLatestProducts: " + e.getMessage());
+            System.err.println("Error in getLatestProducts: " + e.getMessage());
             e.printStackTrace();
         }
-
         System.out.println("✅ Retrieved " + products.size() + " latest products");
         return products;
     }
-
-    // ========== GET PRODUCTS BY CATEGORY ==========
     public List<Product> getProductsByCategory(int categoryId) {
         List<Product> products = new ArrayList<>();
 
@@ -153,7 +150,7 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getProductsByCategory: " + e.getMessage());
+            System.err.println("Error in getProductsByCategory: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -180,7 +177,7 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getProductsByCategoryAndBrand: " + e.getMessage());
+            System.err.println("Error in getProductsByCategoryAndBrand: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -206,7 +203,7 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getProductsByBrand: " + e.getMessage());
+            System.err.println("Error in getProductsByBrand: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -218,15 +215,16 @@ public class ProductDAO extends DBContext {
     public List<Product> searchProducts(String keyword) {
         List<Product> products = new ArrayList<>();
 
-        String query = buildBaseQuery()
-                + "WHERE (p.Name LIKE ? OR p.Description LIKE ?) AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+       String query = buildBaseQuery()
+        + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+        + GROUP_BY + " ORDER BY p.ProductId ASC";
+
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
+           
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -234,7 +232,7 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in searchProducts: " + e.getMessage());
+            System.err.println("Error in searchProducts: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -307,7 +305,7 @@ public class ProductDAO extends DBContext {
                 return rs.getInt("Total");
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getTotalProducts: " + e.getMessage());
+            System.err.println("Error in getTotalProducts: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -335,7 +333,7 @@ public class ProductDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Error in getAllProducts: " + e.getMessage());
+            System.err.println("Error in getAllProducts: " + e.getMessage());
             e.printStackTrace();
         }
 

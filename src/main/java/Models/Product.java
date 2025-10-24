@@ -1,5 +1,7 @@
 package Models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -19,11 +21,22 @@ public class Product {
     private String availableSizes;
     private String brandName;
     private String categoryName;
+    private int variantCount;
+    
+    // List of variants for this product
+    private List<ProductVariant> variants;
+    
+    // Available colors and sizes as lists
+    private List<String> colors;
+    private List<String> sizes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
    
 
     public Product() {
+        this.variants = new ArrayList<>();
+        this.colors = new ArrayList<>();
+        this.sizes = new ArrayList<>();
     }
 
     public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, LocalDateTime createdAt, LocalDateTime updatedAt) {
@@ -155,6 +168,45 @@ public class Product {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public int getVariantCount() {
+        return variantCount;
+    }
+
+    public void setVariantCount(int variantCount) {
+        this.variantCount = variantCount;
+    }
+
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
+    
+    public void addVariant(ProductVariant variant) {
+        if (this.variants == null) {
+            this.variants = new ArrayList<>();
+        }
+        this.variants.add(variant);
+    }
+
+    public List<String> getColors() {
+        return colors;
+    }
+
+    public void setColors(List<String> colors) {
+        this.colors = colors;
+    }
+
+    public List<String> getSizes() {
+        return sizes;
+    }
+
+    public void setSizes(List<String> sizes) {
+        this.sizes = sizes;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -128,7 +128,7 @@
                         <i data-lucide="users"></i>
                         Customer
                     </a>
-                    <a id="staff" data-page="profile" href="${pageContext.request.contextPath}/profile" class="nav-link">
+                    <a id="staff" data-page="profile" href="${pageContext.request.contextPath}/profilestaff" class="nav-link">
                         <i data-lucide="user-cog"></i>
                         Profile
                     </a>
@@ -151,11 +151,11 @@
                         <i data-lucide="tags"></i>
                         Categories
                     </a>
-                    <a id="voucher" data-page="voucher" href="${pageContext.request.contextPath}/manage-voucher" class="nav-link">
+                    <a id="voucher" data-page="voucher" href="${pageContext.request.contextPath}/vouchermanage" class="nav-link">
                         <i data-lucide="ticket"></i>
                         Vouchers
                     </a>
-                    <a id="brand" data-page="brand" href="${pageContext.request.contextPath}/manage-brand" class="nav-link">
+                    <a id="brand" data-page="brand" href="${pageContext.request.contextPath}/managebrands" class="nav-link">
                         <i data-lucide="layers"></i>
                         Brands
                     </a>

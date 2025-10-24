@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package Models;
 
 import java.math.BigDecimal;
@@ -16,6 +13,7 @@ public class ProductVariant {
     private int productVariantId;
     private Product product;
     private int productId;
+    private String productName;
     private String image;
     private String size;
     private String color;
@@ -28,10 +26,11 @@ public class ProductVariant {
     public ProductVariant() {
     }
 
-    public ProductVariant(int productVariantId, Product product, int productId, String image, String size, String color, BigDecimal price, int quantityAvailable, LocalDateTime createdAt, LocalDateTime updatedAt, int isDeleted) {
+    public ProductVariant(int productVariantId, Product product, int productId, String productName, String image, String size, String color, BigDecimal price, int quantityAvailable, LocalDateTime createdAt, LocalDateTime updatedAt, int isDeleted) {
         this.productVariantId = productVariantId;
         this.product = product;
         this.productId = productId;
+        this.productName = productName;
         this.image = image;
         this.size = size;
         this.color = color;
@@ -66,6 +65,14 @@ public class ProductVariant {
         this.productId = productId;
     }
 
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+    
     public String getImage() {
         return image;
     }
