@@ -1,5 +1,6 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="Your Orders - NeoShoes" scope="request"/>
 
@@ -8,7 +9,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${pageTitle != null ? pageTitle : 'NeoShoes'}</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title><c:out value="${pageTitle != null ? pageTitle : 'NeoShoes'}"/></title>
 
         <!-- Bootstrap 5 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -30,6 +32,7 @@
                 min-height: 100vh;
                 padding: 20px 0;
             }
+            
             .orders-header {
                 background: white;
                 padding: 20px;
@@ -37,12 +40,14 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                 margin-bottom: 20px;
             }
+            
             .orders-title {
                 display: flex;
                 align-items: center;
                 gap: 12px;
                 margin-bottom: 0;
             }
+            
             .orders-icon {
                 width: 40px;
                 height: 40px;
@@ -54,6 +59,7 @@
                 color: white;
                 font-size: 18px;
             }
+            
             .order-card {
                 background: white;
                 border-radius: 12px;
@@ -62,81 +68,91 @@
                 overflow: hidden;
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
+            
             .order-card:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 16px rgba(0,0,0,0.15);
             }
+            
             .order-header {
                 padding: 20px;
                 border-bottom: 1px solid #f0f0f0;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
             }
+            
             .order-info {
                 display: flex;
                 align-items: center;
                 gap: 15px;
+                flex-wrap: wrap;
             }
+            
             .order-number {
                 font-weight: 600;
                 color: #007bff;
                 font-size: 16px;
             }
+            
             .order-date {
                 color: #666;
                 font-size: 14px;
             }
+            
             .order-status {
                 padding: 6px 12px;
                 border-radius: 20px;
                 font-size: 12px;
                 font-weight: 600;
+                text-transform: capitalize;
             }
-            .status-delivered {
+            
+            .status-APPROVED, .status-delivered {
                 background: #d4edda;
                 color: #155724;
             }
-            .status-pending {
+            
+            .status-PENDING {
                 background: #fff3cd;
                 color: #856404;
             }
-            .status-canceled {
+            
+            .status-processing {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+            
+            .status-shipped, .status-shipping {
+                background: #cce7ff;
+                color: #004085;
+            }
+            
+            .status-canceled, .status-cancelled {
                 background: #f8d7da;
                 color: #721c24;
             }
+            
             .order-actions {
                 display: flex;
                 align-items: center;
                 gap: 15px;
+                flex-wrap: wrap;
             }
+            
             .order-total {
                 font-weight: 600;
                 color: #007bff;
                 font-size: 16px;
-            }
-            .details-btn {
-                background: #007bff;
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 6px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: background 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .details-btn:hover {
-                background: #0056b3;
             }
             
             .action-buttons {
                 display: flex;
                 gap: 8px;
                 align-items: center;
+                flex-wrap: wrap;
             }
             
             .action-buttons .btn {
@@ -147,19 +163,45 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
+                white-space: nowrap;
             }
+            
+            .details-btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+            }
+            
+            .details-btn:hover {
+                background: #0056b3;
+                color: white;
+            }
+            
             .order-items {
                 padding: 20px;
             }
+            
             .order-item {
                 display: flex;
                 align-items: center;
                 padding: 15px 0;
                 border-bottom: 1px solid #f0f0f0;
             }
+            
             .order-item:last-child {
                 border-bottom: none;
             }
+            
             .item-image {
                 width: 60px;
                 height: 60px;
@@ -168,46 +210,34 @@
                 margin-right: 15px;
                 border: 1px solid #e0e0e0;
             }
+            
             .item-details {
                 flex: 1;
             }
+            
             .item-name {
                 font-weight: 600;
                 margin-bottom: 4px;
                 color: #333;
             }
+            
+            .item-variant {
+                color: #999;
+                font-size: 13px;
+                margin-bottom: 2px;
+            }
+            
             .item-quantity {
                 color: #666;
                 font-size: 14px;
             }
+            
             .item-price {
                 font-weight: 600;
                 color: #333;
                 margin-right: 15px;
             }
-            .review-btn {
-                background: #ffc107;
-                border: 1px solid #ffc107;
-                color: #000;
-                padding: 8px 16px;
-                border-radius: 6px;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .review-btn:hover {
-                background: #e0a800;
-                border-color: #d39e00;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
-            }
-            .review-btn i {
-                font-size: 14px;
-            }
+            
             .delivery-info {
                 background: #f8f9fa;
                 padding: 15px 20px;
@@ -215,9 +245,14 @@
                 font-size: 14px;
                 color: #666;
                 display: flex;
-                align-items: center;
+                align-items: flex-start;
                 gap: 8px;
             }
+            
+            .delivery-info i {
+                margin-top: 2px;
+            }
+            
             .empty-state {
                 text-align: center;
                 padding: 60px 20px;
@@ -225,19 +260,23 @@
                 border-radius: 12px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             }
+            
             .empty-state i {
                 font-size: 4rem;
                 color: #ccc;
                 margin-bottom: 20px;
             }
+            
             .empty-state h4 {
                 color: #666;
                 margin-bottom: 10px;
             }
+            
             .empty-state p {
                 color: #999;
                 margin-bottom: 20px;
             }
+            
             .start-shopping-btn {
                 background: #007bff;
                 color: white;
@@ -251,39 +290,75 @@
                 align-items: center;
                 gap: 8px;
             }
+            
             .start-shopping-btn:hover {
                 background: #0056b3;
             }
-            .user-profile-section {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                padding: 20px;
-                margin-bottom: 20px;
+            
+            /* Star Rating Styles */
+            .star-rating {
                 display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 12px;
+                gap: 5px;
+                margin-bottom: 10px;
             }
-            .user-avatar {
-                width: 80px;
-                height: 80px;
+            
+            .star {
+                font-size: 30px;
+                color: #ddd;
+                cursor: pointer;
+                transition: color 0.2s;
+                user-select: none;
+            }
+            
+            .star:hover,
+            .star.active {
+                color: #ffc107;
+            }
+            
+            .star:hover ~ .star {
+                color: #ddd;
+            }
+            
+            /* Loading Spinner */
+            .btn-loading {
+                position: relative;
+                pointer-events: none;
+            }
+            
+            .btn-loading::after {
+                content: "";
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                top: 50%;
+                left: 50%;
+                margin-left: -8px;
+                margin-top: -8px;
+                border: 2px solid #ffffff;
                 border-radius: 50%;
-                object-fit: cover;
-                border: 3px solid #007bff;
-                box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+                border-top-color: transparent;
+                animation: spinner 0.6s linear infinite;
             }
-            .user-info h5 {
-                margin: 0;
-                color: #333;
-                font-weight: 600;
-                font-size: 16px;
+            
+            @keyframes spinner {
+                to { transform: rotate(360deg); }
             }
-            .user-info p {
-                margin: 0;
-                color: #666;
-                font-size: 14px;
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                .order-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                
+                .order-actions {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+                
+                .action-buttons {
+                    width: 100%;
+                }
             }
         </style>
     </head>
@@ -293,16 +368,14 @@
         
         <div class="orders-container">
             <div class="container">
-            <div class="row">
+                <div class="row">
                     <!-- Sidebar -->
                     <div class="col-lg-3">
-                        
-                <jsp:include page="common/customer-sidebar.jsp"/>
+                        <jsp:include page="common/customer-sidebar.jsp"/>
                     </div>
 
                     <!-- Main Content -->
                     <div class="col-lg-9">
-
                         <!-- Page Header -->
                         <div class="orders-header">
                             <h1 class="orders-title">
@@ -311,9 +384,8 @@
                                 </div>
                                 Your Orders
                             </h1>
-                            <!-- Debug Info (remove in production) -->
                             <c:if test="${not empty orders}">
-                                <small class="text-muted">Found ${orders.size()} orders</small>
+                                <small class="text-muted">Found ${fn:length(orders)} orders</small>
                             </c:if>
                         </div>
 
@@ -321,16 +393,16 @@
                         <c:if test="${not empty successMessage}">
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <i class="fas fa-check-circle"></i>
-                                ${successMessage}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <c:out value="${successMessage}"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </c:if>
                         
                         <c:if test="${not empty errorMessage}">
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle"></i>
-                                ${errorMessage}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <c:out value="${errorMessage}"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </c:if>
 
@@ -338,8 +410,8 @@
                         <c:if test="${not empty sessionScope.flash}">
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
                                 <i class="fas fa-check-circle"></i>
-                                ${sessionScope.flash}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <c:out value="${sessionScope.flash}"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             <c:remove var="flash" scope="session"/>
                         </c:if>
@@ -347,86 +419,89 @@
                         <c:if test="${not empty sessionScope.flash_error}">
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle"></i>
-                                ${sessionScope.flash_error}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                                <c:out value="${sessionScope.flash_error}"/>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
                             <c:remove var="flash_error" scope="session"/>
                         </c:if>
 
-
-                            <c:if test="${empty orders}">
+                        <!-- Empty State -->
+                        <c:if test="${empty orders}">
                             <div class="empty-state">
                                 <i class="fas fa-shopping-bag"></i>
                                 <h4>No orders yet</h4>
                                 <p>You haven't placed any orders yet.</p>
-                                <button class="start-shopping-btn" onclick="window.location.href='${pageContext.request.contextPath}/products'">
+                                <button class="start-shopping-btn" onclick="window.location.href = '${pageContext.request.contextPath}/products'">
                                     <i class="fas fa-shopping-cart"></i>
                                     Start Shopping
                                 </button>
                             </div>
-                            </c:if>
+                        </c:if>
 
-                            <c:if test="${not empty orders}">
+                        <!-- Orders List -->
+                        <c:if test="${not empty orders}">
                             <c:forEach items="${orders}" var="order">
-                                <div class="order-card">
+                                <div class="order-card" data-status="${order.status}">
                                     <!-- Order Header -->
                                     <div class="order-header">
                                         <div class="order-info">
-                                            <span class="order-number">Order: #${order.orderId}</span>
-                                            <span class="order-date">
-                                                <c:choose>
-                                                    <c:when test="${order.placedAt != null}">
-                                                        ${order.placedAt}
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        N/A
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </span>
-                                            <span class="order-status ${order.paymentStatusId == completeStatusId ? 'status-delivered' : 'status-pending'}">
-                                                ${order.paymentStatusName}
+                                            <span class="order-number">Order: #<c:out value="${order.orderId}"/></span>
+                                            <span class="order-date"><c:out value="${order.placedAt}"/></span>
+                                            <span class="order-status status-${order.status}">
+                                                <c:out value="${order.status}"/>
                                             </span>
                                         </div>
                                         <div class="order-actions">
-                                            <span class="order-total">$${order.totalAmount}</span>
+                                            <span class="order-total">$<c:out value="${order.totalAmount}"/></span>
                                             <div class="action-buttons">
                                                 <c:choose>
-                                                    <c:when test="${order.paymentStatusId == completeStatusId}">
-                                                        <!-- Order is completed/delivered - check if review exists -->
+                                                    <c:when test="${order.paymentStatusId == completeStatusId && not empty order.items}">
+                                                        <!-- Order is completed/delivered -->
                                                         <c:choose>
                                                             <c:when test="${order.items[0].review != null}">
-                                                                <!-- Review exists - show edit/delete buttons -->
-                                                                <button type="button" class="btn btn-sm btn-warning" 
-                                                                        onclick="openEditReviewModal(${order.items[0].review.reviewId}, ${order.items[0].review.star}, '${order.items[0].review.reviewContent}', ${order.items[0].productVariantId}, '${order.items[0].productName}')">
+                                                                <!-- Review exists -->
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-warning"
+                                                                        data-action="edit"
+                                                                        data-review-id="${order.items[0].review.reviewId}"
+                                                                        data-star="${order.items[0].review.star}"
+                                                                        data-content="${fn:escapeXml(order.items[0].review.reviewContent)}"
+                                                                        data-variant-id="${order.items[0].productVariantId}"
+                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
                                                                     <i class="fas fa-edit"></i> Edit Review
                                                                 </button>
-                                                                <button type="button" class="btn btn-sm btn-danger" 
-                                                                        onclick="deleteReview(${order.items[0].review.reviewId})">
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-danger"
+                                                                        data-action="delete"
+                                                                        data-review-id="${order.items[0].review.reviewId}">
                                                                     <i class="fas fa-trash"></i> Delete
                                                                 </button>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <!-- No review - show write review button -->
-                                                                <button type="button" class="btn btn-sm btn-primary" 
-                                                                        onclick="openReviewModal(${order.items[0].productVariantId}, '${order.items[0].productName}')">
+                                                                <!-- No review -->
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-primary"
+                                                                        data-action="create"
+                                                                        data-variant-id="${order.items[0].productVariantId}"
+                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
                                                                     <i class="fas fa-star"></i> Write Review
                                                                 </button>
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <!-- Order not completed - disable review -->
+                                                        <!-- Order not completed -->
                                                         <button type="button" class="btn btn-sm btn-secondary" disabled 
                                                                 title="You can only review products after delivery">
                                                             <i class="fas fa-star"></i> Review
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>
-                                            <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
-                                               class="details-btn">
-                                                <i class="fas fa-eye"></i>
-                                                Details
-                                            </a>
+                                                <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
+                                                   class="details-btn">
+                                                    <i class="fas fa-eye"></i>
+                                                    Details
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -435,53 +510,43 @@
                                     <div class="order-items">
                                         <c:choose>
                                             <c:when test="${not empty order.items}">
-                                        <c:forEach items="${order.items}" var="item">
-                                            <div class="order-item">
-                                                <c:choose>
-                                                    <c:when test="${item.productName.contains('Vans')}">
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Nike')}">
-                                                        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Adidas')}">
-                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Converse')}">
-                                                        <img src="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Jordan')}">
-                                                        <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Puma')}">
-                                                        <img src="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('Reebok')}">
-                                                        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:when test="${item.productName.contains('New Balance')}">
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center" 
-                                                             alt="${item.productName}" class="item-image">
-                                                    </c:otherwise>
-                                                </c:choose>
-                                                <div class="item-details">
-                                                    <div class="item-name">${item.productName}</div>
-                                                    <div class="item-quantity">x${item.detailQuantity}</div>
-                                                </div>
-                                                <div class="item-price">$${item.detailPrice}</div>
-                                            </div>
-                                        </c:forEach>
+                                                <c:forEach items="${order.items}" var="item">
+                                                    <div class="order-item">
+                                                        <c:set var="productName" value="${fn:toLowerCase(item.productName)}"/>
+                                                        <c:choose>
+                                                            <c:when test="${fn:contains(productName, 'vans')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(productName, 'nike')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(productName, 'adidas')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(productName, 'converse')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(productName, 'jordan')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:when test="${fn:contains(productName, 'puma')}">
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <img src="${imageUrl}" 
+                                                             alt="<c:out value='${item.productName}'/>" 
+                                                             class="item-image"
+                                                             loading="lazy">
+                                                        <div class="item-details">
+                                                            <div class="item-name"><c:out value="${item.productName}"/></div>
+                                                            <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
+                                                        </div>
+                                                        <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
+                                                    </div>
+                                                </c:forEach>
                                             </c:when>
                                             <c:otherwise>
                                                 <div class="order-item">
@@ -499,7 +564,9 @@
                                         <i class="fas fa-truck"></i>
                                         <c:choose>
                                             <c:when test="${not empty order.recipientName}">
-                                                Delivery to: ${order.recipientName}, ${order.addressDetails} | ${order.recipientPhone}
+                                                Delivery to: <c:out value="${order.recipientName}"/>, 
+                                                <c:out value="${order.addressDetails}"/> | 
+                                                <c:out value="${order.recipientPhone}"/>
                                             </c:when>
                                             <c:otherwise>
                                                 Delivery to: Default Address
@@ -507,229 +574,12 @@
                                         </c:choose>
                                     </div>
                                 </div>
-                                        </c:forEach>
-                            </c:if>
-                        </div>
+                            </c:forEach>
+                        </c:if>
                     </div>
-            </div>
-        </div>
-        <!-- Bootstrap 5 JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-
-                                                    // Review product function
-                                                    function reviewProduct(productName, productId) {
-                                                        // Create review modal
-                                                        const modal = document.createElement('div');
-                                                        modal.className = 'modal fade';
-                                                        modal.innerHTML = `
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Review Product</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <h6>${productName}</h6>
-                                <div class="mb-3">
-                                    <label class="form-label">Rating</label>
-                                    <div class="rating">
-                                        <i class="fas fa-star" data-rating="1"></i>
-                                        <i class="fas fa-star" data-rating="2"></i>
-                                        <i class="fas fa-star" data-rating="3"></i>
-                                        <i class="fas fa-star" data-rating="4"></i>
-                                        <i class="fas fa-star" data-rating="5"></i>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="reviewText" class="form-label">Your Review</label>
-                                    <textarea class="form-control" id="reviewText" rows="4" placeholder="Share your experience with this product..."></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="button" class="btn btn-warning" onclick="submitReview('${productName}')">Submit Review</button>
                 </div>
             </div>
         </div>
-                `;
-
-                                                        document.body.appendChild(modal);
-                                                        const bsModal = new bootstrap.Modal(modal);
-                                                        bsModal.show();
-
-                                                        // Rating functionality
-                                                        const stars = modal.querySelectorAll('.rating i');
-                                                        let selectedRating = 0;
-
-                                                        stars.forEach((star, index) => {
-                                                            star.addEventListener('click', () => {
-                                                                selectedRating = index + 1;
-                                                                stars.forEach((s, i) => {
-                                                                    s.style.color = i < selectedRating ? '#ffc107' : '#ddd';
-                                                                });
-                                                            });
-                                                        });
-
-                                                        // Clean up modal when hidden
-                                                        modal.addEventListener('hidden.bs.modal', () => {
-                                                            document.body.removeChild(modal);
-                                                        });
-                                                    }
-
-                                                    // Review modal functions
-                                                    let currentReviewId = null;
-                                                    let currentProductVariantId = null;
-                                                    let currentAction = 'create';
-
-                                                    function openReviewModal(productVariantId, productName) {
-                                                        currentProductVariantId = productVariantId;
-                                                        currentAction = 'create';
-                                                        currentReviewId = null;
-                                                        
-                                                        document.getElementById('reviewModalLabel').textContent = 'Write Review - ' + productName;
-                                                        document.getElementById('reviewText').value = '';
-                                                        document.getElementById('starRating').value = 5;
-                                                        updateStarDisplay(5);
-                                                        
-                                                        const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
-                                                        modal.show();
-                                                    }
-
-                                                    function openEditReviewModal(reviewId, star, content, productVariantId, productName) {
-                                                        currentReviewId = reviewId;
-                                                        currentProductVariantId = productVariantId;
-                                                        currentAction = 'update';
-                                                        
-                                                        document.getElementById('reviewModalLabel').textContent = 'Edit Review - ' + productName;
-                                                        document.getElementById('reviewText').value = content;
-                                                        document.getElementById('starRating').value = star;
-                                                        updateStarDisplay(star);
-                                                        
-                                                        const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
-                                                        modal.show();
-                                                    }
-
-                                                    function deleteReview(reviewId) {
-                                                        if (confirm('Are you sure you want to delete this review?')) {
-                                                            const form = document.createElement('form');
-                                                            form.method = 'POST';
-                                                            form.action = '<%= request.getContextPath()%>/orders';
-                                                            
-                                                            const actionInput = document.createElement('input');
-                                                            actionInput.type = 'hidden';
-                                                            actionInput.name = 'action';
-                                                            actionInput.value = 'deleteReview';
-                                                            
-                                                            const reviewIdInput = document.createElement('input');
-                                                            reviewIdInput.type = 'hidden';
-                                                            reviewIdInput.name = 'reviewId';
-                                                            reviewIdInput.value = reviewId;
-                                                            
-                                                            form.appendChild(actionInput);
-                                                            form.appendChild(reviewIdInput);
-                                                            document.body.appendChild(form);
-                                                            form.submit();
-                                                        }
-                                                    }
-
-                                                    function updateStarDisplay(rating) {
-                                                        const stars = document.querySelectorAll('.star-rating .star');
-                                                        stars.forEach((star, index) => {
-                                                            if (index < rating) {
-                                                                star.classList.add('active');
-                                                            } else {
-                                                                star.classList.remove('active');
-                                                            }
-                                                        });
-                                                    }
-
-                                                    function setRating(rating) {
-                                                        document.getElementById('starRating').value = rating;
-                                                        updateStarDisplay(rating);
-                                                    }
-
-                                                    function submitReview() {
-                                                        const star = document.getElementById('starRating').value;
-                                                        const content = document.getElementById('reviewText').value.trim();
-                                                        
-                                                        if (!star || star < 1 || star > 5) {
-                                                            alert('Please select a rating.');
-                                                            return;
-                                                        }
-                                                        
-                                                        if (!content) {
-                                                            alert('Please write a review.');
-                                                            return;
-                                                        }
-
-                                                        const form = document.createElement('form');
-                                                        form.method = 'POST';
-                                                        form.action = '<%= request.getContextPath()%>/orders';
-                                                        
-                                                        const actionInput = document.createElement('input');
-                                                        actionInput.type = 'hidden';
-                                                        actionInput.name = 'action';
-                                                        actionInput.value = currentAction + 'Review';
-                                                        
-                                                        const productVariantInput = document.createElement('input');
-                                                        productVariantInput.type = 'hidden';
-                                                        productVariantInput.name = 'productVariantId';
-                                                        productVariantInput.value = currentProductVariantId;
-                                                        
-                                                        const starInput = document.createElement('input');
-                                                        starInput.type = 'hidden';
-                                                        starInput.name = 'star';
-                                                        starInput.value = star;
-                                                        
-                                                        const contentInput = document.createElement('input');
-                                                        contentInput.type = 'hidden';
-                                                        contentInput.name = 'reviewContent';
-                                                        contentInput.value = content;
-                                                        
-                                                        if (currentAction === 'update') {
-                                                            const reviewIdInput = document.createElement('input');
-                                                            reviewIdInput.type = 'hidden';
-                                                            reviewIdInput.name = 'reviewId';
-                                                            reviewIdInput.value = currentReviewId;
-                                                            form.appendChild(reviewIdInput);
-                                                        }
-                                                        
-                                                        form.appendChild(actionInput);
-                                                        form.appendChild(productVariantInput);
-                                                        form.appendChild(starInput);
-                                                        form.appendChild(contentInput);
-                                                        
-                                                        document.body.appendChild(form);
-                                                        form.submit();
-                                                    }
-
-                                                    // Initialize page
-                                                    document.addEventListener('DOMContentLoaded', function () {
-                                                        // Set active menu based on current page
-                                                        const currentPath = window.location.pathname;
-                                                        const menuLinks = document.querySelectorAll('.nav-link-item');
-
-                                                        menuLinks.forEach(link => {
-                                                            const linkHref = link.getAttribute('href');
-                                                            link.classList.remove('active');
-
-                                                            if (currentPath.includes(linkHref.split('/').pop())) {
-                                                                link.classList.add('active');
-                                                            }
-                                                        });
-
-                                                        // Default to orders if no match
-                                                        const hasActive = document.querySelector('.nav-link-item.active');
-                                                        if (!hasActive) {
-                                                            const ordersLink = document.getElementById('order');
-                                                            if (ordersLink) {
-                                                                ordersLink.classList.add('active');
-                                                            }
-                                                        }
-                                                    });
-
-        </script>
 
         <!-- Review Modal -->
         <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
@@ -742,55 +592,284 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Rating:</label>
-                            <div class="star-rating">
+                            <div class="star-rating" id="starRatingDisplay">
                                 <input type="hidden" id="starRating" value="5">
-                                <span class="star" onclick="setRating(1)">★</span>
-                                <span class="star" onclick="setRating(2)">★</span>
-                                <span class="star" onclick="setRating(3)">★</span>
-                                <span class="star" onclick="setRating(4)">★</span>
-                                <span class="star active" onclick="setRating(5)">★</span>
+                                <span class="star active" data-rating="1">★</span>
+                                <span class="star active" data-rating="2">★</span>
+                                <span class="star active" data-rating="3">★</span>
+                                <span class="star active" data-rating="4">★</span>
+                                <span class="star active" data-rating="5">★</span>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="reviewText" class="form-label">Your Review:</label>
-                            <textarea class="form-control" id="reviewText" rows="5" placeholder="Share your experience with this product..."></textarea>
+                            <textarea class="form-control" 
+                                      id="reviewText" 
+                                      rows="5" 
+                                      maxlength="1000"
+                                      placeholder="Share your experience with this product..."></textarea>
+                            <small class="text-muted">Maximum 1000 characters</small>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                        <button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <style>
-            .star-rating {
-                display: flex;
-                gap: 5px;
-                margin-bottom: 10px;
-            }
-            
-            .star {
-                font-size: 30px;
-                color: #ddd;
-                cursor: pointer;
-                transition: color 0.2s;
-            }
-            
-            .star:hover,
-            .star.active {
-                color: #ffc107;
-            }
-            
-            .star:hover ~ .star {
-                color: #ddd;
-            }
-        </style>
-
         <!-- Footer -->
         <jsp:include page="common/footer.jsp"/>
 
+        <!-- Bootstrap 5 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script>
+            // Review management
+            const ReviewManager = {
+                currentReviewId: null,
+                currentProductVariantId: null,
+                currentAction: 'create',
+                modal: null,
+                
+                init() {
+                    this.modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+                    this.attachEventListeners();
+                },
+                
+                attachEventListeners() {
+                    // Star rating clicks
+                    document.querySelectorAll('#starRatingDisplay .star').forEach(star => {
+                        star.addEventListener('click', (e) => {
+                            const rating = parseInt(e.target.dataset.rating);
+                            this.setRating(rating);
+                        });
+                    });
+                    
+                    // Submit button
+                    document.getElementById('submitReviewBtn').addEventListener('click', () => {
+                        this.submitReview();
+                    });
+                    
+                    // Action buttons (using event delegation)
+                    document.addEventListener('click', (e) => {
+                        const btn = e.target.closest('[data-action]');
+                        if (!btn) return;
+                        
+                        const action = btn.dataset.action;
+                        
+                        if (action === 'create') {
+                            this.openCreateModal(
+                                btn.dataset.variantId,
+                                btn.dataset.productName
+                            );
+                        } else if (action === 'edit') {
+                            this.openEditModal(
+                                btn.dataset.reviewId,
+                                btn.dataset.star,
+                                btn.dataset.content,
+                                btn.dataset.variantId,
+                                btn.dataset.productName
+                            );
+                        } else if (action === 'delete') {
+                            this.deleteReview(btn.dataset.reviewId);
+                        }
+                    });
+                },
+                
+                openCreateModal(variantId, productName) {
+                    this.currentAction = 'create';
+                    this.currentProductVariantId = variantId;
+                    this.currentReviewId = null;
+                    
+                    document.getElementById('reviewModalLabel').textContent = 'Write Review - ' + productName;
+                    document.getElementById('reviewText').value = '';
+                    this.setRating(5);
+                    
+                    this.modal.show();
+                },
+                
+                openEditModal(reviewId, star, content, variantId, productName) {
+                    this.currentAction = 'update';
+                    this.currentReviewId = reviewId;
+                    this.currentProductVariantId = variantId;
+                    
+                    document.getElementById('reviewModalLabel').textContent = 'Edit Review - ' + productName;
+                    document.getElementById('reviewText').value = content;
+                    this.setRating(parseInt(star));
+                    
+                    this.modal.show();
+                },
+                
+                setRating(rating) {
+                    document.getElementById('starRating').value = rating;
+                    
+                    const stars = document.querySelectorAll('#starRatingDisplay .star');
+                    stars.forEach((star, index) => {
+                        if (index < rating) {
+                            star.classList.add('active');
+                        } else {
+                            star.classList.remove('active');
+                        }
+                    });
+                },
+                
+                submitReview() {
+                    const star = document.getElementById('starRating').value;
+                    const content = document.getElementById('reviewText').value.trim();
+                    const submitBtn = document.getElementById('submitReviewBtn');
+                    
+                    // Validation
+                    if (!star || star < 1 || star > 5) {
+                        this.showAlert('Please select a rating.', 'warning');
+                        return;
+                    }
+                    
+                    if (!content) {
+                        this.showAlert('Please write a review.', 'warning');
+                        return;
+                    }
+                    
+                    if (content.length > 1000) {
+                        this.showAlert('Review is too long. Maximum 1000 characters.', 'warning');
+                        return;
+                    }
+                    
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('btn-loading');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Submitting...';
+                    
+                    // Create and submit form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '${pageContext.request.contextPath}/orders';
+                    
+                    const fields = {
+                        action: this.currentAction + 'Review',
+                        productVariantId: this.currentProductVariantId,
+                        star: star,
+                        reviewContent: content
+                    };
+                    
+                    if (this.currentAction === 'update') {
+                        fields.reviewId = this.currentReviewId;
+                    }
+                    
+                    Object.entries(fields).forEach(([name, value]) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        input.value = value;
+                        form.appendChild(input);
+                    });
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                
+                deleteReview(reviewId) {
+                    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+                        return;
+                    }
+                    
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '${pageContext.request.contextPath}/orders';
+                    
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = 'deleteReview';
+                    
+                    const reviewIdInput = document.createElement('input');
+                    reviewIdInput.type = 'hidden';
+                    reviewIdInput.name = 'reviewId';
+                    reviewIdInput.value = reviewId;
+                    
+                    form.appendChild(actionInput);
+                    form.appendChild(reviewIdInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                
+                showAlert(message, type = 'info') {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-info-circle"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    const container = document.querySelector('.col-lg-9');
+                    const firstChild = container.firstElementChild.nextElementSibling;
+                    container.insertBefore(alertDiv, firstChild);
+                    
+                    // Auto dismiss after 5 seconds
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 5000);
+                }
+            };
+            
+            // Initialize when DOM is ready
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize review manager
+                ReviewManager.init();
+                
+                // Set active menu based on current page
+                const currentPath = window.location.pathname;
+                const menuLinks = document.querySelectorAll('.nav-link-item');
+                
+                menuLinks.forEach(link => {
+                    const linkHref = link.getAttribute('href');
+                    link.classList.remove('active');
+                    
+                    if (currentPath.includes(linkHref.split('/').pop())) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                // Default to orders if no match
+                const hasActive = document.querySelector('.nav-link-item.active');
+                if (!hasActive) {
+                    const ordersLink = document.getElementById('order');
+                    if (ordersLink) {
+                        ordersLink.classList.add('active');
+                    }
+                }
+                
+                // Auto-hide alerts after 5 seconds
+                const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    }, 5000);
+                });
+            });
+            
+            // Filter orders by status (if you add filter tabs later)
+            function filterOrders(status) {
+                const orderCards = document.querySelectorAll('.order-card');
+                orderCards.forEach(card => {
+                    const orderStatus = card.getAttribute('data-status');
+                    
+                    if (status === 'all' || orderStatus === status) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Export to window for inline usage if needed
+            window.ReviewManager = ReviewManager;
+            window.filterOrders = filterOrders;
+        </script>
     </body>
 </html>
-
