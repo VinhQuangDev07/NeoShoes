@@ -58,25 +58,24 @@ public class ProfileServlet extends HttpServlet {
 //        int customerId = (int) session.getAttribute("customerId");
 
 //        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 1;
+        int customerId = 2;
 
         Customer customer = customerDAO.findById(customerId);
-
-        request.setAttribute("customer", customer);
-
-        try {
-            addressList = addressDAO.getAllAddressByCustomerId(customerId);
-            request.setAttribute("addressList", addressList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
-        if (customer != null) {
+      
 
+        if (customer != null) {
+            try {
+                addressList = addressDAO.getAllAddressByCustomerId(customerId);
+                request.setAttribute("addressList", addressList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            request.setAttribute("customer", customer);
         }
 
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
@@ -125,7 +124,7 @@ public class ProfileServlet extends HttpServlet {
                     & (avatarPart.getSize() == 0 || avatarPart.getSubmittedFileName() == "")
                     & Objects.equals(gender, currentCustomer.getGender())) {
                 unchanged = true;
-            }
+            } 
 
             if (unchanged) {
                 session.setAttribute("flash_info", "No change in profile information.");

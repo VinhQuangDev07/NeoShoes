@@ -62,7 +62,7 @@ public class CartServlet extends HttpServlet {
 //        }
         // For now, using hardcoded customer ID. In production, get from session
         // Using Customer ID = ?
-        int customerId = 1;
+        int customerId = 2;
         // Get cart items for the customer
         List<CartItem> cartItems = cartDAO.getItemsByCustomerId(customerId);
 
@@ -129,7 +129,7 @@ public class CartServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         // Using Customer ID = ?
-        int customerId = 1;
+        int customerId = 2;
 
         if ("add".equals(action)) {
             int variantId = Integer.parseInt(request.getParameter("variantId"));
