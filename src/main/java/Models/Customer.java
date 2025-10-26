@@ -20,6 +20,7 @@ public class Customer {
     private String phoneNumber;
     private String avatar;
     private String gender;
+    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isBlock;
@@ -104,6 +105,14 @@ public class Customer {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
     }
 
     public LocalDateTime getUpdatedAt() {
