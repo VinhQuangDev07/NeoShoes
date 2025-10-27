@@ -470,4 +470,72 @@ public class CustomerDAO extends DB.DBContext {
 
         return customer;
     }
+
+    /**
+     * Login customer with email and password
+     */
+    public Customer login(String email, String password) {
+        String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, email);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // Check if account is blocked
+                    if (rs.getBoolean("IsBlock")) {
+                        System.err.println("Account is blocked: " + email);
+                        return null;
+                    }
+                    
+                    // Verify password
+                    String storedHash = rs.getString("PasswordHash");
+                    if (Utils.verifyPassword(password, storedHash)) {
+                        // Map customer data
+                        Customer customer = mapCustomer(rs);
+                        System.out.println("Login successful: " + email);
+                        return customer;
+                    } else {
+                        System.err.println("Invalid password for: " + email);
+                        return null;
+                    }
+                } else {
+                    System.err.println("Customer not found: " + email);
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error during login: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    /**
+ * Update last login time
+ */
+public boolean updateLastLogin(int customerId) {
+    String sql = "UPDATE Customer SET UpdatedAt=GETDATE() WHERE CustomerId=?";
+    
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        
+        ps.setInt(1, customerId);
+        int result = ps.executeUpdate();
+        
+        if (result > 0) {
+            System.out.println("✅ Updated last login for customer ID: " + customerId);
+            return true;
+        }
+        
+        return false;
+        
+    } catch (SQLException e) {
+        System.err.println("❌ Error updating last login: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    }
+}
+    
 }
