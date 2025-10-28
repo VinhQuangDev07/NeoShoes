@@ -146,6 +146,32 @@
                 min-width: 200px;
             }
 
+            /* Create Button */
+            .btn-create {
+                padding: 10px 20px;
+                background-color: #3b82f6;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+            }
+
+            .btn-create:hover {
+                background-color: #2563eb;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            .btn-create:active {
+                transform: translateY(0);
+            }
+
             /* Table */
             .product-table {
                 width: 100%;
@@ -249,7 +275,13 @@
                 color: #991b1b;
             }
 
-            /* Action Button */
+            /* Action Buttons */
+            .action-buttons {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
             .action-btn {
                 width: 36px;
                 height: 36px;
@@ -266,6 +298,25 @@
 
             .action-btn:hover {
                 background-color: #bfdbfe;
+                transform: scale(1.05);
+            }
+
+            .action-btn.edit {
+                background-color: #fef3c7;
+                color: #f59e0b;
+            }
+
+            .action-btn.edit:hover {
+                background-color: #fde68a;
+            }
+
+            .action-btn.delete {
+                background-color: #fee2e2;
+                color: #ef4444;
+            }
+
+            .action-btn.delete:hover {
+                background-color: #fecaca;
             }
 
             .info-text {
@@ -343,6 +394,10 @@
             <div class="product-section">
                 <div class="section-header">
                     <h2>Product List</h2>
+                    <button class="btn-create" onclick="createProduct()">
+                        <span>➕</span>
+                        Create Product
+                    </button>
                 </div>
 
                 <table class="product-table">
@@ -454,7 +509,17 @@
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <button class="action-btn" onclick="viewProduct(${product.productId})">👁️</button>
+                                    <div class="action-buttons">
+                                        <button class="action-btn" onclick="viewProduct(${product.productId})" title="View Details">
+                                            👁️
+                                        </button>
+                                        <button class="action-btn edit" onclick="editProduct(${product.productId})" title="Edit Product">
+                                            ✏️
+                                        </button>
+                                        <button class="action-btn delete" onclick="deleteProduct(${product.productId}, '${fn:escapeXml(product.name)}')" title="Delete Product">
+                                            🗑️
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -465,9 +530,45 @@
         </div>
 
         <script>
+            function createProduct() {
+                // chuyển trang tới servlet để tạo product mới
+                window.location.href = '${pageContext.request.contextPath}/staff/product?action=create';
+            }
+
             function viewProduct(productId) {
                 // chuyển trang tới servlet bằng GET
                 window.location.href = '${pageContext.request.contextPath}/staff/product?action=detail&productId=' + encodeURIComponent(productId);
+            }
+
+            function editProduct(productId) {
+                // chuyển trang tới servlet để edit
+                window.location.href = '${pageContext.request.contextPath}/staff/product?action=edit&productId=' + encodeURIComponent(productId);
+            }
+
+            function deleteProduct(productId, productName) {
+                if (!confirm('Are you sure you want to delete "' + productName + '"?\n\nThis action cannot be undone!')) {
+                    return;
+                }
+
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/staff/product';
+
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'delete';
+                form.appendChild(actionInput);
+
+                const productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = 'productId';
+                productIdInput.value = productId;
+                form.appendChild(productIdInput);
+
+                document.body.appendChild(form);
+                form.submit();
             }
         </script>
     </body>

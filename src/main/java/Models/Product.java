@@ -22,24 +22,21 @@ public class Product {
     private String brandName;
     private String categoryName;
     private int variantCount;
-    
+    private String isActive;
+
     // List of variants for this product
     private List<ProductVariant> variants;
-    
+
     // Available colors and sizes as lists
     private List<String> colors;
     private List<String> sizes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-   
 
     public Product() {
-        this.variants = new ArrayList<>();
-        this.colors = new ArrayList<>();
-        this.sizes = new ArrayList<>();
     }
 
-    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, int variantCount, String isActive, List<ProductVariant> variants, List<String> colors, List<String> sizes, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.productId = productId;
         this.brandId = brandId;
         this.categoryId = categoryId;
@@ -54,8 +51,20 @@ public class Product {
         this.availableSizes = availableSizes;
         this.brandName = brandName;
         this.categoryName = categoryName;
+        this.variantCount = variantCount;
+        this.isActive = isActive;
+        this.variants = variants;
+        this.colors = colors;
+        this.sizes = sizes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public void addVariant(ProductVariant variant) {
+        if (this.variants == null) {
+            this.variants = new ArrayList<>();
+        }
+        this.variants.add(variant);
     }
 
     public int getProductId() {
@@ -178,19 +187,20 @@ public class Product {
         this.variantCount = variantCount;
     }
 
+    public String getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(String isActive) {
+        this.isActive = isActive;
+    }
+
     public List<ProductVariant> getVariants() {
         return variants;
     }
 
     public void setVariants(List<ProductVariant> variants) {
         this.variants = variants;
-    }
-    
-    public void addVariant(ProductVariant variant) {
-        if (this.variants == null) {
-            this.variants = new ArrayList<>();
-        }
-        this.variants.add(variant);
     }
 
     public List<String> getColors() {

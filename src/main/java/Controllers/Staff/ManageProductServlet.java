@@ -4,8 +4,12 @@
  */
 package Controllers.Staff;
 
+import DAOs.BrandDAO;
+import DAOs.CategoryDAO;
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
+import Models.Brand;
+import Models.Category;
 import Models.Product;
 import Models.ProductVariant;
 import java.io.IOException;
@@ -16,7 +20,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +70,8 @@ public class ManageProductServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-
         ProductDAO pDAO = new ProductDAO();
         ProductVariantDAO pvDAO = new ProductVariantDAO();
-
         // ⭐ Dùng if-else để đảm bảo chỉ 1 nhánh được thực thi
         if ("detail".equals(action)) {
             // XỬ LÝ DETAIL
@@ -120,48 +121,74 @@ public class ManageProductServlet extends HttpServlet {
                 response.sendRedirect("manage-product?error=Invalid product ID");
             }
 
+        } else if ("create".equals(action)) {
+            // Load brands và categories
+            BrandDAO brandDAO = new BrandDAO();
+            CategoryDAO categoryDAO = new CategoryDAO();
+            List<Brand> brands = brandDAO.getAllBrands();
+            List<Category> categories = categoryDAO.getAllCategories();
+
+            request.setAttribute("brands", brands);
+            request.setAttribute("categories", categories);
+
+            request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/create.jsp")
+                    .forward(request, response);
+        } else if ("edit".equals(action)) {
+            int productId = Integer.parseInt(request.getParameter("productId"));
+            // Load product info
+            BrandDAO brandDAO = new BrandDAO();
+            Product product = pDAO.getById(productId);
+            List<Brand> brands = brandDAO.getAllBrands();
+            CategoryDAO categoryDAO = new CategoryDAO();
+            List<Category> categories = categoryDAO.getAllCategories();
+            request.setAttribute("product", product);
+            request.setAttribute("brands", brands);
+            request.setAttribute("categories", categories);
+            request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/update.jsp")
+                    .forward(request, response);
         } else {
-            // ⭐ XỬ LÝ LIST (mặc định)
-            List<Product> listProduct = pDAO.getAllProducts(0, 50);
-            Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
-
-            for (Product p : listProduct) {
-                List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
-                productVariantsMap.put(p.getProductId(), variants);
-            }
-
-            int totalProduct = pDAO.getTotalProducts();
-            int totalQuantity = pvDAO.getTotalQuantityAvailable();
-            BigDecimal totalPrice = pvDAO.getTotalInventoryValue();
 
             int currentPage = 1;
             String pageParam = request.getParameter("page");
             if (pageParam != null && !pageParam.isEmpty()) {
                 try {
-                    currentPage = Integer.parseInt(pageParam);
+                    currentPage = Math.max(1, Integer.parseInt(pageParam));
                 } catch (NumberFormatException e) {
                     currentPage = 1;
                 }
             }
 
             int recordsPerPage = 10;
-            int startIndex = (currentPage - 1) * recordsPerPage;
-            int endIndex = Math.min(startIndex + recordsPerPage, totalProduct);
+            int offset = (currentPage - 1) * recordsPerPage;
 
-            List<Product> pageData;
-            if (startIndex < totalProduct) {
-                pageData = listProduct.subList(startIndex, endIndex);
-            } else {
-                pageData = new ArrayList<>();
+// 2. Lấy ĐÚNG số lượng data cần hiển thị từ DB
+            List<Product> listProduct = pDAO.getAllProductsForStaff(offset, recordsPerPage);
+
+// 3. Chỉ load variants cho products hiển thị trên page hiện tại
+            Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
+            for (Product p : listProduct) {
+                List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
+                productVariantsMap.put(p.getProductId(), variants);
             }
 
+// 4. Lấy tổng số records để tính số trang
+            int totalProduct = pDAO.getTotalProductStaff();
+            int totalPages = (int) Math.ceil((double) totalProduct / recordsPerPage);
+
+// 5. Lấy các thống kê
+            int totalQuantity = pvDAO.getTotalQuantityAvailable();
+            BigDecimal totalPrice = pvDAO.getTotalInventoryValue();
+
+// 6. Set attributes
             request.setAttribute("productVariantsMap", productVariantsMap);
+            request.setAttribute("listProduct", listProduct);
+            request.setAttribute("currentPage", currentPage);
+            request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalRecords", totalProduct);
             request.setAttribute("totalQuantity", totalQuantity);
             request.setAttribute("totalPrice", totalPrice);
-            request.setAttribute("listProduct", pageData);
-            request.setAttribute("baseUrl", request.getRequestURI());
             request.setAttribute("recordsPerPage", recordsPerPage);
+            request.setAttribute("baseUrl", request.getRequestURI());
 
             request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/list.jsp")
                     .forward(request, response);
@@ -179,7 +206,118 @@ public class ManageProductServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String action = request.getParameter("action");
+        ProductDAO productDAO = new ProductDAO();
+        if ("create".equals(action)) {
+            try {
+                // Get và validate parameters
+                String name = request.getParameter("name");
+                String description = request.getParameter("description");
+                String material = request.getParameter("material");
+                String imageUrl = request.getParameter("defaultImageUrl");
+
+                // Check required fields
+                if (name == null || name.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Product name is required!");
+                }
+
+                // Parse IDs
+                int brandId = Integer.parseInt(request.getParameter("brandId"));
+                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+
+                // Create product
+                Product product = new Product();
+                product.setName(name.trim());
+                product.setDescription(description != null ? description.trim() : "");
+                product.setBrandId(brandId);
+                product.setCategoryId(categoryId);
+                product.setMaterial(material != null ? material.trim() : "");
+                product.setDefaultImageUrl(imageUrl != null ? imageUrl.trim() : "");
+                product.setIsActive("1".equals(request.getParameter("isActive")) ? "active" : "inactive");
+
+                boolean success = productDAO.createProduct(product);
+
+                if (success && product.getProductId() > 0) {
+                    request.getSession().setAttribute("successMessage", "Product created successfully!");
+                    response.sendRedirect(request.getContextPath()
+                            + "/staff/product?action=detail&productId=" + product.getProductId());
+                } else {
+                    throw new Exception("Failed to create product!");
+                }
+
+            } catch (Exception e) {
+                request.setAttribute("errorMessage", "Error: " + e.getMessage());
+                request.getRequestDispatcher("/staff/create-product.jsp").forward(request, response);
+            }
+        } else if ("update".equals(action)) {
+            try {
+                // Parse và validate
+                int productId = Integer.parseInt(request.getParameter("productId"));
+                String name = request.getParameter("name");
+
+                if (name == null || name.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Product name is required!");
+                }
+
+                int brandId = Integer.parseInt(request.getParameter("brandId"));
+                int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+
+                // Create product
+                Product product = new Product();
+                product.setProductId(productId);
+                product.setName(name.trim());
+                product.setDescription(request.getParameter("description"));
+                product.setBrandId(brandId);
+                product.setCategoryId(categoryId);
+                product.setMaterial(request.getParameter("material"));
+                product.setDefaultImageUrl(request.getParameter("defaultImageUrl"));
+                product.setIsActive("1".equals(request.getParameter("isActive")) ? "active" : "inactive");
+
+                // Update
+                boolean success = productDAO.updateProduct(product);
+
+                if (success) {
+                    request.getSession().setAttribute("successMessage", "Product updated successfully!");
+                    response.sendRedirect(request.getContextPath()
+                            + "/staff/product?action=detail&productId=" + productId);
+                } else {
+                    throw new Exception("Failed to update product!");
+                }
+
+            } catch (Exception e) {
+                request.getSession().setAttribute("errorMessage", "Error: " + e.getMessage());
+                // Redirect về detail page
+                String productIdStr = request.getParameter("productId");
+                if (productIdStr != null && !productIdStr.isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/staff/product");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/staff/product");
+                }
+            }
+        } else if ("delete".equals(action)) {
+            try {
+                int productId = Integer.parseInt(request.getParameter("productId"));
+
+                // Soft delete: set IsDeleted = 1
+                boolean success = productDAO.deleteProduct(productId);
+
+                if (success) {
+                    request.getSession().setAttribute("successMessage",
+                            "Product deleted successfully!");
+                } else {
+                    request.getSession().setAttribute("errorMessage",
+                            "Failed to delete product! It may not exist or already deleted.");
+                }
+
+                response.sendRedirect(request.getContextPath() + "/staff/product");
+
+            } catch (Exception e) {
+                request.getSession().setAttribute("errorMessage",
+                        "Error: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/staff/product");
+            }
+        }
+
     }
 
     /**

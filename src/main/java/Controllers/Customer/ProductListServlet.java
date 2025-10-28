@@ -78,10 +78,10 @@ public class ProductListServlet extends HttpServlet {
             List<Brand> brands = brandDAO.getAllBrands();
             
             // Load products with pagination
-            List<Product> products = productDAO.getAllProducts(offset, PAGE_SIZE);
+            List<Product> products = productDAO.getAllProductsCustomer(offset, PAGE_SIZE);
             
             // Get total products and calculate total pages
-            int totalProducts = productDAO.getTotalProducts();
+            int totalProducts = productDAO.getTotalProductForCustomer();
             int totalPages = (int) Math.ceil((double) totalProducts / PAGE_SIZE);
 
             // Debug log
