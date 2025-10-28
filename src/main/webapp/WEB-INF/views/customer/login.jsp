@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập - NeoShoes</title>
+    <title>Login - NeoShoes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -201,7 +201,7 @@
     <div class="login-container">
         <div class="logo-section">
             <h2><i class="fas fa-shoe-prints"></i> NeoShoes</h2>
-            <p>Đăng nhập để tiếp tục mua sắm</p>
+            <p>Sign in to continue shopping</p>
         </div>
         
         <% if (request.getAttribute("error") != null) { %>
@@ -236,7 +236,7 @@
             </div>
             
             <div class="mb-3">
-                <label for="password" class="form-label">Mật khẩu</label>
+                <label for="password" class="form-label">Password</label>
                 <div class="input-group">
                     <span class="input-group-text">
                         <i class="fas fa-lock"></i>
@@ -258,21 +258,21 @@
                        id="remember" 
                        name="remember"
                        <%= request.getAttribute("rememberedEmail") != null ? "checked" : "" %>>
-                <label for="remember">Ghi nhớ đăng nhập</label>
+                <label for="remember">Remember login</label>
             </div>
             
             <button type="submit" class="btn btn-login">
-                <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                <i class="fas fa-sign-in-alt"></i> Login
             </button>
         </form>
         
         <div class="divider">
-            <span>HOẶC</span>
+            <span>OR</span>
         </div>
         
         <div class="links">
-            <p class="mb-2">Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register">Đăng ký ngay</a></p>
-            <p class="mb-0"><a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a></p>
+            <p class="mb-2">Don't have an account? <a href="${pageContext.request.contextPath}/register">Sign up now</a></p>
+            <p class="mb-0"><a href="${pageContext.request.contextPath}/forgot-password">Forgot your password?</a></p>
         </div>
     </div>
 

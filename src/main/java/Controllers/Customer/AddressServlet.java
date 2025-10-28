@@ -18,33 +18,16 @@ import java.util.logging.Logger;
 
 @WebServlet(name = "AddressServlet", urlPatterns = {"/address"})
 public class AddressServlet extends HttpServlet {
-
     
+    private AddressDAO addressDAO;
 
-    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-//        String addressAction = request.getParameter("addressAction");
-//        AddressDAO addressDAO = new AddressDAO();
-//        if (addressAction.equals("newAddress")) {
-//            request.getRequestDispatcher("/WEB-INF/views/customer/address/add.jsp").forward(request, response);
-//        }
-//        if (addressAction.equals("editAddress")) {
-//
-//            try {
-//                int addressId = Integer.parseInt(request.getParameter("addressId"));
-//                Address address;
-//                address = addressDAO.getAddressById(addressId);
-//                request.setAttribute("address", address);
-//                request.getRequestDispatcher("/WEB-INF/views/customer/address/edit.jsp")
-//                        .forward(request, response);
-//            } catch (SQLException ex) {
-//                Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//
-//        }
+    public void init() throws ServletException {
+        super.init(); 
+        addressDAO = new AddressDAO();
     }
+    
+    
 
     /**
      * Handles the HTTP <code>POST</code> method.
@@ -57,7 +40,7 @@ public class AddressServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        AddressDAO addressDAO = new AddressDAO();
+        
         String addressAction = request.getParameter("addressAction");
         if ("addAddress".equals(addressAction)) {
             try {

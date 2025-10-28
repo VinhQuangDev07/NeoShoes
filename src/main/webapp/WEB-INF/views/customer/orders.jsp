@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Custom CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+        
+        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
         <style>
             /* Orders-specific sidebar adjustments */
@@ -351,6 +353,7 @@
     <body>
         <!-- Header -->
         <jsp:include page="common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         
         <div class="orders-container">
             <div class="container">
@@ -365,9 +368,6 @@
                         <!-- Page Header -->
                         <div class="orders-header">
                             <h1 class="orders-title">
-                                <div class="orders-icon">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
                                 Your Orders
                             </h1>
                             <c:if test="${not empty orders}">

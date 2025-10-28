@@ -1,6 +1,6 @@
 
 
-<div class="customer-sidebar bg-white" style="height: 500px; overflow: hidden;">
+<div class="customer-sidebar bg-white" style="height: 350px; overflow: hidden;">
     <div class="d-flex flex-column">
 
         <!-- Navigation Menu -->

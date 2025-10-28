@@ -19,6 +19,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -34,17 +35,22 @@ public class OrderDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            HttpSession session = request.getSession();
+            Customer customer = (Customer) session.getAttribute("customer");
+
+            if (customer == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
 
             // For now, using hardcoded customer ID. In production, get from session
-            int customerId = 1;
-            Customer customer = customerDAO.findById(customerId);
             int orderId = Integer.parseInt(request.getParameter("id"));
             int requestId = 0;
             try {
 
                 Order order = orderDAO.findWithItems(orderId);
                 request.setAttribute("order", order);
-                
+
                 // Load order status history for timeline
                 List<OrderStatusHistory> statusHistory = orderDAO.getOrderStatusHistory(orderId);
                 request.setAttribute("statusHistory", statusHistory);
@@ -85,18 +91,20 @@ public class OrderDetailServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            HttpSession session = request.getSession();
+            Customer customer = (Customer) session.getAttribute("customer");
+
+            if (customer == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
             String action = request.getParameter("action");
 
             if ("cancel".equals(action)) {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
-                
+
                 // Get customer ID from session
-                int customerId = 2;
-//                if (customerId == null) {
-//                    System.err.println("Customer not logged in");
-//                    response.sendRedirect(request.getContextPath() + "/orders?error=not_logged_in");
-//                    return;
-//                }
+                int customerId = customer.getId();
 
                 // Update order status to CANCELLED using customer method
                 boolean success = orderDAO.updateOrderStatusForCustomer(orderId, "CANCELLED", customerId);

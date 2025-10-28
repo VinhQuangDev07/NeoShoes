@@ -49,7 +49,7 @@
                 margin-bottom: 1rem;
                 color: #333;
                 padding-bottom: 0.5rem;
-                border-bottom: 2px solid #667eea;
+                border-bottom: 2px solid rgba(15, 23, 42, 0.9);
             }
             .categories-list {
                 list-style: none;
@@ -68,7 +68,7 @@
                 transition: all 0.2s;
             }
             .category-link:hover, .category-link.active {
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: #fff;
             }
             .category-thumb {
@@ -224,14 +224,15 @@
             }
             .page-link {
                 padding: 8px 16px;
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: white;
                 text-decoration: none;
                 border-radius: 5px;
                 transition: background 0.3s;
             }
             .page-link:hover {
-                background: #5a6fd8;
+                background: rgba(15, 23, 42, 0.7);
+                color: white;
             }
             .page-link.disabled {
                 background: #ccc;
@@ -250,7 +251,7 @@
                 transition: all 0.3s;
             }
             .page-number:hover, .page-number.active {
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: white;
             }
 
@@ -329,7 +330,7 @@
 
             /* --- Buttons (base) --- */
             .btn{
-                
+
                 display:inline-flex;
                 align-items:center;
                 justify-content:center;
@@ -649,5 +650,8 @@
             </main>
         </div>
         <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
+
+        <!-- JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

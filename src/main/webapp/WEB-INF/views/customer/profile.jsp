@@ -50,7 +50,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem 0;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             border-radius: 0 0 15px 15px;
         }
 

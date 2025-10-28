@@ -8,6 +8,7 @@ import DAOs.CartDAO;
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.CartItem;
+import Models.Customer;
 import Models.Product;
 import Models.ProductVariant;
 import java.io.IOException;
@@ -51,16 +52,15 @@ public class CartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession();
-//        Customer customer = (Customer) session.getAttribute("customer");
-//
-//        if (customer == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-        // For now, using hardcoded customer ID. In production, get from session
-        // Using Customer ID = ?
-        int customerId = 1;
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        int customerId = customer.getId();
         // Get cart items for the customer
         List<CartItem> cartItems = cartDAO.getItemsByCustomerId(customerId);
 
@@ -108,11 +108,13 @@ public class CartServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
         // Using Customer ID = ?
