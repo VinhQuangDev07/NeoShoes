@@ -14,6 +14,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <style>
             * {
                 margin: 0;
@@ -354,7 +356,7 @@
                         <div class="number">${totalRecords}</div>
                     </div>
                     <div class="stat-icon blue">
-                        📦
+                        <i class="fas fa-box"></i>
                     </div>
                 </div>
 
@@ -364,7 +366,7 @@
                         <div class="number">${totalQuantity}</div>
                     </div>
                     <div class="stat-icon green">
-                        📊
+                        <i class="fas fa-chart-bar"></i>
                     </div>
                 </div>
 
@@ -375,7 +377,7 @@
                         <div class="number">${fmtTotal}</div>
                     </div>
                     <div class="stat-icon yellow">
-                        💰
+                        <i class="fas fa-dollar-sign"></i>
                     </div>
                 </div>
 
@@ -385,7 +387,7 @@
                         <div class="number">0</div>
                     </div>
                     <div class="stat-icon purple">
-                        🏢
+                        <i class="fas fa-exclamation-triangle"></i>
                     </div>
                 </div>
             </div>

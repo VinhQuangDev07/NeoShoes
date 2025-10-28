@@ -56,7 +56,7 @@ public class ProfileStaffServlet extends HttpServlet {
             return;
         }
         request.setAttribute("staff", staff);
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/Staff/ProfileStaff.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/staff/ProfileStaff.jsp");
         rd.forward(request, response);
     }
 
@@ -178,6 +178,6 @@ public class ProfileStaffServlet extends HttpServlet {
     private void forwardForm(HttpServletRequest req, HttpServletResponse resp, int staffId)
             throws ServletException, IOException {
         req.setAttribute("staff", staffDAO.getStaffById(staffId));
-        req.getRequestDispatcher("/WEB-INF/views/Staff/ProfileStaff.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/staff/ProfileStaff.jsp").forward(req, resp);
     }
 }

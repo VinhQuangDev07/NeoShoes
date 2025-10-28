@@ -5,6 +5,7 @@
 package DAOs;
 
 import Models.Review;
+import Models.StaffReply;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,11 +31,15 @@ public class ReviewDAO extends DB.DBContext {
                      "r.CreatedAt, r.UpdatedAt, r.IsDeleted, " +
                      "c.Name as CustomerName, " +
                      "p.Name as ProductName, " +
-                     "pv.Color " +
+                     "pv.Color, " +
+                     "rep.ReplyId, rep.ReplyContent, rep.CreatedAt as ReplyCreatedAt, " +
+                     "s.Name as StaffName " +
                      "FROM Review r " +
                      "INNER JOIN Customer c ON r.CustomerId = c.CustomerId " +
                      "INNER JOIN ProductVariant pv ON r.ProductVariantId = pv.ProductVariantId " +
                      "INNER JOIN Product p ON pv.ProductId = p.ProductId " +
+                     "LEFT JOIN Reply rep ON r.ReviewId = rep.ReviewId AND rep.IsDeleted = 0 " +
+                     "LEFT JOIN Staff s ON rep.StaffId = s.StaffId " +
                      "WHERE p.ProductId = ? AND r.IsDeleted = 0 " +
                      "ORDER BY r.CreatedAt DESC";
         
@@ -43,6 +48,18 @@ public class ReviewDAO extends DB.DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Review review = createReviewFromResultSet(rs);
+                    
+                    // Load staff reply if exists
+                    if (rs.getObject("ReplyId") != null) {
+                        StaffReply staffReply = new StaffReply();
+                        staffReply.setStaffReplyId(rs.getInt("ReplyId"));
+                        staffReply.setContent(rs.getString("ReplyContent"));
+                        Timestamp replyCreatedAt = rs.getTimestamp("ReplyCreatedAt");
+                        staffReply.setCreatedAt(replyCreatedAt == null ? null : replyCreatedAt.toLocalDateTime());
+                        staffReply.setStaffName(rs.getString("StaffName"));
+                        review.setStaffReply(staffReply);
+                    }
+                    
                     reviews.add(review);
                 }
             }
@@ -67,11 +84,15 @@ public class ReviewDAO extends DB.DBContext {
                                              "r.CreatedAt, r.UpdatedAt, r.IsDeleted, " +
                                              "c.Name as CustomerName, " +
                                              "p.Name as ProductName, " +
-                                             "pv.Color " +
+                                             "pv.Color, " +
+                                             "rep.ReplyId, rep.ReplyContent, rep.CreatedAt as ReplyCreatedAt, " +
+                                             "s.Name as StaffName " +
                                              "FROM Review r " +
                                              "INNER JOIN Customer c ON r.CustomerId = c.CustomerId " +
                                              "INNER JOIN ProductVariant pv ON r.ProductVariantId = pv.ProductVariantId " +
                                              "INNER JOIN Product p ON pv.ProductId = p.ProductId " +
+                                             "LEFT JOIN Reply rep ON r.ReviewId = rep.ReviewId AND rep.IsDeleted = 0 " +
+                                             "LEFT JOIN Staff s ON rep.StaffId = s.StaffId " +
                                              "WHERE p.ProductId = ? AND r.IsDeleted = 0");
         
         // Add rating filter if specified
@@ -103,6 +124,18 @@ public class ReviewDAO extends DB.DBContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Review review = createReviewFromResultSet(rs);
+                    
+                    // Load staff reply if exists
+                    if (rs.getObject("ReplyId") != null) {
+                        StaffReply staffReply = new StaffReply();
+                        staffReply.setStaffReplyId(rs.getInt("ReplyId"));
+                        staffReply.setContent(rs.getString("ReplyContent"));
+                        Timestamp replyCreatedAt = rs.getTimestamp("ReplyCreatedAt");
+                        staffReply.setCreatedAt(replyCreatedAt == null ? null : replyCreatedAt.toLocalDateTime());
+                        staffReply.setStaffName(rs.getString("StaffName"));
+                        review.setStaffReply(staffReply);
+                    }
+                    
                     reviews.add(review);
                 }
             }
@@ -278,5 +311,56 @@ public class ReviewDAO extends DB.DBContext {
         review.setColor(rs.getString("Color"));
         
         return review;
+    }
+    
+    /**
+     * Add staff reply to a review
+     * @param reviewId The ID of the review to reply to
+     * @param replyContent The content of the staff reply
+     * @return true if successful, false otherwise
+     */
+    public boolean addStaffReply(int reviewId, String replyContent, int staffId) {
+        String sql = "INSERT INTO Reply (ReviewId, StaffId, ReplyContent, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, GETDATE(), GETDATE(), 0)";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, reviewId);
+            ps.setInt(2, staffId);
+            ps.setString(3, replyContent);
+            
+            int result = ps.executeUpdate();
+            return result > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error adding staff reply: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Updates an existing staff reply
+     * @param replyId The ID of the reply to update
+     * @param replyContent The new content of the reply
+     * @param staffId The ID of the staff member updating
+     * @return true if successful, false otherwise
+     */
+    public boolean updateStaffReply(int replyId, String replyContent, int staffId) {
+        String sql = "UPDATE Reply SET ReplyContent = ?, UpdatedAt = GETDATE() WHERE ReplyId = ? AND StaffId = ? AND IsDeleted = 0";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, replyContent);
+            ps.setInt(2, replyId);
+            ps.setInt(3, staffId);
+            
+            int result = ps.executeUpdate();
+            return result > 0;
+            
+        } catch (SQLException e) {
+            System.err.println("Error updating staff reply: " + e.getMessage());
+            return false;
+        }
     }
 }

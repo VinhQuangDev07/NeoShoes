@@ -8,18 +8,17 @@ import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
 import Models.Order;
 
-import Models.ReturnRequest;
 import DAOs.CustomerDAO;
 
 import Models.Customer;
 import Models.Order;
+import Models.OrderStatusHistory;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -45,6 +44,10 @@ public class OrderDetailServlet extends HttpServlet {
 
                 Order order = orderDAO.findWithItems(orderId);
                 request.setAttribute("order", order);
+                
+                // Load order status history for timeline
+                List<OrderStatusHistory> statusHistory = orderDAO.getOrderStatusHistory(orderId);
+                request.setAttribute("statusHistory", statusHistory);
 
                 ReturnRequestDAO rrDAO = new ReturnRequestDAO();
                 boolean hasRequest = rrDAO.existsByOrderId(orderId);
@@ -86,17 +89,22 @@ public class OrderDetailServlet extends HttpServlet {
 
             if ("cancel".equals(action)) {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
+                
+                // Get customer ID from session
+                int customerId = 2;
+//                if (customerId == null) {
+//                    System.err.println("Customer not logged in");
+//                    response.sendRedirect(request.getContextPath() + "/orders?error=not_logged_in");
+//                    return;
+//                }
 
-                boolean success = orderDAO.deleteOrder(orderId);
+                // Update order status to CANCELLED using customer method
+                boolean success = orderDAO.updateOrderStatusForCustomer(orderId, "CANCELLED", customerId);
 
                 if (success) {
-                    // Redirect to orders page with success message
-                    // response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
                     System.out.println("Order " + orderId + " cancelled successfully");
-                    response.sendRedirect(request.getContextPath() + "/orders?cancelled=true");
+                    response.sendRedirect(request.getContextPath() + "/orders");
                 } else {
-                    // Redirect to orders page with error message
-                    //response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
                     System.err.println("Failed to cancel order " + orderId);
                     response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
                 }

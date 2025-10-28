@@ -52,8 +52,14 @@ public class Order {
     private String recipientName;
     private String recipientPhone;
     
-    // Payment status name for display
+    // Payment information for display
+    private String paymentMethodName;
     private String paymentStatusName;
+    
+    // Customer information for staff view
+    private String customerName;
+    private String customerEmail;
+    private String customerPhone;
 
     private transient Voucher voucher;
 
@@ -233,11 +239,43 @@ public BigDecimal getSubtotal() {
     }
     return subtotal;
 }
+    public String getPaymentMethodName() {
+        return paymentMethodName;
+    }
+
+    public void setPaymentMethodName(String paymentMethodName) {
+        this.paymentMethodName = paymentMethodName;
+    }
+
     public String getPaymentStatusName() {
         return paymentStatusName;
     }
 
     public void setPaymentStatusName(String paymentStatusName) {
         this.paymentStatusName = paymentStatusName;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
     }
 }

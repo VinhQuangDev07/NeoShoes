@@ -25,6 +25,7 @@ public class Review {
     private String customerName;
     private String productName;
     private String color;
+    private StaffReply staffReply;
     
     public Review() {
     }
@@ -128,6 +129,14 @@ public class Review {
     
     public void setColor(String color) {
         this.color = color;
+    }
+    
+    public StaffReply getStaffReply() {
+        return staffReply;
+    }
+    
+    public void setStaffReply(StaffReply staffReply) {
+        this.staffReply = staffReply;
     }
     
     @Override

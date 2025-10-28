@@ -143,7 +143,7 @@
                         <i data-lucide="package"></i>
                         Products
                     </a>
-                    <a id="order" data-page="order" href="${pageContext.request.contextPath}/manage-order" class="nav-link">
+                    <a id="order" data-page="order" href="${pageContext.request.contextPath}/staff/orders" class="nav-link">
                         <i data-lucide="shopping-cart"></i>
                         Orders
                     </a>
@@ -182,5 +182,18 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+        
+        // Highlight current page
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === currentPath || 
+                (currentPath.includes('/staff/orders') && link.getAttribute('href').includes('/staff/orders')) ||
+                (currentPath.includes('/staff/order-detail') && link.getAttribute('href').includes('/staff/orders'))) {
+                link.classList.add('active');
+            }
+        });
     });
 </script>

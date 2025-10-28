@@ -10,8 +10,10 @@ import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.Brand;
 import Models.Category;
+import DAOs.ReviewDAO;
 import Models.Product;
 import Models.ProductVariant;
+import Models.Review;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -108,11 +110,16 @@ public class ManageProductServlet extends HttpServlet {
                     }
                 }
 
+                // Get reviews count for display
+                ReviewDAO reviewDAO = new ReviewDAO();
+                List<Review> reviews = reviewDAO.getReviewsByProduct(productId);
+
                 request.setAttribute("product", product);
                 request.setAttribute("productVariants", productVariants);
                 request.setAttribute("totalQuantity", totalQuantity);
                 request.setAttribute("minPrice", minPrice != null ? minPrice : BigDecimal.ZERO);
                 request.setAttribute("maxPrice", maxPrice != null ? maxPrice : BigDecimal.ZERO);
+                request.setAttribute("reviews", reviews);
 
                 request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/product-detail.jsp")
                         .forward(request, response);
@@ -318,6 +325,41 @@ public class ManageProductServlet extends HttpServlet {
             }
         }
 
+        
+        if ("reply-review".equals(action)) {
+            // Handle staff reply to review
+            try {
+                int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+                int productId = Integer.parseInt(request.getParameter("productId"));
+                String replyContent = request.getParameter("replyContent");
+                
+                if (replyContent == null || replyContent.trim().isEmpty()) {
+                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Reply content cannot be empty");
+                    return;
+                }
+                
+                // Get staff ID from session (you may need to adjust this based on your session management)
+                Integer staffId = (Integer) request.getSession().getAttribute("staffId");
+                if (staffId == null) {
+                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Staff not logged in");
+                    return;
+                }
+                
+                ReviewDAO reviewDAO = new ReviewDAO();
+                boolean success = reviewDAO.addStaffReply(reviewId, replyContent, staffId);
+                
+                if (success) {
+                    response.sendRedirect("product?action=detail&productId=" + productId + "&success=Reply sent successfully");
+                } else {
+                    response.sendRedirect("product?action=detail&productId=" + productId + "&error=Failed to send reply");
+                }
+                
+            } catch (NumberFormatException e) {
+                response.sendRedirect("product?action=detail&error=Invalid review ID");
+            }
+        } else {
+            processRequest(request, response);
+        }
     }
 
     /**
