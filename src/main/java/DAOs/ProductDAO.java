@@ -113,7 +113,7 @@ public class ProductDAO extends DBContext {
         String query = buildBaseQuery()
                 + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
                 + GROUP_BY + " "
-                + "ORDER BY p.ProductId DESC "
+                + "ORDER BY p.CreatedAt DESC "
                 + "OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
