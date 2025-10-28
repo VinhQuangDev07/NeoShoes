@@ -29,7 +29,8 @@ public class LogoutServlet extends HttpServlet {
         // response.addCookie(emailCookie);
         
         // 3. Redirect to login page with success message
-        response.sendRedirect(request.getContextPath() + "/login");
+        response.sendRedirect(request.getContextPath() + "/home");
+        //response.sendRedirect(request.getContextPath() + "/WEB-INF/views/customer/login.jsp");
     }
     
     @Override

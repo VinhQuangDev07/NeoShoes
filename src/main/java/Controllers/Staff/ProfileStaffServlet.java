@@ -28,6 +28,7 @@ public class ProfileStaffServlet extends HttpServlet {
      */
     private Integer resolveStaffId(HttpServletRequest request) {
         HttpSession session = request.getSession();
+        
         Integer staffId = (Integer) session.getAttribute("staffId");
         if (staffId == null && DEV_ALLOW_AS_PARAM) {
             String asStaffId = request.getParameter("asStaffId");
@@ -45,13 +46,16 @@ public class ProfileStaffServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        Integer staffId = resolveStaffId(request);
-        if (staffId == null) {
-            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
-            return;
-        }
+        
+//        Integer staffId = resolveStaffId(request);
+//        if (staffId == null) {
+//            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
+//            return;
+//        }
+        int staffId = 4;
         Staff staff = staffDAO.getStaffById(staffId);
         if (staff == null) {
+            
             response.sendRedirect(request.getContextPath() + "/error.jsp");
             return;
         }
@@ -65,19 +69,20 @@ public class ProfileStaffServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding(StandardCharsets.UTF_8.name());
         HttpSession session = request.getSession();
-        Integer staffId = resolveStaffId(request);
-        if (staffId == null) {
-            session.setAttribute("flash_error", "Phiên đăng nhập hết hạn!");
-            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
-            return;
-        }
+//        Integer staffId = resolveStaffId(request);
+//        if (staffId == null) {
+//            session.setAttribute("flash_error", "Phiên đăng nhập hết hạn!");
+//            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
+//            return;
+//        }
 
         String action = safe(request.getParameter("action"));
 
         // Lấy bản ghi hiện tại để fallback khi param thiếu (do input bị disabled)
+        int staffId = 4;
         Staff current = staffDAO.getStaffById(staffId);
         if (current == null) {
-            flash(request, "Staff not found.", "error");
+flash(request, "Staff not found.", "error");
             forwardForm(request, response, staffId);
             return;
         }
@@ -132,7 +137,7 @@ public class ProfileStaffServlet extends HttpServlet {
             // 1) Validate strength: 8+ ký tự, 1 hoa, 1 thường, 1 số
             boolean strong = newPw.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$");
             if (!strong) {
-                flash(request, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.", "error");
+flash(request, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.", "error");
                 forwardForm(request, response, staffId);
                 return;
             }
