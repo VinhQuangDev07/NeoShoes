@@ -14,6 +14,7 @@ import java.util.Objects;
 
 import DB.DBContext;
 import Models.Staff;
+import Utils.Utils;
 
 /**
  * Staff Data Access Object
@@ -150,6 +151,44 @@ public class StaffDAO extends DBContext {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
+
+    /**
+     * Authenticate staff or admin by email and password.
+     * Returns Staff on success, otherwise null.
+     */
+    public Staff login(String email, String password) {
+        String sql = "SELECT * FROM Staff WHERE Email=? AND IsDeleted=0";
+
+        try (Connection c = getConnection();
+             PreparedStatement p = c.prepareStatement(sql)) {
+
+            p.setString(1, email);
+
+            try (ResultSet rs = p.executeQuery()) {
+                if (!rs.next()) {
+                    System.err.println("❌ Staff not found: " + email);
+                    return null;
+                }
+
+                String hash = rs.getString("PasswordHash");
+                if (!Utils.verifyPassword(password, hash)) {
+                    System.err.println("❌ Invalid password for: " + email);
+                    return null;
+                }
+
+                return mapStaff(rs);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error during staff login: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // ============================================
