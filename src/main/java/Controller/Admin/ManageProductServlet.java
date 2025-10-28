@@ -90,7 +90,7 @@ public class ManageProductServlet extends HttpServlet {
                     return;
                 }
 
-                List<ProductVariant> productVariants = pvDAO.getByProductId(productId);
+                List<ProductVariant> productVariants = pvDAO.getVariantListByProductId(productId);
 
                 // Tính toán thống kê...
                 int totalQuantity = 0;
@@ -126,7 +126,7 @@ public class ManageProductServlet extends HttpServlet {
             Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
 
             for (Product p : listProduct) {
-                List<ProductVariant> variants = pvDAO.getByProductId(p.getProductId());
+                List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
                 productVariantsMap.put(p.getProductId(), variants);
             }
 

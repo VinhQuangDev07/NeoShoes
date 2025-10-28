@@ -35,8 +35,8 @@ public class OrderDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             // For now, using hardcoded customer ID. In production, get from session
-            int customerId = 2;
-            Customer customer = customerDAO.findById(customerId);
+           // int customerId = 2;
+            //Customer customer = customerDAO.findById(customerId);
 
         // For now, using hardcoded customer ID. In production, get from session
         int customerId = 1;

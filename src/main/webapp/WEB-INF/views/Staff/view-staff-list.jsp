@@ -117,6 +117,8 @@
                 font-weight: 600;
                 font-size: 14px;
             }
+
+            
         </style>
     </head>
     <body>
@@ -146,140 +148,187 @@
 
             <!-- Page Header -->
             <div class="mb-4">
-                <h1 class="page-title"><i class="fas fa-users-cog"></i> Staff Management</h1>
-                <p class="page-subtitle">View and manage all staff members</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="page-title"><i class="fas fa-users-cog"></i> Staff Management</h1>
+                        <p class="page-subtitle">View and manage all staff members</p>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/manage-staff?action=add" 
+                       class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Add New Staff
+                    </a>
+                </div>
             </div>
 
             <!-- Statistics -->
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="stat-card">
-                        <div class="d-flex align-items-center">
-                            <div class="stat-icon" style="background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="ms-3">
-                                <h3 class="mb-0">${totalRecords}</h3>
-                                <p class="text-muted mb-0">Total Staff</p>
-                            </div>
+            <!--            <div class="row mb-4">
+                                <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Full Name <span class="required">*</span></label>
+                                            <div class="input-icon has-left-icon" id="nameWrapper">
+                                                <i class="far fa-user icon-left"></i>
+                                                <input type="text" id="nameInput" name="name" class="form-control" 
+                                                       value="${not empty staff ? staff.name : ''}" placeholder="Full name">
+                                            </div>
+                                            <small class="text-danger d-none" id="nameError">
+                                                Full name is required.
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Role</label>
+                                            <div class="input-icon has-left-icon">
+                                                <i class="far fa-id-badge icon-left"></i>
+                                                <input type="text" class="form-control" value="Staff" readonly disabled>
+                                            </div>
+                                            <input type="hidden" name="role" value="staff">
+                                        </div> 
+                                               placeholder="Search by name, email, phone..."
+                                               value="${keyword}">
+                                    </div>
+            
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold">Filter by Role</label>
+                                        <select name="roleFilter" class="form-select">
+                                            <option value="">All Roles</option>
+                                            <option value="admin" <c:if test="${roleFilter eq 'admin'}">selected</c:if>>Admin</option>
+                                            <option value="staff" <c:if test="${roleFilter eq 'staff'}">selected</c:if>>Staff</option>
+                                            </select>
+                                        </div>
+            
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-primary me-2">
+                                                <i class="fas fa-search"></i> Search
+                                            </button>
+                                            <a href="${pageContext.request.contextPath}/manage-staff?role=${userRole}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-redo"></i> Reset
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>-->
+
+            <!-- Staff Table -->
+            <div class="table-card">
+                <h5 class="mb-3">
+                    <i class="fas fa-list"></i> Staff List
+                    <span class="text-muted">(${fn:length(staffList)} results)</span>
+                </h5>
+
+                <c:choose>
+                    <c:when test="${empty staffList}">
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No staff found</h5>
+                            <p class="text-muted">Try adjusting your search criteria</p>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Search & Filter -->
-                <div class="search-box">
-                    <form method="get" action="${pageContext.request.contextPath}/manage-staff" class="row g-3">
-                        <input type="hidden" name="role" value="${userRole}"/>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Search Staff</label>
-                            <input type="text" name="keyword" class="form-control"
-                                   placeholder="Search by name, email, phone..."
-                                   value="${keyword}">
+                    </c:when>
+                    <c:otherwise>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Staff</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Role</th>
+                                        <th>Created</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- ✅ MỚI - Chỉ hiển thị Staff (bỏ Admin) -->
+                                    <c:forEach items="${staffList}" var="staff">
+                                        <c:if test="${!staff.role}">
+                                            <tr>
+                                                <td><strong>#${staff.staffId}</strong></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="${staff.displayAvatar}" alt="${staff.name}" class="avatar-sm me-2">
+                                                        <strong>${staff.name}</strong>
+                                                    </div>
+                                                </td>
+                                                <td><small>${staff.email}</small></td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${not empty staff.phoneNumber}">
+                                                            <small>${staff.phoneNumber}</small>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-muted">N/A</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <span class="badge-role badge-staff">
+                                                        <i class="fas fa-user"></i>
+                                                        ${staff.roleName}
+                                                    </span>
+                                                </td>
+                                                <td><small class="text-muted">${staff.formattedCreatedAt}</small></td>
+                                                <td class="text-end">
+                                                    <a href="${pageContext.request.contextPath}/manage-staff?action=view&id=${staff.staffId}"
+                                                       class="btn btn-sm btn-info btn-action">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/manage-staff?action=edit&id=${staff.staffId}"
+                                                       class="btn btn-sm btn-warning btn-action mx-1">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-danger btn-action"
+                                                            data-staff-id="${staff.staffId}"
+                                                            data-staff-name="${staff.name}"
+                                                            onclick="confirmDelete(this.getAttribute('data-staff-id'), this.getAttribute('data-staff-name'))">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </c:if>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                            <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
                         </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label fw-semibold">Filter by Role</label>
-                            <select name="roleFilter" class="form-select">
-                                <option value="">All Roles</option>
-                                <option value="admin" <c:if test="${roleFilter eq 'admin'}">selected</c:if>>Admin</option>
-                                <option value="staff" <c:if test="${roleFilter eq 'staff'}">selected</c:if>>Staff</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
-                                <a href="${pageContext.request.contextPath}/manage-staff?role=${userRole}" class="btn btn-outline-secondary">
-                                <i class="fas fa-redo"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Staff Table -->
-                <div class="table-card">
-                    <h5 class="mb-3">
-                        <i class="fas fa-list"></i> Staff List
-                        <span class="text-muted">(${fn:length(staffList)} results)</span>
-                    </h5>
-
-                    <c:choose>
-                        <c:when test="${empty staffList}">
-                            <div class="text-center py-5">
-                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No staff found</h5>
-                                <p class="text-muted">Try adjusting your search criteria</p>
-                            </div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Staff</th>
-                                            <th>Email</th>
-                                            <th>Phone</th>
-                                            <th>Role</th>
-                                            <th>Created</th>
-                                            <th class="text-end">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- ✅ MỚI - Chỉ hiển thị Staff (bỏ Admin) -->
-                                        <c:forEach items="${staffList}" var="staff">
-                                            <c:if test="${!staff.role}">
-                                                <tr>
-                                                    <td><strong>#${staff.staffId}</strong></td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="${staff.displayAvatar}" alt="${staff.name}" class="avatar-sm me-2">
-                                                            <strong>${staff.name}</strong>
-                                                        </div>
-                                                    </td>
-                                                    <td><small>${staff.email}</small></td>
-                                                    <td>
-                                                        <c:choose>
-                                                            <c:when test="${not empty staff.phoneNumber}">
-                                                                <small>${staff.phoneNumber}</small>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="text-muted">N/A</span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge-role badge-staff">
-                                                            <i class="fas fa-user"></i>
-                                                            ${staff.roleName}
-                                                        </span>
-                                                    </td>
-                                                    <td><small class="text-muted">${staff.formattedCreatedAt}</small></td>
-                                                    <td class="text-end">
-                                                        <a href="${pageContext.request.contextPath}/manage-staff?action=view&id=${staff.staffId}" 
-                                                           class="btn btn-sm btn-info btn-action">
-                                                            <i class="fas fa-eye"></i> View
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </c:if>
-                                        </c:forEach>
-                                    </tbody>
-                                </table>
-                                <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                    </c:otherwise>
+                </c:choose>
 
 
-                </div>
             </div>
+        </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script> if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }</script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+                                                                if (typeof lucide !== 'undefined') {
+                                                                    lucide.createIcons();
+                                                                }
+
+                                                                // Delete confirmation
+                                                                function confirmDelete(staffId, staffName) {
+                                                                    if (confirm('Are you sure you want to delete staff: ' + staffName + '?\\n\\nThis action cannot be undone!')) {
+                                                                        // Create form and submit
+                                                                        const form = document.createElement('form');
+                                                                        form.method = 'POST';
+                                                                        form.action = '${pageContext.request.contextPath}/manage-staff';
+
+                                                                        // Add action parameter
+                                                                        const actionInput = document.createElement('input');
+                                                                        actionInput.type = 'hidden';
+                                                                        actionInput.name = 'action';
+                                                                        actionInput.value = 'delete';
+                                                                        form.appendChild(actionInput);
+
+                                                                        // Add id parameter
+                                                                        const idInput = document.createElement('input');
+                                                                        idInput.type = 'hidden';
+                                                                        idInput.name = 'id';
+                                                                        idInput.value = staffId;
+                                                                        form.appendChild(idInput);
+
+                                                                        // Submit form
+                                                                        document.body.appendChild(form);
+                                                                        form.submit();
+                                                                    }
+                                                                }
+        </script>
     </body>
 </html>

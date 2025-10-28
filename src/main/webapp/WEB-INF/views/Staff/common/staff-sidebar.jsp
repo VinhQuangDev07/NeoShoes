@@ -147,7 +147,7 @@
                         <i data-lucide="shopping-cart"></i>
                         Orders
                     </a>
-                    <a id="category" data-page="category" href="${pageContext.request.contextPath}/manage-category" class="nav-link">
+                    <a id="category" data-page="category" href="${pageContext.request.contextPath}/managecategoriesforstaff" class="nav-link">
                         <i data-lucide="tags"></i>
                         Categories
                     </a>
