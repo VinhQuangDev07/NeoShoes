@@ -301,11 +301,13 @@
               <span class="label">Phone Number</span>
               <div class="ctrl editable" id="phoneCtrl">
                 <i class="fa-solid fa-phone"></i>
-                <input id="phoneNumber" name="phoneNumber" value="${staff.phoneNumber}"
-                       placeholder="0xxxxxxxxx or +84xxxxxxxxx" readonly>
+                <input type="tel" id="phoneNumber" name="phoneNumber" value="${staff.phoneNumber}"
+                       placeholder="0xxxxxxxxx or +84xxxxxxxxx" 
+                       pattern="^(\+84[0-9]{9}|0[0-9]{9})$"
+                       readonly>
                 <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
               </div>
-              <div class="msg-error hidden" id="errPhone">Phone must be 10 digits starting with 0, or +84 + 9 digits.</div>
+              <div class="msg-error hidden" id="errPhone">Invalid phone number. Please enter 0xxxxxxxxx (10 digits) or +84xxxxxxxxx (9 digits).</div>
             </div>
           </div>
 
@@ -430,20 +432,60 @@
     (function(){
       const phoneInput = document.getElementById('phoneNumber');
       const phoneCtrl  = document.getElementById('phoneCtrl');
+      const errPhone   = document.getElementById('errPhone');
       if (!phoneInput || !phoneCtrl) return;
 
       const reVN = /^(\+84[0-9]{9}|0[0-9]{9})$/;
 
+      // Chặn nhập ký tự không hợp lệ (chỉ cho phép số, +, và xóa)
+      phoneInput.addEventListener('keypress', function(e){
+        const char = String.fromCharCode(e.which);
+        // Chỉ cho phép số 0-9 và dấu +
+        if (!/[0-9+]/.test(char)) {
+          e.preventDefault();
+          return false;
+        }
+        // Dấu + chỉ được phép ở đầu
+        if (char === '+' && this.value.length > 0) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Chặn paste ký tự không hợp lệ
+      phoneInput.addEventListener('paste', function(e){
+        setTimeout(() => {
+          this.value = this.value.replace(/[^0-9+]/g, '');
+          updatePhoneValid();
+        }, 10);
+      });
+
       function updatePhoneValid(){
         const v = (phoneInput.value || '').trim();
         const editable = !phoneInput.hasAttribute('readonly') && !phoneInput.disabled;
-        if (!editable){ phoneCtrl.classList.remove('valid'); return; }
+        
+        if (!editable){ 
+          phoneCtrl.classList.remove('valid', 'invalid'); 
+          errPhone.classList.add('hidden');
+          return; 
+        }
 
+        // Nếu rỗng hoặc đang nhập
+        if (!v) {
+          phoneCtrl.classList.remove('valid', 'invalid');
+          errPhone.classList.add('hidden');
+          return;
+        }
+
+        // Validate format
         if (reVN.test(v)){
           phoneCtrl.classList.remove('invalid');
           phoneCtrl.classList.add('valid');
+          errPhone.classList.add('hidden');
         } else {
           phoneCtrl.classList.remove('valid');
+          phoneCtrl.classList.add('invalid');
+          errPhone.classList.remove('hidden');
         }
       }
 

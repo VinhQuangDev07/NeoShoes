@@ -239,27 +239,28 @@ public class StaffDAO extends DBContext {
      * Update staff information
      */
     public boolean updateStaff(Staff staff) {
-        String sql = "UPDATE Staff SET " +
-                    "Role=?, Name=?, PhoneNumber=?, Avatar=?, Gender=?, Address=?, DateOfBirth=?, UpdatedAt=GETDATE() " +
-                    "WHERE StaffId=? AND IsDeleted=0";
+    String sql = "UPDATE Staff SET " +
+            "Role=?, Email=?, Name=?, PhoneNumber=?, Avatar=?, Gender=?, Address=?, DateOfBirth=?, UpdatedAt=GETDATE() " +
+            "WHERE StaffId=? AND IsDeleted=0";
         
         try (Connection c = getConnection();
              PreparedStatement p = c.prepareStatement(sql)) {
             
             p.setBoolean(1, staff.isRole());
-            p.setString(2, staff.getName());
-            p.setString(3, staff.getPhoneNumber());
-            p.setString(4, staff.getAvatar());
-            p.setString(5, staff.getGender());
-            p.setString(6, staff.getAddress());
+            p.setString(2, staff.getEmail());
+            p.setString(3, staff.getName());
+            p.setString(4, staff.getPhoneNumber());
+            p.setString(5, staff.getAvatar());
+            p.setString(6, staff.getGender());
+            p.setString(7, staff.getAddress());
             
             if (staff.getDateOfBirth() != null) {
-                p.setDate(7, Date.valueOf(staff.getDateOfBirth()));
+                p.setDate(8, Date.valueOf(staff.getDateOfBirth()));
             } else {
-                p.setNull(7, Types.DATE);
+                p.setNull(8, Types.DATE);
             }
             
-            p.setInt(8, staff.getStaffId());
+            p.setInt(9, staff.getStaffId());
             
             int result = p.executeUpdate();
             
