@@ -50,8 +50,7 @@ public class ProductDAO extends DBContext {
             = "GROUP BY p.ProductId, p.BrandId, p.CategoryId, p.Name, "
             + "p.Description, p.DefaultImageUrl, p.Material, "
             + "p.CreatedAt, p.UpdatedAt, "
-            + 
-            "b.Name, c.Name, "
+            + "b.Name, c.Name, "
             + "Colors.AvailableColors, Sizes.AvailableSizes";
 
     public ProductDAO() {
@@ -130,9 +129,10 @@ public class ProductDAO extends DBContext {
             System.err.println("Error in getLatestProducts: " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("✅ Retrieved " + products.size() + " latest products");
+        System.out.println("Retrieved " + products.size() + " latest products");
         return products;
     }
+
     public List<Product> getProductsByCategory(int categoryId) {
         List<Product> products = new ArrayList<>();
 
@@ -154,7 +154,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("✅ Found " + products.size() + " products for category " + categoryId);
+        System.out.println("Found " + products.size() + " products for category " + categoryId);
         return products;
     }
 
@@ -181,7 +181,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("✅ Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
+        System.out.println("Found " + products.size() + " products for category " + categoryId + " and brand " + brandId);
         return products;
     }
 
@@ -207,7 +207,7 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("✅ Found " + products.size() + " products for brand " + brandId);
+        System.out.println("Found " + products.size() + " products for brand " + brandId);
         return products;
     }
 
@@ -215,16 +215,14 @@ public class ProductDAO extends DBContext {
     public List<Product> searchProducts(String keyword) {
         List<Product> products = new ArrayList<>();
 
-       String query = buildBaseQuery()
-        + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-        + GROUP_BY + " ORDER BY p.ProductId ASC";
-
+        String query = buildBaseQuery()
+                + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
+                + GROUP_BY + " ORDER BY p.ProductId ASC";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
 
             String searchPattern = "%" + keyword + "%";
             ps.setString(1, searchPattern);
-           
 
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -236,67 +234,66 @@ public class ProductDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("✅ Found " + products.size() + " products matching '" + keyword + "'");
+        System.out.println("Found " + products.size() + " products matching '" + keyword + "'");
         return products;
     }
 
-   public Product getById(int productId) {
-    if (productId <= 0) {
-        System.err.println("❌ Invalid productId: " + productId);
+    public Product getById(int productId) {
+        if (productId <= 0) {
+            System.err.println("Invalid productId: " + productId);
+            return null;
+        }
+
+        String query = "SELECT p.*, "
+                + "b.Name AS BrandName, "
+                + "c.Name AS CategoryName "
+                + "FROM Product p "
+                + "INNER JOIN Brand b ON p.BrandId = b.BrandId "
+                + "INNER JOIN Category c ON p.CategoryId = c.CategoryId "
+                + "WHERE p.ProductId = ? AND p.IsDeleted = 0";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, productId);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Product product = new Product();
+                    product.setProductId(rs.getInt("ProductId"));
+                    product.setName(rs.getString("Name"));
+                    product.setDescription(rs.getString("Description"));
+                    product.setCategoryId(rs.getInt("CategoryId"));
+                    product.setBrandId(rs.getInt("BrandId"));
+                    product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
+                    product.setMaterial(rs.getString("Material"));
+
+                    // ⭐ Thêm BrandName và CategoryName
+                    product.setBrandName(rs.getString("BrandName"));
+                    product.setCategoryName(rs.getString("CategoryName"));
+
+                    Timestamp cr = rs.getTimestamp("CreatedAt");
+                    if (cr != null) {
+                        product.setCreatedAt(cr.toLocalDateTime());
+                    }
+
+                    Timestamp up = rs.getTimestamp("UpdatedAt");
+                    if (up != null) {
+                        product.setUpdatedAt(up.toLocalDateTime());
+                    }
+
+                    return product;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in getById: " + e.getMessage());
+            e.printStackTrace();
+        }
+
         return null;
     }
 
-    String query = "SELECT p.*, " +
-                   "b.Name AS BrandName, " +
-                   "c.Name AS CategoryName " +
-                   "FROM Product p " +
-                   "INNER JOIN Brand b ON p.BrandId = b.BrandId " +
-                   "INNER JOIN Category c ON p.CategoryId = c.CategoryId " +
-                   "WHERE p.ProductId = ? AND p.IsDeleted = 0";
-
-    try (Connection conn = getConnection();
-         PreparedStatement ps = conn.prepareStatement(query)) {
-
-        ps.setInt(1, productId);
-
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Product product = new Product();
-                product.setProductId(rs.getInt("ProductId"));
-                product.setName(rs.getString("Name"));
-                product.setDescription(rs.getString("Description"));
-                product.setCategoryId(rs.getInt("CategoryId"));
-                product.setBrandId(rs.getInt("BrandId"));
-                product.setDefaultImageUrl(rs.getString("DefaultImageUrl"));
-                product.setMaterial(rs.getString("Material"));
-                
-                // ⭐ Thêm BrandName và CategoryName
-                product.setBrandName(rs.getString("BrandName"));
-                product.setCategoryName(rs.getString("CategoryName"));
-                
-                Timestamp cr = rs.getTimestamp("CreatedAt");
-                if (cr != null) {
-                    product.setCreatedAt(cr.toLocalDateTime());
-                }
-                
-                Timestamp up = rs.getTimestamp("UpdatedAt");
-                if (up != null) {
-                    product.setUpdatedAt(up.toLocalDateTime());
-                }
-
-                return product;
-            }
-        }
-    } catch (SQLException e) {
-        System.err.println("❌ Error in getById: " + e.getMessage());
-        e.printStackTrace();
-    }
-
-    return null;
-}
-
-    // ========== COUNT TOTAL PRODUCTS ==========
-    public int getTotalProducts() {
+    // ========== COUNT TOTAL PRODUCTS FOR CUSTOMER ==========
+    public int getTotalProductForCustomer() {
         String query = "SELECT COUNT(*) AS Total FROM Product WHERE IsActive = 1 AND IsDeleted = 0";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
@@ -311,9 +308,26 @@ public class ProductDAO extends DBContext {
 
         return 0;
     }
+    // ========== COUNT TOTAL PRODUCTS FOR STAFF ==========
 
-    // ========== GET ALL PRODUCTS WITH PAGINATION ==========
-    public List<Product> getAllProducts(int offset, int limit) {
+    public int getTotalProductStaff() {
+        String query = "SELECT COUNT(*) AS Total FROM Product WHERE IsDeleted = 0";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query);  ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in getTotalProducts: " + e.getMessage());
+
+        }
+
+        return 0;
+    }
+
+    // ========== GET ALL PRODUCTS WITH PAGINATION FOR CUSTOMER ==========
+    public List<Product> getAllProductsCustomer(int offset, int limit) {
         List<Product> products = new ArrayList<>();
 
         String query = buildBaseQuery()
@@ -339,4 +353,175 @@ public class ProductDAO extends DBContext {
 
         return products;
     }
+
+    // ========== GET ALL PRODUCTS WITH PAGINATION STAFF ==========
+    public List<Product> getAllProductsForStaff(int offset, int limit) {
+        List<Product> products = new ArrayList<>();
+
+        String query = buildBaseQuery()
+                + "WHERE p.IsDeleted = 0 "
+                + GROUP_BY + " "
+                + "ORDER BY p.ProductId ASC "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
+
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    products.add(mapProduct(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in getAllProducts: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return products;
+    }
+// ========== TOGGLE PRODUCT ACTIVE STATUS (ADMIN) ==========
+
+    public boolean toggleProductStatus(int productId) {
+        String query = "UPDATE Product SET IsActive = CASE WHEN IsActive = 1 THEN 0 ELSE 1 END, "
+                + "UpdatedAt = GETDATE() "
+                + "WHERE ProductId = ? AND IsDeleted = 0";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, productId);
+
+            int affectedRows = ps.executeUpdate();
+
+            if (affectedRows > 0) {
+                System.out.println("Product status toggled: ID " + productId);
+                return true;
+            } else {
+                System.err.println(" No product found with ID: " + productId);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in toggleProductStatus: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean createProduct(Product product) {
+        String query = "INSERT INTO Product (BrandId, CategoryId, Name, Description, "
+                + "DefaultImageUrl, Material, IsActive, IsDeleted, CreatedAt, UpdatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, 0, GETDATE(), GETDATE())";
+        Object[] params = {
+            product.getBrandId(),
+            product.getCategoryId(),
+            product.getName(),
+            product.getDescription(),
+            product.getDefaultImageUrl(),
+            product.getMaterial(),
+            "active".equalsIgnoreCase(product.getIsActive()) ? 1 : 0,};
+        try {
+            int generatedId = execQueryReturnId(query, params);
+            if (generatedId > 0) {
+                product.setProductId(generatedId);
+                System.out.println("Product created successfully with ID: " + generatedId);
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in createProduct: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+    // ========== UPDATE PRODUCT STATUS (ADMIN) - Tắt/Bật sản phẩm ==========
+
+    public boolean updateProductStatus(int productId, boolean isActive) {
+        String query = "UPDATE Product SET IsActive = ?, UpdatedAt = GETDATE() "
+                + "WHERE ProductId = ? AND IsDeleted = 0";
+
+        Object[] params = {isActive ? 1 : 0, productId};
+
+        try {
+            int affectedRows = execQuery(query, params);
+
+            if (affectedRows > 0) {
+                System.out.println("Product status updated: ID " + productId + " -> " + (isActive ? "Active" : "Inactive"));
+                return true;
+            } else {
+                System.err.println(" No product found with ID: " + productId);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in updateProductStatus: " + e.getMessage());
+
+        }
+
+        return false;
+    }
+    // ========== UPDATE PRODUCT (ADMIN) - Sử dụng execQuery ==========
+
+    public boolean updateProduct(Product product) {
+        String query = "UPDATE Product SET "
+                + "BrandId = ?, "
+                + "CategoryId = ?, "
+                + "Name = ?, "
+                + "Description = ?, "
+                + "DefaultImageUrl = ?, "
+                + "Material = ?, "
+                + "IsActive = ?, "
+                + "UpdatedAt = GETDATE() "
+                + "WHERE ProductId = ? AND IsDeleted = 0";
+
+        Object[] params = {
+            product.getBrandId(),
+            product.getCategoryId(),
+            product.getName(),
+            product.getDescription(),
+            product.getDefaultImageUrl(),
+            product.getMaterial(),
+            "active".equalsIgnoreCase(product.getIsActive()) ? 1 : 0, // Convert String ("active"/"inactive") to int
+            product.getProductId()
+        };
+
+        try {
+            int affectedRows = execQuery(query, params);
+
+            if (affectedRows > 0) {
+                System.out.println("Product updated successfully: ID " + product.getProductId());
+                return true;
+            } else {
+                System.err.println("No product found with ID: " + product.getProductId());
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in updateProduct: " + e.getMessage());
+
+        }
+
+        return false;
+    }
+
+    // ========== SOFT DELETE PRODUCT (ADMIN) ==========
+    public boolean deleteProduct(int productId) {
+        String query = "UPDATE Product SET IsDeleted = 1, UpdatedAt = GETDATE() "
+                + "WHERE ProductId = ? AND IsDeleted = 0";
+
+        try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, productId);
+
+            int affectedRows = ps.executeUpdate();
+
+            if (affectedRows > 0) {
+                System.out.println("Product soft-deleted successfully: ID " + productId);
+                return true;
+            } else {
+                System.err.println(" No product found or already deleted: ID " + productId);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error in deleteProduct: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 }
