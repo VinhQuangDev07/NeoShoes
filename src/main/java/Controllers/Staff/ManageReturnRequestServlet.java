@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package Controller.Admin;
+package Controllers.Staff;
 
 import DAOs.ReturnRequestDAO;
 import DAOs.ReturnRequestDetailDAO;
@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @author Nguyen Huynh Thien An - CE190979
  */
-@WebServlet(name = "ManageReturnRequestServlet", urlPatterns = {"/admin/manage-return-request"})
+@WebServlet(name = "ManageReturnRequestServlet", urlPatterns = {"/staff/manage-return-request"})
 public class ManageReturnRequestServlet extends HttpServlet {
 
     /**
@@ -76,7 +76,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             List<ReturnRequestDetail> returnDetails = rrdDAO.getDetailsByReturnRequestId(returnRequest.getReturnRequestId());
 
             request.setAttribute("returnDetails", returnDetails);
-            request.getRequestDispatcher("/WEB-INF/views/admin/manage-return-request/request-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/request-detail.jsp").forward(request, response);
         } else {
             ReturnRequestDAO rDAO = new ReturnRequestDAO();
             List<ReturnRequest> requests = rDAO.getAllReturnRequests();
@@ -113,7 +113,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             request.setAttribute("recordsPerPage", recordsPerPage);
             request.setAttribute("baseUrl", request.getRequestURI());
 
-            request.getRequestDispatcher("/WEB-INF/views/admin/manage-return-request/list.jsp")
+            request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/list.jsp")
                     .forward(request, response);
         }
     }
@@ -150,7 +150,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 }
             }
             rrdDAO.updateRefundDateByRequestId(requestId);
-            response.sendRedirect(request.getContextPath() + "/admin/manage-return-request");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
         } else if ("delete".equals(action)) {  // ĐỔI THÀNH CHỮ THƯỜNG
             try {
                 int requestId = Integer.parseInt(request.getParameter("requestId"));
@@ -160,16 +160,16 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 rrDAO.deleteReturnRequest(requestId, orderId);
 
                 // Dùng full context path giống như updateStatus
-                response.sendRedirect(request.getContextPath() + "/admin/manage-return-request");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
 
             } catch (NumberFormatException e) {
                 e.printStackTrace();
                 request.setAttribute("error", "Invalid request ID or order ID!");
-                request.getRequestDispatcher("/admin/manage-return-request").forward(request, response);
+                request.getRequestDispatcher("/staff/manage-return-request").forward(request, response);
             } catch (Exception e) {
                 e.printStackTrace();
                 request.setAttribute("error", "Error deleting return request: " + e.getMessage());
-                request.getRequestDispatcher("/admin/manage-return-request").forward(request, response);
+                request.getRequestDispatcher("/staff/manage-return-request").forward(request, response);
             }
 
         }

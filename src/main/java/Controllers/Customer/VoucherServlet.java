@@ -204,19 +204,19 @@ public class VoucherServlet extends HttpServlet {
             Voucher voucher = voucherDAO.getVoucherByCode(voucherCode, customerId);
 
             if (voucher == null) {
-                System.err.println("❌ Voucher NOT FOUND");
+                System.err.println("Voucher NOT FOUND");
                 out.print("{\"success\": false, \"message\": \"Voucher code không tồn tại!\"}");
             } else if (!voucher.isActive()) {
-                System.err.println("❌ Voucher NOT ACTIVE");
+                System.err.println("Voucher NOT ACTIVE");
                 out.print("{\"success\": false, \"message\": \"Voucher không còn hoạt động!\"}");
             } else if (voucher.isExpired()) {
-                System.err.println("❌ Voucher EXPIRED");
+                System.err.println("Voucher EXPIRED");
                 out.print("{\"success\": false, \"message\": \"Voucher đã hết hạn!\"}");
             } else if (voucher.getMinValue() != null && orderTotal < voucher.getMinValue().doubleValue()) {
-                System.err.println("❌ Order total too low: " + orderTotal + " < " + voucher.getMinValue());
+                System.err.println("Order total too low: " + orderTotal + " < " + voucher.getMinValue());
                 out.print("{\"success\": false, \"message\": \"Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue() + "\"}");
             } else if (!voucherDAO.isVoucherUsable(voucher.getVoucherId(), customerId)) {
-                System.err.println("❌ Voucher NOT USABLE (usage limit reached)");
+                System.err.println("Voucher NOT USABLE (usage limit reached)");
                 out.print("{\"success\": false, \"message\": \"Bạn đã sử dụng hết lượt cho voucher này!\"}");
             } else {
                 // ✅ Tính toán discount
