@@ -180,7 +180,5 @@ public class Staff {
         isDeleted = v;
     }
     
-    public String getRoleName() {
-        return role ? "Admin" : "Staff";
-    }
+
 }

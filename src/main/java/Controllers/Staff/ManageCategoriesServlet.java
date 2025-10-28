@@ -118,7 +118,7 @@ public class ManageCategoriesServlet extends HttpServlet {
         boolean canModify = canModify(role);
         request.setAttribute("canModify", canModify);
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Manage-Categories.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Manage-Categories.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -130,7 +130,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             return;
         }
         
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Category-form.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Category-form.jsp");
         request.setAttribute("formAction", "add");
         dispatcher.forward(request, response);
     }
@@ -149,7 +149,7 @@ public class ManageCategoriesServlet extends HttpServlet {
         if (category != null) {
             request.setAttribute("category", category);
             request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Category-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Category-form.jsp");
             dispatcher.forward(request, response);
         } else {
             response.sendError(404, "Category not found");
@@ -187,7 +187,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "add");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Category-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Category-form.jsp");
             dispatcher.forward(request, response);
             return;
         }
@@ -236,7 +236,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Category-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Category-form.jsp");
             dispatcher.forward(request, response);
             return;
         }
@@ -249,7 +249,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             category.setIsActive(isActive);
             request.setAttribute("category", category);
             request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/Staff/Category-form.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Category-form.jsp");
             dispatcher.forward(request, response);
             return;
         }
