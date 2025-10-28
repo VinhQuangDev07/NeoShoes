@@ -468,17 +468,6 @@
     <body>
         
        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
-        <!--         Header 
-                <header class="header">
-                    <div class="header-container">
-                        <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                        <form action="${pageContext.request.contextPath}/home" method="get" class="search-form">
-                            <input type="hidden" name="action" value="search">
-                            <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                            <button type="submit" class="search-button">Search</button>
-                        </form>
-                    </div>
-                </header>-->
 
 
         <!-- Video Banner Section -->
@@ -516,7 +505,7 @@
                 </div>
             </div>
         </section>
-    </section>
+    
 
     <!-- Featured Products -->
     <section class="products">
