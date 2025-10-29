@@ -5,18 +5,21 @@
 
 package Controllers.Customer;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
+import DAOs.ReviewDAO;
 import Models.Product;
 import Models.ProductVariant;
-import java.io.IOException;
+import Models.Review;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -27,31 +30,30 @@ public class ProductDetailServlet extends HttpServlet {
    
     private ProductDAO productDAO;
     private ProductVariantDAO variantDAO;
+    private ReviewDAO reviewDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         productDAO = new ProductDAO();
         variantDAO = new ProductVariantDAO();
-    } 
+        reviewDAO = new ReviewDAO();
+    }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
+        String productIdParam = request.getParameter("id");
         
+        if (productIdParam == null || productIdParam.trim().isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Product ID is required");
+            return;
+        }
 
         try {
-            int productId = Integer.parseInt(request.getParameter("id"));
-
-            // Load Product
+            int productId = Integer.parseInt(productIdParam);
             Product product = productDAO.getById(productId);
             
             if (product == null) {
@@ -59,21 +61,59 @@ public class ProductDetailServlet extends HttpServlet {
                 return;
             }
 
-            // Load List<ProductVariant>
-            List<ProductVariant> variants = variantDAO.getByProductId(productId);
-            // Extract unique colors and sizes from variants
-            List<String> colors = new ArrayList<>();
-            List<String> sizes = new ArrayList<>();
+            // Product already has variants, colors, and sizes loaded from ProductDAO
+            List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
+            List<String> colors = variantDAO.getColorsByProductId(productId);
+            List<String> sizes = variantDAO.getSizesByProductId(productId);
             
-            for (ProductVariant variant : variants) {
-                // Add unique colors
-                if (!colors.contains(variant.getColor()) && variant.getColor() != null) {
-                    colors.add(variant.getColor());
+            // Get filter parameters for reviews
+            String ratingParam = request.getParameter("rating");
+            String timeParam = request.getParameter("time");
+            
+            // Parse rating filter
+            Integer rating = null;
+            if (ratingParam != null && !ratingParam.trim().isEmpty() && !"all".equals(ratingParam)) {
+                try {
+                    rating = Integer.parseInt(ratingParam);
+                    if (rating < 1 || rating > 5) {
+                        rating = null;
+                    }
+                } catch (NumberFormatException e) {
+                    rating = null;
                 }
-                // Add unique sizes
-                if (!sizes.contains(variant.getSize()) && variant.getSize() != null) {
-                    sizes.add(variant.getSize());
+            }
+            
+            // Load reviews for the product (filtered or all)
+            List<Review> reviews;
+            if (rating != null) {
+                // Get filtered reviews by rating
+                reviews = reviewDAO.getReviewsByFilter(productId, rating, null);
+            } else {
+                // Get all reviews for the product
+                reviews = reviewDAO.getReviewsByProduct(productId);
+            }
+            
+            // Apply time filter if specified
+            if (timeParam != null && !timeParam.trim().isEmpty() && !"all".equals(timeParam)) {
+                reviews = filterReviewsByTime(reviews, timeParam);
+            }
+            
+            // Load all reviews for statistics calculation (unfiltered)
+            List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
+            
+            // Calculate review statistics from all reviews
+            int totalReviews = allReviews.size();
+            double averageRating = 0.0;
+            int[] ratingCounts = new int[6]; // 0-5 stars
+            
+            if (totalReviews > 0) {
+                int totalStars = 0;
+                for (Review review : allReviews) {
+                    int star = review.getStar();
+                    totalStars += star;
+                    ratingCounts[star]++;
                 }
+                averageRating = (double) totalStars / totalReviews;
             }
             
             // Set attributes for JSP
@@ -81,6 +121,15 @@ public class ProductDetailServlet extends HttpServlet {
             request.setAttribute("variants", variants);
             request.setAttribute("colors", colors);
             request.setAttribute("sizes", sizes);
+            request.setAttribute("reviews", reviews);
+            request.setAttribute("totalReviews", totalReviews);
+            request.setAttribute("averageRating", averageRating);
+            request.setAttribute("formattedRating", formatRating(averageRating));
+            request.setAttribute("ratingCounts", ratingCounts);
+            
+            // Set filter attributes for JSP
+            request.setAttribute("selectedRating", rating);
+            request.setAttribute("selectedTime", timeParam);
 
             // Forward to JSP
             request.getRequestDispatcher("/WEB-INF/views/customer/product-detail.jsp").forward(request, response);
@@ -107,13 +156,54 @@ public class ProductDetailServlet extends HttpServlet {
         doGet(request, response);
     }
 
+    /**
+     * Format average rating to 1 decimal place
+     */
+    private String formatRating(double rating) {
+        return String.format("%.1f", rating);
+    }
+    
+    /**
+     * Filter reviews by time period
+     * @param reviews List of reviews to filter
+     * @param timeParam Time filter parameter (today, week, month)
+     * @return Filtered list of reviews
+     */
+    private List<Review> filterReviewsByTime(List<Review> reviews, String timeParam) {
+        if (reviews == null || reviews.isEmpty()) {
+            return reviews;
+        }
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.LocalDateTime cutoff;
+        
+        switch (timeParam.toLowerCase()) {
+            case "today":
+                cutoff = now.minusDays(1);
+                break;
+            case "week":
+                cutoff = now.minusWeeks(1);
+                break;
+            case "month":
+                cutoff = now.minusMonths(1);
+                break;
+            default:
+                return reviews; // No filtering for unknown time periods
+        }
+        
+        return reviews.stream()
+                .filter(review -> review.getCreatedAt().isAfter(cutoff))
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+
     /** 
      * Returns a short description of the servlet.
      * @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Product Detail Servlet with Reviews";
+    }
 
 }

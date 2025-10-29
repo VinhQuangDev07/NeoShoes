@@ -5,13 +5,14 @@
 package Models;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
  * @author Le Huu Nghia - CE181052
  */
 public class Customer {
-    
+
     private int id;
     private String email;
     private String passwordHash;
@@ -19,6 +20,7 @@ public class Customer {
     private String phoneNumber;
     private String avatar;
     private String gender;
+    private boolean isVerified;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean isBlock;
@@ -27,7 +29,7 @@ public class Customer {
     public Customer() {
     }
 
-        public Customer(int id, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isBlock, boolean isDeleted) {
+    public Customer(int id, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isBlock, boolean isDeleted) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -104,6 +106,14 @@ public class Customer {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean isVerified) {
+        this.isVerified = isVerified;
+    }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
@@ -129,9 +139,16 @@ public class Customer {
         this.isDeleted = isDeleted;
     }
 
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        }
+        return "N/A";
+    }
+
     @Override
     public String toString() {
         return "Customer{" + "id=" + id + ", email=" + email + ", passwordHash=" + passwordHash + ", name=" + name + ", phoneNumber=" + phoneNumber + ", avatar=" + avatar + ", gender=" + gender + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + ", isBlock=" + isBlock + ", isDeleted=" + isDeleted + '}';
-    }  
-    
+    }
+
 }

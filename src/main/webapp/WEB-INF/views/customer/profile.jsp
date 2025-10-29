@@ -6,164 +6,120 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
     <head>
         <title>My Profile</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
         <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
     </head> 
     <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Button Styles */
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Profile Page Styles */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 1rem;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border: 4px solid #fff;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Form Styles */
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+
         /* Validation form */
         .form-floating {
             position: relative;
             margin-bottom: 15px;
         }
 
-        .customer-sidebar {
-            height: 326px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            margin-top: 48px;
-            margin-right: 12px;
-            overflow: hidden;
+        .form-floating.success input,
+        .form-floating.success select {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
         }
 
-        .profile-section {
-            padding: 1.5rem 2rem;
-            position: relative;
+        .form-floating.error input,
+        .form-floating.error select {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.25);
         }
 
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-            border: 3px solid #d1d5db;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .profile-name {
-            color: #1f2937;
-            font-size: 1.125rem;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 0.25rem;
-        }
-
-        .profile-subtitle {
-            color: #6b7280;
-            font-size: 0.75rem;
-        }
-
-        .profile-divider {
-            position: absolute;
-            bottom: 0;
-            left: 1.5rem;
-            right: 1.5rem;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-            transition: transform 0.5s ease;
-            transform-origin: center;
-        }
-
-        .profile-section:hover .profile-divider {
-            transform: scaleX(1.1);
-        }
-
-        /* Sidebar */
-        .nav-menu {
-            padding: 1.5rem 0;
-        }
-
-        .nav-link-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 0.5rem;
-            border-radius: 8px;
-            color: #374151;
-            text-decoration: none;
-            transition: all 0.2s ease-in-out;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-link-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background: #4b5563;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-
-        .nav-link-item:hover {
-            color: #000000;
-            background-color: #eff6ff;
-            transform: scale(1.05);
-        }
-
-        .nav-link-item:hover::before {
-            transform: translateX(0);
-        }
-
-        .nav-link-item.active {
-            color: #000000;
-            background-color: #eff6ff;
-        }
-
-        .nav-link-item.active::before {
-            transform: translateX(0);
-            background: #000000;
-        }
-
-        .nav-icon-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: white;
-            border-radius: 8px;
-            transition: background-color 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .nav-link-item:hover .nav-icon-wrapper {
-            background-color: #eff6ff;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            color: currentColor;
-        }
-
-        .nav-text-wrapper {
-            flex: 1;
-        }
-
-        .nav-title {
-            font-weight: 500;
+        .form-floating.error .invalid-feedback {
             display: block;
-            margin-bottom: 0.125rem;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
 
-        .nav-description {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin: 0;
-        }
 
-        .nav-link-item:hover .nav-description {
-            color: #1f2937;
+
+        /* Orders Container - Same as orders page */
+        .orders-container {
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        /* Customer Sidebar - Simple Fix */
+        .customer-sidebar {
+            max-height: 500px; /* Giới hạn chiều cao */
+            overflow-y: auto; /* Cuộn khi cần */
         }
 
         /* Responsive */
@@ -172,6 +128,8 @@
                 width: 100%;
                 margin-top: 20px;
                 height: auto;
+                min-height: auto !important;
+                max-height: none;
             }
         }
     </style>
@@ -198,12 +156,19 @@
         </c:if>
 
         <div class="d-flex justify-content-center">
+        <jsp:include page="common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
+        <div class="orders-container">
             <div class="container">
-                <div class="d-flex profile-layout">
+                <div class="row">
                     <!-- Sidebar -->
-                    <jsp:include page="common/customer-sidebar.jsp"/>
+                    <div class="col-lg-3">
+                        <jsp:include page="common/customer-sidebar.jsp"/>
+                    </div>
                     <!-- Main Content -->
-                    <div id="main-content" class="main-content-wrapper mt-5 mb-5">
+                    <div class="col-lg-9">
+                        <div id="main-content" class="main-content-wrapper mt-2 mb-5">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h3 class="mb-3">Customer Profile</h3>
@@ -372,6 +337,7 @@
                                     <form method="post" action="${pageContext.request.contextPath}/address" id="addressForm-${addr.addressId}">
                                         <input type="hidden" name="addressAction" value="updateAddress"/>
                                         <input type="hidden" name="addressId" value="${addr.addressId}"/>
+                                        <input type="hidden" name="customerId" value="${customer.id}" />
 
                                         <div class="mb-2">
                                             <div class="form-floating">
@@ -418,14 +384,19 @@
                                         <div class="d-flex justify-content-end gap-2">
                                             <div id="viewButtons-${addr.addressId}">
                                                 <button type="button" class="btn btn-primary btn-sm" 
-                                                        onclick="enableEdit(${addr.addressId})">Edit</button>
+                                                        onclick="enableEdit(<c:out value='${addr.addressId}'/>)">Edit</button>
                                                 <button type="button" class="btn btn-danger btn-sm" 
-                                                        onclick="deleteAddress(${addr.addressId})">Delete</button>
+                                                        onclick="deleteAddress(<c:out value='${addr.addressId}'/>)">Delete</button>
                                             </div>
 
                                             <div id="editButtons-${addr.addressId}" class="d-none">
                                                 <button type="button" class="btn btn-secondary btn-sm" 
-                                                        onclick="cancelEdit(${addr.addressId}, '${addr.addressName}', '${addr.recipientName}', '${addr.recipientPhone}', '${addr.addressDetails}')">Cancel</button>
+                                                        data-address-id="${addr.addressId}"
+                                                        data-address-name="${fn:escapeXml(addr.addressName)}"
+                                                        data-recipient-name="${fn:escapeXml(addr.recipientName)}"
+                                                        data-recipient-phone="${fn:escapeXml(addr.recipientPhone)}"
+                                                        data-address-details="${fn:escapeXml(addr.addressDetails)}"
+                                                        onclick="cancelEditFromData(this)">Cancel</button>
                                                 <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
                                             </div>
                                         </div>
@@ -454,6 +425,22 @@
                                                                         btnToggle.innerText = "Change Password";
                                                                     }
                                                                 });
+
+                                                                // Toggle Add Address Form
+                                                                const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
+                                                                const addAddressCard = document.getElementById("addAddressCard");
+
+                                                                btnToggleAddAddress.addEventListener("click", () => {
+                                                                    addAddressCard.classList.toggle("d-none");
+                                                                    if (!addAddressCard.classList.contains("d-none")) {
+                                                                        btnToggleAddAddress.innerText = "Hide Form";
+                                                                        // Scroll to form
+                                                                        addAddressCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                                                                    } else {
+                                                                        btnToggleAddAddress.innerText = "Add New Address";
+                                                                    }
+                                                                });
+                                                            });
 
                                                                 // Toggle Add Address Form
                                                                 const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
@@ -606,7 +593,13 @@
                                                                 document.getElementById('editButtons-' + addressId).classList.remove('d-none');
                                                             }
 
-                                                            function cancelEdit(addressId, originalName, originalRecipient, originalPhone, originalDetails) {
+                                                            function cancelEditFromData(button) {
+                                                                const addressId = button.getAttribute('data-address-id');
+                                                                const originalName = button.getAttribute('data-address-name');
+                                                                const originalRecipient = button.getAttribute('data-recipient-name');
+                                                                const originalPhone = button.getAttribute('data-recipient-phone');
+                                                                const originalDetails = button.getAttribute('data-address-details');
+                                                                
                                                                 document.getElementById('addressName-' + addressId).value = originalName;
                                                                 document.getElementById('recipientName-' + addressId).value = originalRecipient;
                                                                 document.getElementById('recipientPhone-' + addressId).value = originalPhone;
@@ -626,11 +619,11 @@
                                                                 if (confirm('Are you sure you want to delete this address?')) {
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
-                                                                    form.action = '<%= request.getContextPath()%>/address';
+                                                                    form.action = '<%= request.getContextPath()%>/profile';
 
                                                                     const actionInput = document.createElement('input');
                                                                     actionInput.type = 'hidden';
-                                                                    actionInput.name = 'addressAction';
+                                                                    actionInput.name = 'action';
                                                                     actionInput.value = 'deleteAddress';
 
                                                                     const idInput = document.createElement('input');
@@ -638,12 +631,22 @@
                                                                     idInput.name = 'addressId';
                                                                     idInput.value = addressId;
 
+                                                                    const customeridInput = document.createElement('input');
+                                                                    customeridInput.type = 'hidden';
+                                                                    customeridInput.name = 'id';
+                                                                    customeridInput.value = '${customer.id}';
+
                                                                     form.appendChild(actionInput);
                                                                     form.appendChild(idInput);
+                                                                    form.appendChild(customeridInput);
                                                                     document.body.appendChild(form);
                                                                     form.submit();
                                                                 }
                                                             }
         </script>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

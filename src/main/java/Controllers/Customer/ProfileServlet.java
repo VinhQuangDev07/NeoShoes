@@ -32,7 +32,15 @@ import java.util.Objects;
 @MultipartConfig
 public class ProfileServlet extends HttpServlet {
 
-    private CustomerDAO customerDAO = new CustomerDAO();
+    private CustomerDAO customerDAO;
+    private AddressDAO addressDAO;
+    
+    @Override
+    public void init() throws ServletException {
+        super.init(); 
+        customerDAO = new CustomerDAO();
+        addressDAO = new AddressDAO();
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -47,35 +55,33 @@ public class ProfileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        AddressDAO addressDAO = new AddressDAO();
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
         List<Address> addressList;
 
-//        HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-//        int customerId = (int) session.getAttribute("customerId");
+        int customerId = customer.getId();
 
-//        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 2;
+        request.setAttribute("customer", customer);
 
-        Customer customer = customerDAO.findById(customerId);
+        try {
+            addressList = addressDAO.getAllAddressByCustomerId(customerId);
+            request.setAttribute("addressList", addressList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 //        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
 //            response.sendError(403);
 //            return;
 //        }
-      
-
         if (customer != null) {
-            try {
-                addressList = addressDAO.getAllAddressByCustomerId(customerId);
-                request.setAttribute("addressList", addressList);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            request.setAttribute("customer", customer);
+
         }
 
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
@@ -124,7 +130,7 @@ public class ProfileServlet extends HttpServlet {
                     & (avatarPart.getSize() == 0 || avatarPart.getSubmittedFileName() == "")
                     & Objects.equals(gender, currentCustomer.getGender())) {
                 unchanged = true;
-            } 
+            }
 
             if (unchanged) {
                 session.setAttribute("flash_info", "No change in profile information.");
@@ -155,9 +161,25 @@ public class ProfileServlet extends HttpServlet {
                     session.setAttribute("flash_error", "Current password is incorrect.");
                 }
             }
+        } else if ("deleteAddress".equals(action)) {
+            // ====== Delete address ======
+            try {
+                String addressIdStr = request.getParameter("addressId");
+                if (addressIdStr != null && !addressIdStr.trim().isEmpty()) {
+                    int addressId = Integer.parseInt(addressIdStr);
+                    AddressDAO addressDAO = new AddressDAO();
+                    addressDAO.delete(addressId);
+                    session.setAttribute("flash", "Address deleted successfully.");
+                } else {
+                    session.setAttribute("flash_error", "Invalid address ID.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                session.setAttribute("flash_error", "Failed to delete address.");
+            }
         }
 
-        response.sendRedirect(request.getContextPath() + "/profile?id=2");
+        response.sendRedirect(request.getContextPath() + "/profile?id=" + customerId);
     }
 
     /**
