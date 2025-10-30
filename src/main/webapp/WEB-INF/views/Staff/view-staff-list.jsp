@@ -130,22 +130,6 @@
 
         <div class="main-content">
 
-            <!-- Role Switcher (only Set as Admin) -->
-            <div class="role-switcher">
-                <strong>Current Role:</strong> <code>${userRole}</code>
-                <c:url var="setAdminUrl" value="/manage-staff">
-                    <c:param name="role" value="admin"/>
-                </c:url>
-                <c:choose>
-                    <c:when test="${userRole ne 'admin'}">
-                        | <a href="${setAdminUrl}">Set as Admin</a>
-                    </c:when>
-                    <c:otherwise>
-                        | <span class="badge bg-primary">Admin active</span>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-
             <!-- Page Header -->
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center">
