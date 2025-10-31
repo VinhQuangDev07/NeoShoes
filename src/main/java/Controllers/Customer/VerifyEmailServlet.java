@@ -9,9 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * Email Verification Servlet
- */
+
 @WebServlet(name = "VerifyEmailServlet", urlPatterns = {"/verify-email"})
 public class VerifyEmailServlet extends HttpServlet {
 

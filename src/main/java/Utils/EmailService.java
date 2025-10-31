@@ -85,18 +85,18 @@ public class EmailService {
             message.setContent(htmlContent, "text/html; charset=utf-8");
 
             // Send email
-            System.out.println("📤 Sending email...");
+            System.out.println("Sending email...");
             Transport.send(message);
 
-            System.out.println("✅ Email sent successfully to: " + toEmail);
+            System.out.println("Email sent successfully to: " + toEmail);
             return true;
 
         } catch (MessagingException e) {
-            System.err.println("❌ MessagingException: " + e.getMessage());
+            System.err.println("MessagingException: " + e.getMessage());
             e.printStackTrace();
             return false;
         } catch (Exception e) {
-            System.err.println("❌ Failed to send email: " + e.getMessage());
+            System.err.println("Failed to send email: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -109,23 +109,5 @@ public class EmailService {
         return String.valueOf(100000 + (int) (Math.random() * 900000));
     }
 
-//    /**
-//     * Test email configuration
-//     */
-//    public static void main(String[] args) {
-//        System.out.println("🧪 Testing email service...");
-//        
-//        // ✅ THAY EMAIL TEST CỦA BẠN
-//        String testEmail = "vinhuquangoker2004@gmail.com"; // ← Email nhận test
-//        String testName = "Test User";
-//        String testCode = generateVerificationCode();
-//        
-//        boolean sent = sendVerificationCode(testEmail, testName, testCode);
-//        
-//        if (sent) {
-//            System.out.println("✅ Test email sent successfully!");
-//        } else {
-//            System.out.println("❌ Test email failed!");
-//        }
-//    }
+
 }

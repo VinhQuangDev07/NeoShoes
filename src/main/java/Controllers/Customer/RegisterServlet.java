@@ -107,7 +107,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
             return;
         }
         
-        System.out.println("✅ Created customer: " + email);
+        System.out.println("Created customer: " + email);
         
         // ========================================
         // STEP 4: GET CUSTOMER ID
