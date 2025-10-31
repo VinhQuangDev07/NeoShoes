@@ -124,15 +124,17 @@ public class CartServlet extends HttpServlet {
             int variantId = Integer.parseInt(request.getParameter("variantId"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
 
-            if (quantity <= 0) {
-                session.setAttribute("flash_info", "Quantity must be greater than 0");
-                return;
-            }
 
             // Check variant exists and has quantity available
             ProductVariant variant = variantDAO.findById(variantId);
             if (variant == null) {
                 session.setAttribute("flash_info", "Product variant not found");
+                response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                return;
+            }
+            
+            if (quantity <= 0) {
+                session.setAttribute("flash_info", "Quantity must be greater than 0");
                 response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
                 return;
             }
