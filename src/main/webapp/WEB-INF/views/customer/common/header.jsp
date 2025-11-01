@@ -41,18 +41,23 @@
         </a>
 
         <!-- Search -->
-        <form action="${searchAction}" method="get" autocomplete="off" class="position-relative ms-lg-3">
-            <c:if test="${isProductsPage}">
-                <input type="hidden" name="action" value="search"/>
-            </c:if>
+
+        <form action="${pageContext.request.contextPath}/home" 
+              method="get" 
+              autocomplete="off" 
+              class="position-relative ms-lg-3">
+
+            <!-- THÊM DÒNG NÀY - Luôn gửi action=search -->
+            <input type="hidden" name="action" value="search"/>
 
             <input type="text"
                    name="searchTerm"
-                   placeholder="${isProductsPage ? 'Search in products...' : 'Search products...'}"
+                   placeholder="Search products..."
                    value="${param.searchTerm}"
                    class="form-control-header rounded-pill pe-5 p-2 px-4"
                    autocomplete="off"
                    style="background-color:#1e293b;color:#fff;border:1px solid #475569;width:540px;max-width:70vw;">
+
             <button type="submit"
                     class="btn position-absolute top-50 end-0 translate-middle-y border-0 text-warning"
                     style="padding-right:1rem">
@@ -124,7 +129,7 @@
                        class="btn btn-link text-white-50 text-decoration-none small">
                         Login
                     </a>
-                       
+
                     <a href="${pageContext.request.contextPath}/register" 
                        class="btn btn-sm rounded-pill text-white fw-semibold"
                        style="background: linear-gradient(to right, #fbbf24, #f97316); box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.2s;">

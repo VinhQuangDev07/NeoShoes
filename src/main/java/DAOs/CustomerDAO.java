@@ -9,16 +9,18 @@ import Utils.Utils;
 
 /**
  * Customer Data Access Object - standardized with DBContext utilities
+ *
  * @author NeoShoes
  */
 public class CustomerDAO extends DB.DBContext {
 
     // ==================== BASIC CRUD ====================
-
     public Customer findById(int id) {
         String sql = "SELECT * FROM Customer WHERE CustomerId=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{id})) {
-            if (rs != null && rs.next()) return mapCustomer(rs);
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{id})) {
+            if (rs != null && rs.next()) {
+                return mapCustomer(rs);
+            }
         } catch (SQLException e) {
             System.err.println("❌ findById: " + e.getMessage());
         }
@@ -28,8 +30,10 @@ public class CustomerDAO extends DB.DBContext {
     public List<Customer> getAllCustomers() {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM Customer WHERE IsDeleted=0 ORDER BY CreatedAt DESC";
-        try (ResultSet rs = this.execSelectQuery(sql)) {
-            while (rs != null && rs.next()) list.add(mapCustomer(rs));
+        try ( ResultSet rs = this.execSelectQuery(sql)) {
+            while (rs != null && rs.next()) {
+                list.add(mapCustomer(rs));
+            }
         } catch (SQLException e) {
             System.err.println("❌ getAllCustomers: " + e.getMessage());
         }
@@ -38,8 +42,10 @@ public class CustomerDAO extends DB.DBContext {
 
     public int getTotalCustomers() {
         String sql = "SELECT COUNT(*) AS total FROM Customer WHERE IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql)) {
-            if (rs != null && rs.next()) return rs.getInt("total");
+        try ( ResultSet rs = this.execSelectQuery(sql)) {
+            if (rs != null && rs.next()) {
+                return rs.getInt("total");
+            }
         } catch (SQLException e) {
             System.err.println("❌ getTotalCustomers: " + e.getMessage());
         }
@@ -58,11 +64,12 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     // ==================== FIND & AUTH ====================
-
     public Customer findByEmail(String email) {
         String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
-            if (rs != null && rs.next()) return mapCustomer(rs);
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+            if (rs != null && rs.next()) {
+                return mapCustomer(rs);
+            }
         } catch (SQLException e) {
             System.err.println("❌ findByEmail: " + e.getMessage());
         }
@@ -71,7 +78,7 @@ public class CustomerDAO extends DB.DBContext {
 
     public Customer login(String email, String password) {
         String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs == null || !rs.next()) {
                 System.err.println("❌ Customer not found: " + email);
                 return null;
@@ -104,10 +111,9 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     // ==================== CREATE / UPDATE ====================
-
     public boolean createCustomer(Customer c) {
-        String sql = "INSERT INTO Customer (Email, PasswordHash, Name, PhoneNumber, Avatar, Gender, " +
-                     "CreatedAt, UpdatedAt, IsBlock, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), 0, 0)";
+        String sql = "INSERT INTO Customer (Email, PasswordHash, Name, PhoneNumber, Avatar, Gender, "
+                + "CreatedAt, UpdatedAt, IsBlock, IsDeleted) VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), 0, 0)";
         try {
             int result = this.execQuery(sql, new Object[]{
                 c.getEmail(), c.getPasswordHash(), c.getName(),
@@ -121,8 +127,8 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public boolean updateProfile(int id, String name, String phone, String avatar, String gender) {
-        String sql = "UPDATE Customer SET Name=?, PhoneNumber=?, Avatar=?, Gender=?, UpdatedAt=GETDATE() " +
-                     "WHERE CustomerId=? AND IsDeleted=0";
+        String sql = "UPDATE Customer SET Name=?, PhoneNumber=?, Avatar=?, Gender=?, UpdatedAt=GETDATE() "
+                + "WHERE CustomerId=? AND IsDeleted=0";
         try {
             int result = this.execQuery(sql, new Object[]{name, phone, avatar, gender, id});
             return result > 0;
@@ -135,10 +141,14 @@ public class CustomerDAO extends DB.DBContext {
     public boolean changePassword(int id, String currentPlain, String newPlain) {
         String sqlGet = "SELECT PasswordHash FROM Customer WHERE CustomerId=? AND IsDeleted=0";
         String sqlUpd = "UPDATE Customer SET PasswordHash=?, UpdatedAt=GETDATE() WHERE CustomerId=?";
-        try (ResultSet rs = this.execSelectQuery(sqlGet, new Object[]{id})) {
-            if (rs == null || !rs.next()) return false;
+        try ( ResultSet rs = this.execSelectQuery(sqlGet, new Object[]{id})) {
+            if (rs == null || !rs.next()) {
+                return false;
+            }
             String oldHash = rs.getString("PasswordHash");
-            if (!Utils.verifyPassword(currentPlain, oldHash)) return false;
+            if (!Utils.verifyPassword(currentPlain, oldHash)) {
+                return false;
+            }
             int result = this.execQuery(sqlUpd, new Object[]{Utils.hashPassword(newPlain), id});
             return result > 0;
         } catch (SQLException e) {
@@ -148,11 +158,12 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     // ==================== EMAIL / VERIFY ====================
-
     public boolean isEmailExists(String email) {
         String sql = "SELECT COUNT(*) AS count FROM Customer WHERE Email=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
-            if (rs != null && rs.next()) return rs.getInt("count") > 0;
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+            if (rs != null && rs.next()) {
+                return rs.getInt("count") > 0;
+            }
         } catch (SQLException e) {
             System.err.println("isEmailExists: " + e.getMessage());
         }
@@ -160,8 +171,8 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public boolean createVerificationCode(int customerId, String code, LocalDateTime expiry) {
-        String sql = "INSERT INTO VerifyCodeCustomer (CustomerId, Code, FailedCount, RequestCount, ExpiredAt, CreatedAt) " +
-                     "VALUES (?, ?, 0, 1, ?, GETDATE())";
+        String sql = "INSERT INTO VerifyCodeCustomer (CustomerId, Code, FailedCount, RequestCount, ExpiredAt, CreatedAt) "
+                + "VALUES (?, ?, 0, 1, ?, GETDATE())";
         try {
             int result = this.execQuery(sql, new Object[]{
                 customerId, code, Timestamp.valueOf(expiry)
@@ -177,15 +188,19 @@ public class CustomerDAO extends DB.DBContext {
         try {
             // Step 1: get ID
             ResultSet rsId = this.execSelectQuery("SELECT CustomerId FROM Customer WHERE Email=? AND IsDeleted=0", new Object[]{email});
-            if (rsId == null || !rsId.next()) return false;
+            if (rsId == null || !rsId.next()) {
+                return false;
+            }
             int customerId = rsId.getInt("CustomerId");
             rsId.close();
 
             // Step 2: check code validity
             ResultSet rsCode = this.execSelectQuery(
-                "SELECT COUNT(*) AS cnt FROM VerifyCodeCustomer WHERE CustomerId=? AND Code=? AND ExpiredAt>GETDATE()",
-                new Object[]{customerId, code});
-            if (rsCode == null || !rsCode.next() || rsCode.getInt("cnt") == 0) return false;
+                    "SELECT COUNT(*) AS cnt FROM VerifyCodeCustomer WHERE CustomerId=? AND Code=? AND ExpiredAt>GETDATE()",
+                    new Object[]{customerId, code});
+            if (rsCode == null || !rsCode.next() || rsCode.getInt("cnt") == 0) {
+                return false;
+            }
             rsCode.close();
 
             // Step 3: update customer
@@ -196,24 +211,28 @@ public class CustomerDAO extends DB.DBContext {
             return true;
 
         } catch (SQLException e) {
-            System.err.println("❌ verifyCustomer: " + e.getMessage());
+            System.err.println("verifyCustomer: " + e.getMessage());
             return false;
         }
     }
 
     public int getCustomerIdByEmail(String email) {
         String sql = "SELECT CustomerId FROM Customer WHERE Email=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
-            if (rs != null && rs.next()) return rs.getInt("CustomerId");
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+            if (rs != null && rs.next()) {
+                return rs.getInt("CustomerId");
+            }
         } catch (SQLException e) {
-            System.err.println("❌ getCustomerIdByEmail: " + e.getMessage());
+            System.err.println("etCustomerIdByEmail: " + e.getMessage());
         }
         return 0;
     }
 
     public boolean resendVerificationCode(String email) {
         int customerId = getCustomerIdByEmail(email);
-        if (customerId == 0) return false;
+        if (customerId == 0) {
+            return false;
+        }
 
         try {
             this.execQuery("DELETE FROM VerifyCodeCustomer WHERE CustomerId=?", new Object[]{customerId});
@@ -233,16 +252,110 @@ public class CustomerDAO extends DB.DBContext {
 
     public Customer getCustomerByEmail(String email) {
         String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
-        try (ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
-            if (rs != null && rs.next()) return mapCustomer(rs);
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
+            if (rs != null && rs.next()) {
+                return mapCustomer(rs);
+            }
         } catch (SQLException e) {
             System.err.println("❌ getCustomerByEmail: " + e.getMessage());
         }
         return null;
     }
+    // ==================== PASSWORD RESET ====================
+
+    /**
+     * Create password reset token
+     */
+    public boolean createPasswordResetToken(int customerId, String token, LocalDateTime expiry) {
+        String sql = "INSERT INTO PasswordResetToken (CustomerId, Token, ExpiredAt, CreatedAt, IsUsed) "
+                + "VALUES (?, ?, ?, GETDATE(), 0)";
+        try {
+            int result = this.execQuery(sql, new Object[]{
+                customerId, token, Timestamp.valueOf(expiry)
+            });
+            return result > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ createPasswordResetToken: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Validate reset token
+     */
+    public boolean isValidResetToken(String token) {
+        String sql = "SELECT COUNT(*) AS cnt FROM PasswordResetToken "
+                + "WHERE Token=? AND ExpiredAt>GETDATE() AND IsUsed=0";
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{token})) {
+            if (rs != null && rs.next()) {
+                return rs.getInt("cnt") > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ isValidResetToken: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Find customer by reset token
+     */
+    public Customer findByResetToken(String token) {
+        String sql = "SELECT c.* FROM Customer c "
+                + "INNER JOIN PasswordResetToken p ON c.CustomerId = p.CustomerId "
+                + "WHERE p.Token=? AND p.ExpiredAt>GETDATE() AND p.IsUsed=0 AND c.IsDeleted=0";
+        try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{token})) {
+            if (rs != null && rs.next()) {
+                return mapCustomer(rs);
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ findByResetToken: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Update password by customer ID
+     */
+    public boolean updatePasswordById(int customerId, String newPasswordHash) {
+        String sql = "UPDATE Customer SET PasswordHash=?, UpdatedAt=GETDATE() WHERE CustomerId=?";
+        try {
+            int result = this.execQuery(sql, new Object[]{newPasswordHash, customerId});
+            return result > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ updatePasswordById: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Mark reset token as used
+     */
+    public boolean markTokenAsUsed(String token) {
+        String sql = "UPDATE PasswordResetToken SET IsUsed=1 WHERE Token=?";
+        try {
+            int result = this.execQuery(sql, new Object[]{token});
+            return result > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ markTokenAsUsed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Delete old/expired reset tokens
+     */
+    public boolean deleteExpiredTokens(int customerId) {
+        String sql = "DELETE FROM PasswordResetToken WHERE CustomerId=? AND (ExpiredAt<GETDATE() OR IsUsed=1)";
+        try {
+            this.execQuery(sql, new Object[]{customerId});
+            return true;
+        } catch (SQLException e) {
+            System.err.println("❌ deleteExpiredTokens: " + e.getMessage());
+            return false;
+        }
+    }
 
     // ==================== MAPPER ====================
-
     private Customer mapCustomer(ResultSet rs) throws SQLException {
         Customer c = new Customer();
         c.setId(rs.getInt("CustomerId"));
@@ -252,11 +365,18 @@ public class CustomerDAO extends DB.DBContext {
         c.setPhoneNumber(rs.getString("PhoneNumber"));
         c.setAvatar(rs.getString("Avatar"));
         c.setGender(rs.getString("Gender"));
-        try { c.setVerified(rs.getBoolean("IsVerified")); } catch (SQLException ignored) {}
+        try {
+            c.setVerified(rs.getBoolean("IsVerified"));
+        } catch (SQLException ignored) {
+        }
         Timestamp cr = rs.getTimestamp("CreatedAt");
         Timestamp up = rs.getTimestamp("UpdatedAt");
-        if (cr != null) c.setCreatedAt(cr.toLocalDateTime());
-        if (up != null) c.setUpdatedAt(up.toLocalDateTime());
+        if (cr != null) {
+            c.setCreatedAt(cr.toLocalDateTime());
+        }
+        if (up != null) {
+            c.setUpdatedAt(up.toLocalDateTime());
+        }
         c.setIsBlock(rs.getBoolean("IsBlock"));
         c.setIsDeleted(rs.getBoolean("IsDeleted"));
         return c;

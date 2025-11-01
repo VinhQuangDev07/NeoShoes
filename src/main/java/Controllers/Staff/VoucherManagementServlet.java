@@ -437,14 +437,14 @@ public class VoucherManagementServlet extends HttpServlet {
                 request.getSession().setAttribute("errorMessage", "Voucher not found");
                 response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + request.getAttribute("userRole"));
                 return;
+            } else {
+                // Set attributes
+                request.setAttribute("voucher", voucher);
+
+                // Forward to detail page
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-detail.jsp");
+                dispatcher.forward(request, response);
             }
-
-            // Set attributes
-            request.setAttribute("voucher", voucher);
-
-            // Forward to detail page
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-detail.jsp");
-            dispatcher.forward(request, response);
 
         } catch (NumberFormatException e) {
             request.getSession().setAttribute("flash_error", "Voucher not found");

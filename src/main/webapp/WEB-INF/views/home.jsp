@@ -496,8 +496,8 @@
                 <h3 class="categories-title">Brands</h3>
                 <div class="categories-list">
                     <c:forEach var="brand" items="${brands}">
-                        <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${brand.brandId}"
-                           class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
+                        <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${brand.brandId}"
+   class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
