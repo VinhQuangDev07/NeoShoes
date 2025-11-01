@@ -813,7 +813,7 @@
                                         <div>
                                             <span class="payment-badge payment-completed">
                                                 <i class="fas fa-check-circle"></i>
-                                                <c:out value="${order.paymentStatusName}" default="Completed"/>
+                                                <c:out value="${order.paymentStatusName}" default="Pending"/>
                                             </span>
                                         </div>
                                     </c:otherwise>
@@ -995,7 +995,7 @@
                         </div>
                         <div class="cancel-info-item">
                             <span class="cancel-info-label">Payment Status:</span>
-                            <span class="cancel-info-value">Completed</span>
+                            <span class="cancel-info-value">${order.paymentStatusName}</span>
                         </div>
                     </div>
                 </div>

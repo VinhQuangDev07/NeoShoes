@@ -5,6 +5,7 @@
 package Controllers.Customer;
 
 import DAOs.OrderDAO;
+import Models.Customer;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -21,13 +22,15 @@ public class OrderStatusServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-
+       
         try {
+            HttpSession session = request.getSession();
+            Customer customer = (Customer) session.getAttribute("customer");
+
+            if (customer == null) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
             int orderId = Integer.parseInt(request.getParameter("orderId"));
             String newStatus = request.getParameter("status");
             String action = request.getParameter("action");

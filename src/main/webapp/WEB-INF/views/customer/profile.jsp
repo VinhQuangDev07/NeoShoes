@@ -50,7 +50,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem 0;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             border-radius: 0 0 15px 15px;
         }
 
@@ -134,6 +134,28 @@
         }
     </style>
     <body class="bg-light">
+        <c:if test="${not empty sessionScope.flash}">
+            <script>
+                showNotification("${sessionScope.flash}", "success");
+            </script>
+            <c:remove var="flash" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_info}">
+            <script>
+                showNotification("${sessionScope.flash_info}", "info");
+            </script>
+            <c:remove var="flash_info" scope="session"/>
+        </c:if>
+
+        <c:if test="${not empty sessionScope.flash_error}">
+            <script>
+                showNotification("${sessionScope.flash_error}", "error");
+            </script>
+            <c:remove var="flash_error" scope="session"/>
+        </c:if>
+
+        <div class="d-flex justify-content-center">
         <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
@@ -420,55 +442,20 @@
                                                                 });
                                                             });
 
-                                                            // avatar upload preview
-                                                            const avatarUpload = document.getElementById('avatarUpload');
-                                                            const avatarInput = document.getElementById('avatarInput');
-                                                            const avatarPreview = document.getElementById('avatarPreview');
+                                                                // Toggle Add Address Form
+                                                                const btnToggleAddAddress = document.getElementById("toggleAddAddressForm");
+                                                                const addAddressCard = document.getElementById("addAddressCard");
 
-                                                            avatarUpload.addEventListener('click', () => {
-                                                                avatarInput.click();
-                                                            });
-
-                                                            avatarInput.addEventListener('change', (e) => {
-                                                                if (e.target.files.length > 0) {
-                                                                    const file = e.target.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
-                                                            });
-
-                                                            // Handle drag and drop for avatar
-                                                            avatarUpload.addEventListener('dragover', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#0d6efd';
-                                                            });
-
-                                                            avatarUpload.addEventListener('dragleave', () => {
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-                                                            });
-
-                                                            avatarUpload.addEventListener('drop', (e) => {
-                                                                e.preventDefault();
-                                                                avatarUpload.style.borderColor = '#dee2e6';
-
-                                                                if (e.dataTransfer.files.length > 0) {
-                                                                    avatarInput.files = e.dataTransfer.files;
-                                                                    const file = e.dataTransfer.files[0];
-                                                                    const reader = new FileReader();
-
-                                                                    reader.onload = (e) => {
-                                                                        avatarPreview.src = e.target.result;
-                                                                        avatarPreview.style.display = 'block';
-                                                                    };
-
-                                                                    reader.readAsDataURL(file);
-                                                                }
+                                                                btnToggleAddAddress.addEventListener("click", () => {
+                                                                    addAddressCard.classList.toggle("d-none");
+                                                                    if (!addAddressCard.classList.contains("d-none")) {
+                                                                        btnToggleAddAddress.innerText = "Hide Form";
+                                                                        // Scroll to form
+                                                                        addAddressCard.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                                                                    } else {
+                                                                        btnToggleAddAddress.innerText = "Add New Address";
+                                                                    }
+                                                                });
                                                             });
 
                                                             // PROFILE FORM

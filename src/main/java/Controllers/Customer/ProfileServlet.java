@@ -32,7 +32,15 @@ import java.util.Objects;
 @MultipartConfig
 public class ProfileServlet extends HttpServlet {
 
-    private CustomerDAO customerDAO = new CustomerDAO();
+    private CustomerDAO customerDAO;
+    private AddressDAO addressDAO;
+    
+    @Override
+    public void init() throws ServletException {
+        super.init(); 
+        customerDAO = new CustomerDAO();
+        addressDAO = new AddressDAO();
+    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -47,20 +55,17 @@ public class ProfileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        AddressDAO addressDAO = new AddressDAO();
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
         List<Address> addressList;
 
-//        HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-//        int customerId = (int) session.getAttribute("customerId");
-
-//        int customerId = Integer.parseInt(request.getParameter("id"));
-        int customerId = 1;
-
-        Customer customer = customerDAO.findById(customerId);
+        int customerId = customer.getId();
 
         request.setAttribute("customer", customer);
 
@@ -174,7 +179,7 @@ public class ProfileServlet extends HttpServlet {
             }
         }
 
-        response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
+        response.sendRedirect(request.getContextPath() + "/profile?id=" + customerId);
     }
 
     /**

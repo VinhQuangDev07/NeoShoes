@@ -44,10 +44,13 @@ public class PurchaseServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Using Customer ID = ? for testing 
-        int customerId = 1;
-        CustomerDAO customerDAO = new CustomerDAO();
-        Customer customer = customerDAO.findById(customerId);
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
 
@@ -64,10 +67,13 @@ public class PurchaseServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Using Customer ID = ? for testing 
-        int customerId = 1;
-        CustomerDAO customerDAO = new CustomerDAO();
-        Customer customer = customerDAO.findById(customerId);
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
 

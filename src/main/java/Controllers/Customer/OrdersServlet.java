@@ -35,8 +35,15 @@ public class OrdersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Hardcode customerId = 2 for testing (no login functionality yet)
-        int customerId = 2;
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        int customerId = customer.getId();
 
         // Pagination
         int currentPage = 1;
@@ -53,13 +60,13 @@ public class OrdersServlet extends HttpServlet {
         List<Order> orders;
         try {
             orders = orderDAO.listByCustomer(customerId);
-            
+
             int totalRecords = orders.size();
-            
+
             // Calculate start and end positions
             int startIndex = (currentPage - 1) * recordsPerPage;
             int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
-            
+
             // Get data for current page
             List<Order> pageData;
             if (startIndex < totalRecords) {
@@ -67,10 +74,10 @@ public class OrdersServlet extends HttpServlet {
             } else {
                 pageData = new ArrayList<>();
             }
-            
+
             // Calculate pagination info
             int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
-            
+
             request.setAttribute("orders", pageData);
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("totalPages", totalPages);
@@ -88,9 +95,6 @@ public class OrdersServlet extends HttpServlet {
         } catch (SQLException ex) {
             Logger.getLogger(OrdersServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
-        // For now, using hardcoded customer ID. In production, get from session
-        Customer customer = customerDAO.findById(customerId);
-        // Load existing reviews for each order item
 
         // Check for error messages only
         String error = request.getParameter("error");
@@ -102,30 +106,34 @@ public class OrdersServlet extends HttpServlet {
         // Get complete status ID from database
         int completeStatusId = orderDAO.getCompleteStatusId();
 
-     
         request.setAttribute("customer", customer);
         request.setAttribute("completeStatusId", completeStatusId);
         request.getRequestDispatcher("/WEB-INF/views/customer/orders.jsp").forward(request, response);
     }
 
-
-@Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         String action = request.getParameter("action");
 
         // For now, using hardcoded customer ID. In production, get from session
-        int customerId = 2;
+        int customerId = customer.getId();
 
         try {
             if ("createReview".equals(action)) {
-                handleCreateReview(request, response, customerId);
+                handleCreateReview(request, response, customerId, session);
             } else if ("updateReview".equals(action)) {
-                handleUpdateReview(request, response, customerId);
+                handleUpdateReview(request, response, customerId, session);
             } else if ("deleteReview".equals(action)) {
-                handleDeleteReview(request, response, customerId);
+                handleDeleteReview(request, response, customerId, session);
             } else {
                 response.sendRedirect(request.getContextPath() + "/orders");
             }
@@ -136,10 +144,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         }
     }
 
-    private void handleCreateReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+    private void handleCreateReview(HttpServletRequest request, HttpServletResponse response, int customerId, HttpSession session)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
 
         try {
             int productVariantId = Integer.parseInt(request.getParameter("productVariantId"));
@@ -183,10 +189,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.sendRedirect(request.getContextPath() + "/orders");
     }
 
-    private void handleUpdateReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+    private void handleUpdateReview(HttpServletRequest request, HttpServletResponse response, int customerId, HttpSession session)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
 
         try {
             int reviewId = Integer.parseInt(request.getParameter("reviewId"));
@@ -227,10 +231,8 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         response.sendRedirect(request.getContextPath() + "/orders");
     }
 
-    private void handleDeleteReview(HttpServletRequest request, HttpServletResponse response, int customerId)
+    private void handleDeleteReview(HttpServletRequest request, HttpServletResponse response, int customerId, HttpSession session)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
 
         try {
             int reviewId = Integer.parseInt(request.getParameter("reviewId"));
