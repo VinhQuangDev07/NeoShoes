@@ -86,26 +86,29 @@ public class RegisterServlet extends HttpServlet {
                 session.setAttribute("flash_error", "Email already exists! Please use another email.");
                 response.sendRedirect(request.getContextPath() + "/register");
                 return;
+            }
+
+            // ========================================
+            // STEP 3: CREATE CUSTOMER (IsVerified = 0)
+            // ========================================
+            Customer customer = new Customer();
+            customer.setEmail(email.trim());
+            customer.setPasswordHash(password); // TODO: Hash password with BCrypt later
+            customer.setName(name.trim());
+            customer.setPhoneNumber(phone != null ? phone.trim() : null);
+            customer.setGender(gender);
+            customer.setAvatar("https://ui-avatars.com/api/?name="
+                    + name.trim().replace(" ", "+")
+                    + "&background=667eea&color=fff&size=200");
+
+            boolean created = customerDAO.createCustomer(customer);
+
+            if (!created) {
+                session.setAttribute("flash_error", "Registration failed! Please try again.");
+                response.sendRedirect(request.getContextPath() + "/register");
+                return;
             } else {
-
-                // ========================================
-                // STEP 3: CREATE CUSTOMER (IsVerified = 0)
-                // ========================================
-                Customer customer = new Customer();
-                customer.setEmail(email.trim());
-                customer.setPasswordHash(Utils.hashPassword(password)); // TODO: Hash password with BCrypt later
-                customer.setName(name.trim());
-                customer.setPhoneNumber(phone != null ? phone.trim() : null);
-                customer.setGender(gender);
-                customer.setAvatar("https://ui-avatars.com/api/?name="
-                        + name.trim().replace(" ", "+")
-                        + "&background=667eea&color=fff&size=200");
-
-                boolean created = customerDAO.createCustomer(customer);
-
-                if (created) {
-                    
-                System.out.println("Created customer: " + email);
+                System.out.println("✅ Created customer: " + email);
 
                 // ========================================
                 // STEP 4: GET CUSTOMER ID
@@ -122,8 +125,8 @@ public class RegisterServlet extends HttpServlet {
                 // ========================================
                 // STEP 5: GENERATE & SAVE VERIFICATION CODE
                 // ========================================
-                String verificationCode = EmailService.generateVerificationCode();
-                LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+                String verificationCode = Utils.EmailService.generateVerificationCode();
+                java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusMinutes(10);
 
                 boolean codeCreated = customerDAO.createVerificationCode(customerId, verificationCode, expiry);
 
@@ -133,12 +136,12 @@ public class RegisterServlet extends HttpServlet {
                     return;
                 }
 
-                System.out.println("Verification code created: " + verificationCode);
+                System.out.println("✅ Verification code created: " + verificationCode);
 
                 // ========================================
                 // STEP 6: SEND EMAIL
                 // ========================================
-                boolean emailSent = EmailService.sendVerificationCode(
+                boolean emailSent = Utils.EmailService.sendVerificationCode(
                         email.trim(),
                         name.trim(),
                         verificationCode
@@ -152,12 +155,6 @@ public class RegisterServlet extends HttpServlet {
                     session.setAttribute("flash_error", "Account created but failed to send verification email. Please contact support.");
                     response.sendRedirect(request.getContextPath() + "/register");
                 }
-                }else{
-                    session.setAttribute("flash_error", "Registration failed! Please try again.");
-                    response.sendRedirect(request.getContextPath() + "/register");
-                    return;
-                }
-
             }
 
         } catch (Exception e) {
