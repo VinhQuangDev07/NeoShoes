@@ -918,8 +918,8 @@
                                         Order Cancelled
                                     </button>
                                 </c:when>
-                                <c:when test="${order.status == 'DELIVERED'}">
-                                    <!-- Only DELIVERED orders can create return request -->
+                                <c:when test="${order.status == 'COMPLETED'}">
+                                    <!-- Only COMPLETED orders can create return request -->
                                     <c:choose>
                                         <c:when test="${hasRequest}">
                                             <a href="${pageContext.request.contextPath}/return-request?action=detail&requestId=${requestId}" 
@@ -933,7 +933,7 @@
                                             <a href="${pageContext.request.contextPath}/return-request?orderId=${order.orderId}" 
                                                class="btn-action cancel-btn"
                                                aria-label="Create Return Request">
-                                                <i class="fas fa-undo"></i>
+                                                <i class=" "></i>
                                                 Create Return Request
                                             </a>
                                         </c:otherwise>
@@ -944,7 +944,7 @@
                                     <a href="${pageContext.request.contextPath}/return-request?action=detail&requestId=${requestId}" 
                                        class="btn-action cancel-btn"
                                        aria-label="View Return Request">
-                                        <i class="fas fa-eye"></i>
+                                        <i class=""></i>
                                         View Return Request
                                     </a>
                                 </c:when>

@@ -17,10 +17,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.servlet.http.Part;
 import java.util.Objects;
 
@@ -34,10 +31,10 @@ public class ProfileServlet extends HttpServlet {
 
     private CustomerDAO customerDAO;
     private AddressDAO addressDAO;
-    
+
     @Override
     public void init() throws ServletException {
-        super.init(); 
+        super.init();
         customerDAO = new CustomerDAO();
         addressDAO = new AddressDAO();
     }
@@ -54,39 +51,25 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false); 
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         Customer customer = (Customer) session.getAttribute("customer");
-
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
-        List<Address> addressList;
-
+        if (customer.isDeleted() || customer.isBlock()) {
+            session.invalidate();
+            return;
+        }
         int customerId = customer.getId();
-
+         List<Address> addressList = addressDAO.getAllAddressByCustomerId(customerId);
         request.setAttribute("customer", customer);
-
-        try {
-            addressList = addressDAO.getAllAddressByCustomerId(customerId);
-            request.setAttribute("addressList", addressList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-//        if (customer == null || customer.isDeleted()|| customer.isBlock()) {
-//            response.sendError(403);
-//            return;
-//        }
-        if (customer != null) {
-
-        }
-
+        request.setAttribute("addressList", addressList);
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
-
-//        request.getRequestDispatcher("/WEB-INF/views/customer/cart.jsp").forward(request, response);
     }
 
     /**
@@ -160,22 +143,6 @@ public class ProfileServlet extends HttpServlet {
                 } else {
                     session.setAttribute("flash_error", "Current password is incorrect.");
                 }
-            }
-        } else if ("deleteAddress".equals(action)) {
-            // ====== Delete address ======
-            try {
-                String addressIdStr = request.getParameter("addressId");
-                if (addressIdStr != null && !addressIdStr.trim().isEmpty()) {
-                    int addressId = Integer.parseInt(addressIdStr);
-                    AddressDAO addressDAO = new AddressDAO();
-                    addressDAO.delete(addressId);
-                    session.setAttribute("flash", "Address deleted successfully.");
-                } else {
-                    session.setAttribute("flash_error", "Invalid address ID.");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                session.setAttribute("flash_error", "Failed to delete address.");
             }
         }
 

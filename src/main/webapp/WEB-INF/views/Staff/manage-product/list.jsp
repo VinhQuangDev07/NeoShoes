@@ -2,7 +2,7 @@
     Document   : manage-product
     Created on : Oct 18, 2025, 10:27:47 PM
     Author     : Nguyen Huynh Thien An - CE190979
-    Phương án A: Hiển thị biến thể đầu tiên hoặc dữ liệu tổng hợp
+    FIXED VERSION - Validation & Logic
 --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
@@ -14,11 +14,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Lucide Icons -->
         <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
@@ -35,10 +32,9 @@
                 margin: 0;
             }
 
-            /* Wrapper cho content chính */
             .main-wrapper {
-                margin-left: 300px; /* Chiều rộng của sidebar */
-                margin-top: 74px;   /* Chiều cao của header */
+                margin-left: 300px;
+                margin-top: 74px;
                 padding: 20px;
                 min-height: calc(100vh - 74px);
             }
@@ -48,21 +44,18 @@
                 margin: 0 auto;
             }
 
-            /* Responsive: ẩn sidebar trên mobile */
             @media (max-width: 768px) {
                 .main-wrapper {
                     margin-left: 0;
                 }
-
                 #sidebar {
                     transform: translateX(-100%);
                 }
-
                 #sidebar.show {
                     transform: translateX(0);
                 }
             }
-            
+
             .page-header {
                 background: white;
                 border-radius: 12px;
@@ -70,8 +63,7 @@
                 margin-bottom: 1.5rem;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
-            
-            /* Stats Cards */
+
             .stats-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -112,24 +104,11 @@
                 font-size: 24px;
             }
 
-            .stat-icon.blue {
-                background-color: #dbeafe;
-                color: #3b82f6;
-            }
-            .stat-icon.green {
-                background-color: #d1fae5;
-                color: #10b981;
-            }
-            .stat-icon.yellow {
-                background-color: #fef3c7;
-                color: #f59e0b;
-            }
-            .stat-icon.purple {
-                background-color: #e9d5ff;
-                color: #a855f7;
-            }
+            .stat-icon.blue { background-color: #dbeafe; color: #3b82f6; }
+            .stat-icon.green { background-color: #d1fae5; color: #10b981; }
+            .stat-icon.yellow { background-color: #fef3c7; color: #f59e0b; }
+            .stat-icon.purple { background-color: #e9d5ff; color: #a855f7; }
 
-            /* Product List Section */
             .product-section {
                 background: white;
                 border-radius: 12px;
@@ -151,18 +130,6 @@
                 color: #1e293b;
             }
 
-            .category-select {
-                padding: 8px 16px;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                font-size: 14px;
-                color: #475569;
-                background: white;
-                cursor: pointer;
-                min-width: 200px;
-            }
-
-            /* Create Button */
             .btn-create {
                 padding: 10px 20px;
                 background-color: #3b82f6;
@@ -184,11 +151,6 @@
                 box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
             }
 
-            .btn-create:active {
-                transform: translateY(0);
-            }
-
-            /* Table */
             .product-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -220,7 +182,6 @@
                 background-color: #f8fafc;
             }
 
-            /* Product Cell */
             .product-cell {
                 display: flex;
                 align-items: center;
@@ -260,22 +221,9 @@
                 font-weight: 500;
             }
 
-            .tag.blue {
-                background-color: #dbeafe;
-                color: #1e40af;
-            }
+            .tag.blue { background-color: #dbeafe; color: #1e40af; }
+            .variant-count { color: #3b82f6; font-size: 12px; font-weight: 500; }
 
-            .tag.purple {
-                background-color: #e9d5ff;
-                color: #7c3aed;
-            }
-
-            .tag.pink {
-                background-color: #fce7f3;
-                color: #be185d;
-            }
-
-            /* Status Badge */
             .status-badge {
                 display: inline-block;
                 padding: 6px 12px;
@@ -291,7 +239,6 @@
                 color: #991b1b;
             }
 
-            /* Action Buttons */
             .action-buttons {
                 display: flex;
                 gap: 8px;
@@ -317,23 +264,10 @@
                 transform: scale(1.05);
             }
 
-            .action-btn.edit {
-                background-color: #fef3c7;
-                color: #f59e0b;
-            }
-
-            .action-btn.edit:hover {
-                background-color: #fde68a;
-            }
-
-            .action-btn.delete {
-                background-color: #fee2e2;
-                color: #ef4444;
-            }
-
-            .action-btn.delete:hover {
-                background-color: #fecaca;
-            }
+            .action-btn.edit { background-color: #fef3c7; color: #f59e0b; }
+            .action-btn.edit:hover { background-color: #fde68a; }
+            .action-btn.delete { background-color: #fee2e2; color: #ef4444; }
+            .action-btn.delete:hover { background-color: #fecaca; }
 
             .info-text {
                 color: #64748b;
@@ -345,28 +279,29 @@
                 color: #1e293b;
             }
 
-            .variant-count {
-                color: #3b82f6;
-                font-size: 12px;
-                font-weight: 500;
-            }
-
             .price-range {
                 font-size: 13px;
                 color: #1e293b;
             }
-        </style>
 
+            .empty-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: #64748b;
+            }
+
+            .empty-state i {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+        </style>
     </head>
     <body>
-        <!-- Header -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
-
-        <!-- Sidebar -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
-        <!-- Main Content -->
+
         <div class="main-wrapper">
-            <!-- Page Header -->
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -374,14 +309,52 @@
                     </div>
                 </div>
             </div>
-            <div class="container">        
+
+            <!-- ✅ FIX: Success/Error Messages -->
+            <c:if test="${not empty sessionScope.successMessage}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> <c:out value="${sessionScope.successMessage}"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <c:remove var="successMessage" scope="session"/>
+            </c:if>
+            
+            <c:if test="${not empty sessionScope.errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> <c:out value="${sessionScope.errorMessage}"/>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <c:remove var="errorMessage" scope="session"/>
+            </c:if>
+
+            <div class="container">
+                <!-- ✅ FIX 1: Calculate out of stock count -->
+                <c:set var="outOfStockCount" value="0"/>
+                <c:if test="${not empty listProduct}">
+                    <c:forEach var="product" items="${listProduct}">
+                        <c:set var="variants" value="${productVariantsMap[product.productId]}"/>
+                        <c:set var="hasStock" value="false"/>
+                        <c:if test="${not empty variants}">
+                            <c:forEach var="v" items="${variants}">
+                                <c:if test="${v.quantityAvailable > 0}">
+                                    <c:set var="hasStock" value="true"/>
+                                </c:if>
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${!hasStock}">
+                            <c:set var="outOfStockCount" value="${outOfStockCount + 1}"/>
+                        </c:if>
+                    </c:forEach>
+                </c:if>
 
                 <!-- Stats Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-content">
                             <h3>Total products</h3>
-                            <div class="number">${totalRecords}</div>
+                            <div class="number">
+                                <c:out value="${totalRecords}" default="0"/>
+                            </div>
                         </div>
                         <div class="stat-icon blue">
                             <i class="fas fa-box"></i>
@@ -391,7 +364,9 @@
                     <div class="stat-card">
                         <div class="stat-content">
                             <h3>Total Inventory</h3>
-                            <div class="number">${totalQuantity}</div>
+                            <div class="number">
+                                <c:out value="${totalQuantity}" default="0"/>
+                            </div>
                         </div>
                         <div class="stat-icon green">
                             <i class="fas fa-chart-bar"></i>
@@ -401,8 +376,17 @@
                     <div class="stat-card">
                         <div class="stat-content">
                             <h3>Inventory Value</h3>
-                            <fmt:formatNumber value="${totalPrice}" type="currency" currencySymbol="$" maxFractionDigits="2" var="fmtTotal" />
-                            <div class="number">${fmtTotal}</div>
+                            <div class="number">
+                                <!-- ✅ FIX 2: Handle null totalPrice -->
+                                <c:choose>
+                                    <c:when test="${not empty totalPrice}">
+                                        <fmt:formatNumber value="${totalPrice}" type="currency" currencySymbol="$" maxFractionDigits="2"/>
+                                    </c:when>
+                                    <c:otherwise>
+                                        $0.00
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
                         <div class="stat-icon yellow">
                             <i class="fas fa-dollar-sign"></i>
@@ -412,7 +396,7 @@
                     <div class="stat-card">
                         <div class="stat-content">
                             <h3>Out of stocks</h3>
-                            <div class="number">0</div>
+                            <div class="number">${outOfStockCount}</div>
                         </div>
                         <div class="stat-icon purple">
                             <i class="fas fa-exclamation-triangle"></i>
@@ -430,158 +414,222 @@
                         </button>
                     </div>
 
-                    <table class="product-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>PRODUCT</th>
-                                <th>INFORMATION</th>
-                                <th>PRICE RANGE</th>
-                                <th>TOTAL INVENTORY</th>
-                                <th>STATUS</th>
-                                <th>ACTIONS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="product" items="${listProduct}" varStatus="status">
-                                <c:set var="variants" value="${productVariantsMap[product.productId]}" />
-                                <c:set var="hasVariants" value="${not empty variants}" />
+                    <!-- ✅ FIX 3: Check if listProduct is empty -->
+                    <c:choose>
+                        <c:when test="${empty listProduct}">
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <h5>No Products Found</h5>
+                                <p>Get started by creating your first product</p>
+                                <button class="btn-create mt-3" onclick="createProduct()">
+                                    <span>➕</span>
+                                    Create Product
+                                </button>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <table class="product-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>PRODUCT</th>
+                                        <th>INFORMATION</th>
+                                        <th>PRICE RANGE</th>
+                                        <th>TOTAL INVENTORY</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="product" items="${listProduct}" varStatus="status">
+                                        <!-- ✅ FIX 4: Safe null check for variants -->
+                                        <c:set var="variants" value="${productVariantsMap[product.productId]}"/>
+                                        <c:set var="hasVariants" value="${not empty variants}"/>
 
-                                <tr>
-                                    <td>${product.productId}</td>
-                                    <td>
-                                        <div class="product-cell">
-                                            <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image">
-                                            <div class="product-info">
-                                                <div class="product-name">${product.name}</div>
-                                                <div class="product-tags">
-                                                    <span class="tag blue">${product.material}</span>
-                                                    <c:if test="${hasVariants and fn:length(variants) > 1}">
-                                                        <span class="variant-count">${fn:length(variants)} variants</span>
-                                                    </c:if>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="info-text">
-                                            <strong>Variants:</strong> ${hasVariants ? fn:length(variants) : 0}<br>
-                                            <strong>Material:</strong> ${product.material}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${hasVariants}">
-                                                <%-- Tính min và max price --%>
-                                                <c:set var="minPrice" value="${variants[0].price}" />
-                                                <c:set var="maxPrice" value="${variants[0].price}" />
-                                                <c:forEach var="v" items="${variants}">
-                                                    <c:if test="${v.price < minPrice}">
-                                                        <c:set var="minPrice" value="${v.price}" />
-                                                    </c:if>
-                                                    <c:if test="${v.price > maxPrice}">
-                                                        <c:set var="maxPrice" value="${v.price}" />
-                                                    </c:if>
-                                                </c:forEach>
-
-                                                <%-- Hiển thị price range --%>
-                                                <div class="price-range">
+                                        <tr>
+                                            <td>${product.productId}</td>
+                                            <td>
+                                                <div class="product-cell">
+                                                    <!-- ✅ FIX 5: Handle null image -->
                                                     <c:choose>
-                                                        <c:when test="${minPrice == maxPrice}">
-                                                            <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/>
+                                                        <c:when test="${not empty product.defaultImageUrl}">
+                                                            <img src="<c:out value='${product.defaultImageUrl}'/>" 
+                                                                 alt="<c:out value='${product.name}'/>" 
+                                                                 class="product-image"
+                                                                 onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png'">
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/> - 
-                                                            <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
+                                                            <img src="${pageContext.request.contextPath}/images/placeholder.png" 
+                                                                 alt="No image" class="product-image">
                                                         </c:otherwise>
                                                     </c:choose>
+                                                    <div class="product-info">
+                                                        <!-- ✅ FIX 6: Escape XSS -->
+                                                        <div class="product-name">
+                                                            <c:out value="${product.name}" default="Unnamed Product"/>
+                                                        </div>
+                                                        <div class="product-tags">
+                                                            <span class="tag blue">
+                                                                <c:out value="${product.material}" default="N/A"/>
+                                                            </span>
+                                                            <c:if test="${hasVariants and fn:length(variants) > 1}">
+                                                                <span class="variant-count">${fn:length(variants)} variants</span>
+                                                            </c:if>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </c:when>
-                                            <c:otherwise>N/A</c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${hasVariants}">
-                                                <%-- Tính tổng số lượng --%>
-                                                <c:set var="totalQty" value="0" />
-                                                <c:forEach var="v" items="${variants}">
-                                                    <c:set var="totalQty" value="${totalQty + v.quantityAvailable}" />
-                                                </c:forEach>
-                                                <strong>${totalQty}</strong>
-                                            </c:when>
-                                            <c:otherwise>0</c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${hasVariants}">
-                                                <%-- Kiểm tra có variant nào còn hàng không --%>
-                                                <c:set var="hasStock" value="false" />
-                                                <c:forEach var="v" items="${variants}">
-                                                    <c:if test="${v.quantityAvailable > 0}">
-                                                        <c:set var="hasStock" value="true" />
-                                                    </c:if>
-                                                </c:forEach>
-
+                                            </td>
+                                            <td>
+                                                <div class="info-text">
+                                                    <strong>Variants:</strong> ${hasVariants ? fn:length(variants) : 0}<br>
+                                                    <strong>Material:</strong> <c:out value="${product.material}" default="N/A"/>
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <c:choose>
-                                                    <c:when test="${hasStock}">
-                                                        <span class="status-badge">Active</span>
+                                                    <c:when test="${hasVariants}">
+                                                        <!-- ✅ FIX 7: Safe price calculation with BigDecimal -->
+                                                        <c:set var="minPrice" value="${variants[0].price}"/>
+                                                        <c:set var="maxPrice" value="${variants[0].price}"/>
+                                                        <c:forEach var="v" items="${variants}">
+                                                            <c:if test="${v.price != null}">
+                                                                <!-- Compare using compareTo for BigDecimal -->
+                                                                <c:if test="${v.price.compareTo(minPrice) < 0}">
+                                                                    <c:set var="minPrice" value="${v.price}"/>
+                                                                </c:if>
+                                                                <c:if test="${v.price.compareTo(maxPrice) > 0}">
+                                                                    <c:set var="maxPrice" value="${v.price}"/>
+                                                                </c:if>
+                                                            </c:if>
+                                                        </c:forEach>
+
+                                                        <div class="price-range">
+                                                            <c:choose>
+                                                                <c:when test="${minPrice.compareTo(maxPrice) == 0}">
+                                                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/> - 
+                                                                    <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:otherwise>N/A</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <!-- ✅ FIX 8: Optimize - calculate once -->
+                                                <c:choose>
+                                                    <c:when test="${hasVariants}">
+                                                        <c:set var="totalQty" value="0"/>
+                                                        <c:forEach var="v" items="${variants}">
+                                                            <c:set var="totalQty" value="${totalQty + v.quantityAvailable}"/>
+                                                        </c:forEach>
+                                                        <strong>${totalQty}</strong>
+                                                    </c:when>
+                                                    <c:otherwise>0</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <!-- ✅ FIX 9: Optimize - calculate once -->
+                                                <c:choose>
+                                                    <c:when test="${hasVariants}">
+                                                        <c:set var="hasStock" value="false"/>
+                                                        <c:forEach var="v" items="${variants}">
+                                                            <c:if test="${v.quantityAvailable > 0}">
+                                                                <c:set var="hasStock" value="true"/>
+                                                            </c:if>
+                                                        </c:forEach>
+
+                                                        <c:choose>
+                                                            <c:when test="${hasStock}">
+                                                                <span class="status-badge">Active</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="status-badge out-of-stock">Out of Stock</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="status-badge out-of-stock">Out of Stock</span>
                                                     </c:otherwise>
                                                 </c:choose>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="status-badge out-of-stock">Out of Stock</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="action-btn" onclick="viewProduct(${product.productId})" title="View Details">
-                                                👁️
-                                            </button>
-                                            <button class="action-btn edit" onclick="editProduct(${product.productId})" title="Edit Product">
-                                                ✏️
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteProduct(${product.productId}, '${fn:escapeXml(product.name)}')" title="Delete Product">
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                    <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <!-- ✅ FIX 10: Validate productId before use -->
+                                                    <c:if test="${product.productId > 0}">
+                                                        <button class="action-btn" 
+                                                                onclick="viewProduct(${product.productId})" 
+                                                                title="View Details">
+                                                            👁️
+                                                        </button>
+                                                        <button class="action-btn edit" 
+                                                                onclick="editProduct(${product.productId})" 
+                                                                title="Edit Product">
+                                                            ✏️
+                                                        </button>
+                                                        <button class="action-btn delete" 
+                                                                onclick="deleteProduct(${product.productId}, '<c:out value="${fn:escapeXml(product.name)}"/>', ${hasVariants ? fn:length(variants) : 0})" 
+                                                                title="Delete Product">
+                                                            🗑️
+                                                        </button>
+                                                    </c:if>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                            <jsp:include page="/WEB-INF/views/common/pagination.jsp"/>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
-        </div>  
+        </div>
 
         <script>
             function createProduct() {
-                // chuyển trang tới servlet để tạo product mới
                 window.location.href = '${pageContext.request.contextPath}/staff/product?action=create';
             }
 
+            // ✅ FIX 11: Validate productId
             function viewProduct(productId) {
-                // chuyển trang tới servlet bằng GET
+                if (!productId || productId <= 0) {
+                    alert('Invalid product ID');
+                    return;
+                }
                 window.location.href = '${pageContext.request.contextPath}/staff/product?action=detail&productId=' + encodeURIComponent(productId);
             }
 
             function editProduct(productId) {
-                // chuyển trang tới servlet để edit
+                if (!productId || productId <= 0) {
+                    alert('Invalid product ID');
+                    return;
+                }
                 window.location.href = '${pageContext.request.contextPath}/staff/product?action=edit&productId=' + encodeURIComponent(productId);
             }
 
-            function deleteProduct(productId, productName) {
-                if (!confirm('Are you sure you want to delete "' + productName + '"?\n\nThis action cannot be undone!')) {
+            // ✅ FIX 12: Enhanced delete with variant warning
+            function deleteProduct(productId, productName, variantCount) {
+                if (!productId || productId <= 0) {
+                    alert('Invalid product ID');
                     return;
                 }
 
-                // Create form and submit
+                let message = 'Are you sure you want to delete "' + productName + '"?';
+                
+                if (variantCount > 0) {
+                    message += '\n\nThis product has ' + variantCount + ' variant(s) that will also be deleted.';
+                }
+                
+                message += '\n\nThis action cannot be undone!';
+
+                if (!confirm(message)) {
+                    return;
+                }
+
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '${pageContext.request.contextPath}/staff/product';

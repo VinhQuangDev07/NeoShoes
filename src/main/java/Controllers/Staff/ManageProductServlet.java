@@ -168,11 +168,9 @@ public class ManageProductServlet extends HttpServlet {
             int recordsPerPage = 10;
             int offset = (currentPage - 1) * recordsPerPage;
 
-// 2. Lấy ĐÚNG số lượng data cần hiển thị từ DB
             List<Product> listProduct = pDAO.getAllProductsForStaff(offset, recordsPerPage);
-
-// 3. Chỉ load variants cho products hiển thị trên page hiện tại
             Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
+            
             for (Product p : listProduct) {
                 List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
                 productVariantsMap.put(p.getProductId(), variants);

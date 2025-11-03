@@ -127,11 +127,7 @@ public class PurchaseServlet extends HttpServlet {
 
             // Get customer addresses
             List<Address> addresses = new ArrayList<>();
-            try {
-                addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
 
             // Check if customer has addresses - redirect to profile if none
             if (addresses.isEmpty()) {
