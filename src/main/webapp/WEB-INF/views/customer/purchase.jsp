@@ -664,7 +664,8 @@
         <script>
             <c:if test="${not empty cartItems}">
                 let appliedDiscount = 0;
-                let originalTotal = ${total};
+                // Parse total from server, ensure it's a number
+                let originalTotal = parseFloat('${total}') || 0;
 
                 function selectVoucher(code) {
                     document.getElementById('voucherCode').value = code;
@@ -683,10 +684,14 @@
                         return;
                     }
 
-                    // ✅ GỌI SERVER ĐỂ VALIDATE
+                    // Get current total (may already have discount applied)
+                    const currentTotal = parseFloat(document.getElementById('totalAmount').textContent) || originalTotal;
+
+                    // ✅ GỌI SERVER ĐỂ VALIDATE (always use originalTotal for voucher calculation)
                     console.log('=== APPLY VOUCHER REQUEST ===');
                     console.log('Voucher Code:', voucherCode);
-                    console.log('Order Total:', originalTotal);
+                    console.log('Original Total (for voucher calc):', originalTotal);
+                    console.log('Current Display Total:', currentTotal);
                     
                     fetch('${pageContext.request.contextPath}/voucher?action=apply', {
                         method: 'POST',
@@ -712,9 +717,13 @@
                             
                             if (data.success) {
                                 console.log('SUCCESS!');
+                                console.log('Discount from server:', data.discount);
                                 
-                                // Update discount
-                                appliedDiscount = data.discount;
+                                // Update discount (ensure it's a number)
+                                appliedDiscount = parseFloat(data.discount) || 0;
+                                console.log('Applied discount:', appliedDiscount);
+                                
+                                // Update total display
                                 updateTotal();
                                 showDiscountMessage(data.message);
                                 
@@ -753,10 +762,19 @@
                     appliedDiscount = 0;
                     updateTotal();
                     hideDiscountMessage();
+                    // Re-enable input and button
+                    document.getElementById('voucherCode').disabled = false;
+                    if (document.querySelector('.apply-btn')) {
+                        document.querySelector('.apply-btn').disabled = false;
+                    }
                 }
 
                 function updateTotal() {
-                    const newTotal = originalTotal - appliedDiscount;
+                    // Calculate new total: originalTotal - appliedDiscount
+                    const newTotal = Math.max(0, originalTotal - appliedDiscount);
+                    console.log('Updating total: ' + originalTotal + ' - ' + appliedDiscount + ' = ' + newTotal);
+                    
+                    // Update display
                     document.getElementById('totalAmount').textContent = newTotal.toFixed(2);
 
                     if (appliedDiscount > 0) {
