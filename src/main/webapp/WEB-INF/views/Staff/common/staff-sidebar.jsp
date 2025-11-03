@@ -151,7 +151,7 @@
                         <i data-lucide="shopping-cart"></i>
                         Orders
                     </a>
-                    <a id="return-request" data-page="return-request" href="${pageContext.request.contextPath}/staff/orders" class="nav-link">
+                    <a id="return-request" data-page="return-request" href="${pageContext.request.contextPath}/staff/manage-return-request" class="nav-link">
                         <i data-lucide="shopping-cart"></i>
                         Return Request
                     </a>

@@ -6,10 +6,7 @@ package Controllers.Customer;
 
 import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
-import Models.Order;
-
 import DAOs.CustomerDAO;
-
 import Models.Customer;
 import Models.Order;
 import Models.OrderStatusHistory;
@@ -29,8 +26,6 @@ import java.util.logging.Logger;
 public class OrderDetailServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
-    private final CustomerDAO customerDAO = new CustomerDAO();
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

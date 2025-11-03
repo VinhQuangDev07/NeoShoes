@@ -22,6 +22,7 @@ public class ProductVariant {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int isDeleted;
+   
 
     public ProductVariant() {
     }
