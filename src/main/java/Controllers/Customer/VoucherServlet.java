@@ -205,25 +205,25 @@ public class VoucherServlet extends HttpServlet {
 
             if (voucher == null) {
                 System.err.println("Voucher NOT FOUND");
-                out.print("{\"success\": false, \"message\": \"Voucher code không tồn tại!\"}");
+                out.print("{\"success\": false, \"message\": \"Voucher code does not exist!\"}");
             } else if (!voucher.isActive()) {
                 System.err.println("Voucher NOT ACTIVE");
-                out.print("{\"success\": false, \"message\": \"Voucher không còn hoạt động!\"}");
+                out.print("{\"success\": false, \"message\": \"Voucher is no longer active!\"}");
             } else if (voucher.isExpired()) {
                 System.err.println("Voucher EXPIRED");
-                out.print("{\"success\": false, \"message\": \"Voucher đã hết hạn!\"}");
+                out.print("{\"success\": false, \"message\": \"Voucher has expired!\"}");
             } else if (voucher.getMinValue() != null && orderTotal < voucher.getMinValue().doubleValue()) {
                 System.err.println("Order total too low: " + orderTotal + " < " + voucher.getMinValue());
-                out.print("{\"success\": false, \"message\": \"Đơn hàng phải có giá trị tối thiểu $" + voucher.getMinValue() + "\"}");
+                out.print("{\"success\": false, \"message\": \"Order must have a minimum value of $" + voucher.getMinValue() + "\"}");
             } else if (!voucherDAO.isVoucherUsable(voucher.getVoucherId(), customerId)) {
                 System.err.println("Voucher NOT USABLE (usage limit reached)");
-                out.print("{\"success\": false, \"message\": \"Bạn đã sử dụng hết lượt cho voucher này!\"}");
+                out.print("{\"success\": false, \"message\": \"You have used up all attempts for this voucher!\"}");
             } else {
-                // ✅ Tính toán discount
+                // Calculate discount
                 double discount = calculateDiscount(voucher, orderTotal);
                 double finalAmount = orderTotal - discount;
 
-                // ✅ Lưu vào session
+                // Save to session
                 HttpSession session = request.getSession();
                 session.setAttribute("appliedVoucherCode", voucher.getVoucherCode());
                 session.setAttribute("appliedVoucherId", voucher.getVoucherId());
@@ -234,9 +234,9 @@ public class VoucherServlet extends HttpServlet {
                 System.out.println("  - Final Amount: $" + finalAmount);
                 System.out.println("===========================");
 
-                // ✅ RETURN JSON SUCCESS
+                // RETURN JSON SUCCESS
                 out.print("{\"success\": true, " +
-                         "\"message\": \"Áp dụng voucher thành công! Giảm $" + String.format("%.2f", discount) + "\", " +
+                         "\"message\": \"Voucher applied successfully! Discount $" + String.format("%.2f", discount) + "\", " +
                          "\"voucherCode\": \"" + voucher.getVoucherCode() + "\", " +
                          "\"discount\": " + discount + ", " +
                          "\"finalAmount\": " + finalAmount + "}");
@@ -244,11 +244,11 @@ public class VoucherServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             System.err.println("❌ Invalid number format: " + e.getMessage());
-            out.print("{\"success\": false, \"message\": \"Số tiền đơn hàng không hợp lệ!\"}");
+            out.print("{\"success\": false, \"message\": \"Invalid order amount!\"}");
         } catch (Exception e) {
             System.err.println("❌ Error: " + e.getMessage());
             e.printStackTrace();
-            out.print("{\"success\": false, \"message\": \"Lỗi hệ thống!\"}");
+            out.print("{\"success\": false, \"message\": \"System error!\"}");
         } finally {
             out.flush();
         }

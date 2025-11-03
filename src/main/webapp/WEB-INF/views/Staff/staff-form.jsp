@@ -225,8 +225,8 @@
         </style>
     </head>
     <body>
-        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
-        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/Staff/common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/Staff/common/staff-sidebar.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
 
         <div class="main-content">
