@@ -1,5 +1,6 @@
 package Models;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
@@ -32,6 +33,10 @@ public class Product {
     private List<String> sizes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Statistic
+    private int totalSold;
+    private BigDecimal totalRevenue;
 
     public Product() {
     }
@@ -248,4 +253,22 @@ public class Product {
         }
         return "N/A";
     }
+
+    public int getTotalSold() {
+        return totalSold;
+    }
+
+    public void setTotalSold(int totalSold) {
+        this.totalSold = totalSold;
+    }
+
+    public BigDecimal getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(BigDecimal totalRevenue) {
+        this.totalRevenue = totalRevenue;
+    }
+    
+    
 }
