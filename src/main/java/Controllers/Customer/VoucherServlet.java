@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import DAOs.VoucherDAO;
+import Models.Customer;
 import Models.Voucher;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -29,9 +30,14 @@ public class VoucherServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Tạm thời sử dụng customerId mặc định để test
-        // Khi tích hợp đăng nhập sau này, sẽ thay bằng customerId từ session
-        Integer customerId = getCustomerIdFromSessionOrDefault(request);
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+        int customerId = customer.getId();
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -69,8 +75,14 @@ public class VoucherServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Tạm thời sử dụng customerId mặc định để test
-        Integer customerId = getCustomerIdFromSessionOrDefault(request);
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+        int customerId = customer.getId();
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -92,36 +104,6 @@ public class VoucherServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException(e);
         }
-    }
-
-    /**
-     * Lấy customerId từ session hoặc sử dụng giá trị mặc định Khi tích hợp đăng
-     * nhập, chỉ cần sửa method này
-     */
-    private Integer getCustomerIdFromSessionOrDefault(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        Integer customerId = (Integer) session.getAttribute("customerId");
-
-        // Nếu chưa có session (chưa đăng nhập), sử dụng customerId mặc định
-        // Đây là tạm thời, khi tích hợp đăng nhập sẽ bỏ phần này
-        if (customerId == null) {
-            // Có thể lấy từ parameter để test, hoặc dùng giá trị mặc định
-            String customerIdParam = request.getParameter("customerId");
-            if (customerIdParam != null) {
-                try {
-                    customerId = Integer.parseInt(customerIdParam);
-                } catch (NumberFormatException e) {
-                    customerId = 1; // Giá trị mặc định để test
-                }
-            } else {
-                customerId = 1; // Giá trị mặc định để test
-            }
-
-            // Lưu vào session để các request sau sử dụng
-            session.setAttribute("customerId", customerId);
-        }
-
-        return customerId;
     }
 
     private void listAllVouchers(HttpServletRequest request, HttpServletResponse response, int customerId)
@@ -196,7 +178,7 @@ public class VoucherServlet extends HttpServlet {
             System.out.println("Customer ID: " + customerId);
             System.out.println("Voucher Code: " + voucherCode);
             System.out.println("Order Total: " + orderTotalParam);
-            
+
             double orderTotal = orderTotalParam != null ? Double.parseDouble(orderTotalParam) : 0;
 
             // Kiểm tra voucher

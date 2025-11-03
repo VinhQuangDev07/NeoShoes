@@ -137,15 +137,23 @@
             
             <!-- Product Management Section -->
             <div>
-                <h3 class="sidebar-section-title">Product Management</h3>
+                <h3 class="sidebar-section-title">Store Management</h3>
                 <div class="d-flex flex-column gap-1">
-                    <a id="product" data-page="product" href="${pageContext.request.contextPath}/manage-product" class="nav-link">
+                    <a id="product" data-page="product" href="${pageContext.request.contextPath}/staff/product" class="nav-link">
                         <i data-lucide="package"></i>
                         Products
+                    </a>
+                    <a id="product" data-page="import-product-records" href="${pageContext.request.contextPath}/staff/import-records" class="nav-link">
+                        <i data-lucide="package"></i>
+                        Import Product
                     </a>
                     <a id="order" data-page="order" href="${pageContext.request.contextPath}/staff/orders" class="nav-link">
                         <i data-lucide="shopping-cart"></i>
                         Orders
+                    </a>
+                    <a id="return-request" data-page="return-request" href="${pageContext.request.contextPath}/staff/orders" class="nav-link">
+                        <i data-lucide="shopping-cart"></i>
+                        Return Request
                     </a>
                     <a id="category" data-page="category" href="${pageContext.request.contextPath}/managecategoriesforstaff" class="nav-link">
                         <i data-lucide="tags"></i>

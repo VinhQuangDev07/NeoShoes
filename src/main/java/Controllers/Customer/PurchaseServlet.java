@@ -42,7 +42,9 @@ public class PurchaseServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Customer customer = (Customer) request.getSession().getAttribute("customer");
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
@@ -63,7 +65,9 @@ public class PurchaseServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Customer customer = (Customer) request.getSession().getAttribute("customer");
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;

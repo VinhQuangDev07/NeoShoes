@@ -7,6 +7,7 @@ package Controllers.Customer;
 import DAOs.OrderDAO;
 import DAOs.ReturnRequestDAO;
 import DAOs.ReturnRequestDetailDAO;
+import Models.Customer;
 import Models.Order;
 import Models.OrderDetail;
 import Models.ReturnRequest;
@@ -17,6 +18,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -33,10 +35,30 @@ import java.util.logging.Logger;
  */
 @WebServlet(name = "ReturnRequestServlet", urlPatterns = {"/return-request"})
 public class ReturnRequestServlet extends HttpServlet {
+    
+    private ReturnRequestDAO rDAO;
+    private ReturnRequestDetailDAO dDAO;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        rDAO = new ReturnRequestDAO();
+        dDAO = new ReturnRequestDetailDAO();
+    }
+    
+    
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         String action = request.getParameter("action");
         if ("detail".equals(action)) {
             handleViewDetail(request, response);
@@ -58,9 +80,6 @@ public class ReturnRequestServlet extends HttpServlet {
 
         try {
             int requestId = Integer.parseInt(requestIdParam);
-
-            ReturnRequestDAO rDAO = new ReturnRequestDAO();
-            ReturnRequestDetailDAO dDAO = new ReturnRequestDetailDAO();
 
             // Get return request information
             ReturnRequest returnRequest = rDAO.getReturnRequestById(requestId);
@@ -310,11 +329,19 @@ public class ReturnRequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         String action = request.getParameter("action");
 
         // ===== ACTION: CREATE =====
         if ("create".equals(action)) {
-            handleCreatePost(request, response);
+            handleCreatePost(request, response, customer.getId());
         } else if ("update".equals(action)) {
             handleUpdatePost(request, response);
         } else if ("delete".equals(action)) {
@@ -323,12 +350,11 @@ public class ReturnRequestServlet extends HttpServlet {
 
     }
 
-    private void handleCreatePost(HttpServletRequest request, HttpServletResponse response)
+    private void handleCreatePost(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
         try {
             // 1-5. VALIDATION (giữ nguyên code cũ)
             int orderId = Integer.parseInt(request.getParameter("orderId"));
-            int customerId = 1;
             String reason = request.getParameter("reason");
             String bankName = request.getParameter("bankName");
             String accountNumber = request.getParameter("accountNumber");

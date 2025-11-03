@@ -85,7 +85,7 @@ public class OrdersServlet extends HttpServlet {
             } else {
                 pageData = new ArrayList<>();
             }
-            
+
             // Calculate pagination info
             int totalPages = (int) Math.ceil((double) totalRecords / recordsPerPage);
             request.setAttribute("orders", pageData);

@@ -6,11 +6,14 @@
 <html>
     <head>
         <title>NeoShoes - Home</title>
-        <!-- Bootstrap CSS -->
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+
+        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
+
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 
         <style>
@@ -466,8 +469,8 @@
         </style>
     </head>
     <body>
-        
-       <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+
+        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
 
 
         <!-- Video Banner Section -->
@@ -493,8 +496,8 @@
                 <h3 class="categories-title">Brands</h3>
                 <div class="categories-list">
                     <c:forEach var="brand" items="${brands}">
-                        <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${brand.brandId}"
-                           class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
+                        <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${brand.brandId}"
+   class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
@@ -505,88 +508,91 @@
                 </div>
             </div>
         </section>
-    
 
-    <!-- Featured Products -->
-    <section class="products">
-        <div class="section-header">
-            <h2 class="products-title">
-                <c:choose>
-                    <c:when test="${not empty param.searchTerm}">
-                        Search results for "${param.searchTerm}"
-                    </c:when>
-                    <c:when test="${not empty param.selectedCategory}">
-                        <c:forEach var="category" items="${categories}">
-                            <c:if test="${category.categoryId == param.selectedCategory}">
-                                ${category.name}
-                            </c:if>
-                        </c:forEach>
-                    </c:when>
-                    <c:otherwise>Newest Products</c:otherwise> 
-                </c:choose>
-            </h2>
 
-        </div>
-
-        <c:choose>
-            <c:when test="${not empty products}">
-                <div class="products-grid">
-                    <c:forEach var="product" items="${products}">
-                        <div class="product-card">
-                            <div class="product-media">
-                                <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                     onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
-                            </div>
-                            <div class="product-info">
-                                <h3 class="product-name">${product.name}</h3>
-                                <p class="product-brand">${product.brandName}</p>
-
-                                <c:if test="${product.availableColors != null}">
-                                    <div class="color-previews">
-                                        <c:forTokens items="${product.availableColors}" delims="," var="color" end="3">
-                                            <span class="color-dot" style="background-color: ${color}" title="${color}"></span>
-                                        </c:forTokens>
-                                        <c:if test="${fn:length(fn:split(product.availableColors, ',')) > 3}">
-                                            <span class="color-more">+${fn:length(fn:split(product.availableColors, ',')) - 3}</span>
-                                        </c:if>
-                                    </div>
-                                </c:if>
-
-                                <c:choose>
-                                    <c:when test="${product.minPrice != product.maxPrice}">
-                                        <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="price">$${product.minPrice}</div>
-                                    </c:otherwise>
-                                </c:choose>
-
-                                <a href="product-detail?id=${product.productId}" class="view-details-btn">View Details</a>
-                            </div>
-                        </div>
-                    </c:forEach>
-                </div>
-
-                <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
-                    <div class="view-all-mobile">
-                        <a href="${pageContext.request.contextPath}/products" class="view-all-btn-mobile">View All Products</a>
-                    </div>
-                </c:if>
-            </c:when>
-            <c:otherwise>
-                <div class="no-products">
+        <!-- Featured Products -->
+        <section class="products">
+            <div class="section-header">
+                <h2 class="products-title">
                     <c:choose>
                         <c:when test="${not empty param.searchTerm}">
-                            <p>No products matched "${param.searchTerm}"</p>
+                            Search results for "${param.searchTerm}"
                         </c:when>
-                        <c:otherwise>
-                            <p>There are no featured products yet</p>
-                        </c:otherwise>
+                        <c:when test="${not empty param.selectedCategory}">
+                            <c:forEach var="category" items="${categories}">
+                                <c:if test="${category.categoryId == param.selectedCategory}">
+                                    ${category.name}
+                                </c:if>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>Newest Products</c:otherwise> 
                     </c:choose>
-                </div>
-            </c:otherwise>
-        </c:choose>
-    </section>
-    <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
-</body>
+                </h2>
+
+            </div>
+
+            <c:choose>
+                <c:when test="${not empty products}">
+                    <div class="products-grid">
+                        <c:forEach var="product" items="${products}">
+                            <div class="product-card">
+                                <div class="product-media">
+                                    <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
+                                         onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
+                                </div>
+                                <div class="product-info">
+                                    <h3 class="product-name">${product.name}</h3>
+                                    <p class="product-brand">${product.brandName}</p>
+
+                                    <c:if test="${product.availableColors != null}">
+                                        <div class="color-previews">
+                                            <c:forTokens items="${product.availableColors}" delims="," var="color" end="3">
+                                                <span class="color-dot" style="background-color: ${color}" title="${color}"></span>
+                                            </c:forTokens>
+                                            <c:if test="${fn:length(fn:split(product.availableColors, ',')) > 3}">
+                                                <span class="color-more">+${fn:length(fn:split(product.availableColors, ',')) - 3}</span>
+                                            </c:if>
+                                        </div>
+                                    </c:if>
+
+                                    <c:choose>
+                                        <c:when test="${product.minPrice != product.maxPrice}">
+                                            <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="price">$${product.minPrice}</div>
+                                        </c:otherwise>
+                                    </c:choose>
+
+                                    <a href="product-detail?id=${product.productId}" class="view-details-btn">View Details</a>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+
+                    <c:if test="${empty param.searchTerm && empty param.selectedCategory}">
+                        <div class="view-all-mobile">
+                            <a href="${pageContext.request.contextPath}/products" class="view-all-btn-mobile">View All Products</a>
+                        </div>
+                    </c:if>
+                </c:when>
+                <c:otherwise>
+                    <div class="no-products">
+                        <c:choose>
+                            <c:when test="${not empty param.searchTerm}">
+                                <p>No products matched "${param.searchTerm}"</p>
+                            </c:when>
+                            <c:otherwise>
+                                <p>There are no featured products yet</p>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </section>
+        <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
+
+        <!-- JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

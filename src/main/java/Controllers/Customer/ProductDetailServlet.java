@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package Controllers.Customer;
 
 import java.io.IOException;
@@ -23,9 +22,9 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author Le Huu Nghia - CE181052
  */
-@WebServlet(name="ProductDetailServlet", urlPatterns={"/product-detail"})
+@WebServlet(name = "ProductDetailServlet", urlPatterns = {"/product-detail"})
 public class ProductDetailServlet extends HttpServlet {
-   
+
     private ProductDAO productDAO;
     private ProductVariantDAO variantDAO;
     private ReviewDAO reviewDAO;
@@ -49,7 +48,8 @@ public class ProductDetailServlet extends HttpServlet {
             int productId = Integer.parseInt(productIdParam);
             Product product = productDAO.getById(productId);          
             if (product == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Product not found");
+                request.getSession().setAttribute("flash_error", "Product not found");
+                response.sendRedirect(request.getContextPath() + "/producs");
                 return;
             }
 
@@ -57,11 +57,11 @@ public class ProductDetailServlet extends HttpServlet {
             List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
             List<String> colors = variantDAO.getColorsByProductId(productId);
             List<String> sizes = variantDAO.getSizesByProductId(productId);
-            
+
             // Get filter parameters for reviews
             String ratingParam = request.getParameter("rating");
             String timeParam = request.getParameter("time");
-            
+
             // Parse rating filter
             Integer rating = null;
             if (ratingParam != null && !ratingParam.trim().isEmpty() && !"all".equals(ratingParam)) {
@@ -74,7 +74,7 @@ public class ProductDetailServlet extends HttpServlet {
                     rating = null;
                 }
             }
-            
+
             // Load reviews for the product (filtered or all)
             // All filters (rating and time) are now handled at database level
             List<Review> reviews;
@@ -88,12 +88,12 @@ public class ProductDetailServlet extends HttpServlet {
             
             // Load all reviews for statistics calculation (unfiltered)
             List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
-            
+
             // Calculate review statistics from all reviews
             int totalReviews = allReviews.size();
             double averageRating = 0.0;
             int[] ratingCounts = new int[6]; // 0-5 stars
-            
+
             if (totalReviews > 0) {
                 int totalStars = 0;
                 for (Review review : allReviews) {
@@ -103,7 +103,7 @@ public class ProductDetailServlet extends HttpServlet {
                 }
                 averageRating = (double) totalStars / totalReviews;
             }
-            
+
             // Set attributes for JSP
             request.setAttribute("product", product);
             request.setAttribute("variants", variants);
@@ -113,7 +113,7 @@ public class ProductDetailServlet extends HttpServlet {
             request.setAttribute("totalReviews", totalReviews);
             request.setAttribute("averageRating", averageRating);
             request.setAttribute("ratingCounts", ratingCounts);
-            
+
             // Set filter attributes for JSP
             request.setAttribute("selectedRating", rating);
             request.setAttribute("selectedTime", timeParam);
@@ -125,13 +125,14 @@ public class ProductDetailServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                             "An error occurred while loading product details");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "An error occurred while loading product details");
         }
-    } 
+    }
 
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
@@ -139,11 +140,12 @@ public class ProductDetailServlet extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         doGet(request, response);
     }
     /** 
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override
