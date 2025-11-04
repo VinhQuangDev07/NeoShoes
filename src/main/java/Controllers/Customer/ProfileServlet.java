@@ -136,12 +136,14 @@ public class ProfileServlet extends HttpServlet {
 
             if (newPassword == null || newPassword.length() < 8 || !newPassword.equals(confirmPassword)) {
                 session.setAttribute("flash_error", "Password must be >= 8 chars and match confirmation.");
+            } else if (!customerDAO.verifyCurrentPassword(customerId, currentPassword)) {
+                session.setAttribute("flash_error", "Current password is incorrect.");
             } else {
-                success = customerDAO.changePassword(customerId, currentPassword, newPassword);
+                success = customerDAO.changePassword(customerId, newPassword);
                 if (success) {
                     session.setAttribute("flash", "Password changed successfully.");
                 } else {
-                    session.setAttribute("flash_error", "Current password is incorrect.");
+                    session.setAttribute("flash_error", "Failed to change password. Please try again.");
                 }
             }
         }

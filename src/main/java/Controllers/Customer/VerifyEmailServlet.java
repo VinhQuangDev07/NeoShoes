@@ -1,6 +1,7 @@
 package Controllers.Customer;
 
 import DAOs.CustomerDAO;
+import Models.Customer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,10 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
-/**
- * Email Verification Servlet
- */
 @WebServlet(name = "VerifyEmailServlet", urlPatterns = {"/verify-email"})
 public class VerifyEmailServlet extends HttpServlet {
 
@@ -66,7 +65,7 @@ public class VerifyEmailServlet extends HttpServlet {
             if (customerId > 0) {
                 // Generate new code
                 String newCode = Utils.EmailService.generateVerificationCode();
-                java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusMinutes(10);
+                LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
                 
                 // Delete old code and create new one
                 boolean codeCreated = customerDAO.resendVerificationCode(pendingEmail);
@@ -74,8 +73,8 @@ public class VerifyEmailServlet extends HttpServlet {
                 if (codeCreated) {
                     // Send email with new code
                     // Note: Need to get customer name first
-                    DAOs.CustomerDAO dao = new DAOs.CustomerDAO();
-                    Models.Customer customer = dao.getCustomerByEmail(pendingEmail);
+                    CustomerDAO dao = new DAOs.CustomerDAO();
+                    Customer customer = dao.getCustomerByEmail(pendingEmail);
                     
                     if (customer != null) {
                         boolean emailSent = Utils.EmailService.sendVerificationCode(

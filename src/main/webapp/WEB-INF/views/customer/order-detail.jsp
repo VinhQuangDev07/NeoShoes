@@ -1,5 +1,6 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="approvedTime" value="" />
@@ -293,6 +294,26 @@
                 line-height: 1.4;
             }
             
+            .address-horizontal {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            
+            .address-item {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                color: #555;
+                font-size: 14px;
+            }
+            
+            .address-separator {
+                color: #999;
+                font-size: 12px;
+            }
+            
             .address-line {
                 margin-bottom: 4px;
                 color: #555;
@@ -301,6 +322,17 @@
             
             .address-line:last-child {
                 margin-bottom: 0;
+            }
+            
+            @media (max-width: 576px) {
+                .address-horizontal {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
+                }
+                .address-separator {
+                    display: none;
+                }
             }
             
             .products-section {
@@ -778,18 +810,18 @@
                         <!-- Order Summary -->
                         <div class="order-summary">
                             <div class="summary-section">
-                                <h6>Order Amount Details</h6>
+                                <h6>Payment Summary</h6>
                                 <div class="summary-item">
-                                    <span>Subtotal:</span>
-                                    <span>$<c:out value="${order.totalAmount - order.shippingFee}"/></span>
+                                    <span>Items Subtotal:</span>
+                                    <span>$<fmt:formatNumber value="${order.totalAmount - order.shippingFee}" pattern="#,##0.00"/></span>
                                 </div>
                                 <div class="summary-item">
-                                    <span>Shipping fee:</span>
-                                    <span>$<c:out value="${order.shippingFee}"/></span>
+                                    <span>Shipping Fee:</span>
+                                    <span>$<fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00"/></span>
                                 </div>
                                 <div class="summary-item summary-total">
-                                    <span>Total to pay:</span>
-                                    <span>$<c:out value="${order.totalAmount}"/></span>
+                                    <span>Total Amount:</span>
+                                    <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
                                 </div>
                             </div>
                             <div class="summary-section">
@@ -825,14 +857,42 @@
                         <div class="shipping-section">
                             <h6><i class="fas fa-shipping-fast"></i> Delivery Address</h6>
                             <div class="address-info">
+                                <c:set var="hasRecipientName" value="${not empty order.recipientName}" />
+                                <c:set var="hasAddressDetails" value="${not empty order.addressDetails}" />
+                                <c:set var="hasRecipientPhone" value="${not empty order.recipientPhone}" />
+                                <c:set var="hasAnyAddressData" value="${hasRecipientName || hasAddressDetails || hasRecipientPhone}" />
+                                
                                 <c:choose>
-                                    <c:when test="${not empty order.recipientName}">
-                                        <div class="address-line"><strong><c:out value="${order.recipientName}"/></strong></div>
-                                        <div class="address-line"><c:out value="${order.addressDetails}"/></div>
-                                        <div class="address-line"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></div>
+                                    <c:when test="${hasAnyAddressData}">
+                                        <div class="address-horizontal">
+                                            <c:if test="${hasRecipientName}">
+                                                <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.recipientName}"/></strong></span>
+                                            </c:if>
+                                            
+                                            <c:if test="${hasRecipientName && (hasAddressDetails || hasRecipientPhone)}">
+                                                <span class="address-separator">•</span>
+                                            </c:if>
+                                            
+                                            <c:if test="${hasAddressDetails}">
+                                                <span class="address-item"><i class="fas fa-map-marker-alt"></i> <c:out value="${order.addressDetails}"/></span>
+                                            </c:if>
+                                            
+                                            <c:if test="${hasAddressDetails && hasRecipientPhone}">
+                                                <span class="address-separator">•</span>
+                                            </c:if>
+                                            
+                                            <c:if test="${hasRecipientPhone}">
+                                                <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></span>
+                                            </c:if>
+                                        </div>
                                     </c:when>
                                     <c:otherwise>
-                                        <div class="address-line">Default Address</div>
+                                        <div class="address-horizontal">
+                                            <span class="address-item text-muted">
+                                                <i class="fas fa-info-circle"></i> 
+                                                Address information not available
+                                            </span>
+                                        </div>
                                     </c:otherwise>
                                 </c:choose>
                             </div>
@@ -877,12 +937,16 @@
                                                 <div class="product-name">
                                                     <c:out value="${item.productName}"/>
                                                 </div>
+                                                <div class="product-variant">
+                                                    <c:if test="${not empty item.color}">Color: ${item.color}</c:if>
+                                                    <c:if test="${not empty item.size}"> • Size: ${item.size}</c:if>
+                                                </div>
                                                 <div class="product-quantity">
                                                     Quantity: x<c:out value="${item.detailQuantity}"/>
                                                 </div>
                                             </div>
                                             <div class="product-price">
-                                                $<c:out value="${item.detailPrice}"/>
+                                                $<fmt:formatNumber value="${item.detailPrice}" pattern="#,##0.00"/>
                                             </div>
                                         </div>
                                     </c:forEach>

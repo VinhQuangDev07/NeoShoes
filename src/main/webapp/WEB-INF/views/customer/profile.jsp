@@ -143,7 +143,6 @@
         }
     </style>
     <body class="bg-light">
-
         <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <c:if test="${empty sessionScope.customer}">

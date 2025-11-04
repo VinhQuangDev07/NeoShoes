@@ -27,16 +27,11 @@ public class ManageStaffServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        routeGetRequest(request, response);
-    }
-
-    // ===== ROUTING GET REQUESTS =====
-    private void routeGetRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
         String action = request.getParameter("action");
-        
-        if (action == null) action = "list";
-        
+        if (action == null) {
+            action = "list";
+        }
+
         switch (action) {
             case "view":
                 viewStaffDetail(request, response);
@@ -47,12 +42,13 @@ public class ManageStaffServlet extends HttpServlet {
             case "add":
                 showAddForm(request, response);
                 break;
-            case "list":
             default:
                 listStaff(request, response);
                 break;
         }
     }
+
+   
 
     // ===== SHOW EDIT FORM =====
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -83,22 +79,10 @@ public class ManageStaffServlet extends HttpServlet {
         String roleFilter = request.getParameter("roleFilter");
 
         List<Staff> staffList;
+        staffList = staffDAO.getAllStaff();
+        System.out.println("Get all staff → " + staffList.size() + " results");
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            staffList = staffDAO.searchStaff(keyword.trim());
-            System.out.println("Search: " + keyword + " → " + staffList.size() + " results");
-        } else if (roleFilter != null && !roleFilter.isEmpty()) {
-            boolean isAdmin = "admin".equalsIgnoreCase(roleFilter);
-            staffList = staffDAO.getStaffByRole(isAdmin);
-            System.out.println("Filter: " + roleFilter + " → " + staffList.size() + " results");
-        } else {
-            staffList = staffDAO.getAllStaff();
-            System.out.println("Get all staff → " + staffList.size() + " results");
-        }
-
-        
-        
-         int currentPage = 1;
+        int currentPage = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
             try {
@@ -108,25 +92,25 @@ public class ManageStaffServlet extends HttpServlet {
             }
         }
         int recordsPerPage = 10;
-        
-         int totalRecords = staffList.size();
-        
+
+        int totalRecords = staffList.size();
+
         // Calculate start and end positions
         int startIndex = (currentPage - 1) * recordsPerPage;
         int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
-        
+
         // 5. Lấy dữ liệu cho trang hiện tại
         List<Staff> pageData;
         if (startIndex < totalRecords) {
             pageData = staffList.subList(startIndex, endIndex);
-} else {
+        } else {
             pageData = new ArrayList<>();
         }
 
         request.setAttribute("staffList", pageData);
-         request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("recordsPerPage", recordsPerPage);
-        request.setAttribute("baseUrl", request.getRequestURI()); 
+        request.setAttribute("baseUrl", request.getRequestURI());
         //request.setAttribute("totalStaff", staffDAO.getTotalStaffCount());
         request.setAttribute("keyword", keyword);
         request.setAttribute("roleFilter", roleFilter);
@@ -149,7 +133,7 @@ public class ManageStaffServlet extends HttpServlet {
                 return;
             }
 
-            System.out.println("👁️ View staff: " + staff.getName() + " (ID: " + staffId + ")");
+            System.out.println("View staff: " + staff.getName() + " (ID: " + staffId + ")");
 
             request.setAttribute("staff", staff);
             request.getRequestDispatcher("/WEB-INF/views/staff/view-staff-details.jsp").forward(request, response);
@@ -162,15 +146,15 @@ public class ManageStaffServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
         HttpSession session = request.getSession();
-        
+
         if (action == null) {
             response.sendRedirect(request.getContextPath() + "/manage-staff");
             return;
         }
-        
+
         switch (action) {
             case "create":
                 createStaff(request, response, session);
@@ -186,7 +170,7 @@ public class ManageStaffServlet extends HttpServlet {
                 break;
         }
     }
-    
+
     // ===== CREATE STAFF =====
     private void createStaff(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws ServletException, IOException {
@@ -195,30 +179,30 @@ public class ManageStaffServlet extends HttpServlet {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
             String name = request.getParameter("name");
-            
+
             String phone = request.getParameter("phone");
             String roleStr = request.getParameter("role");
             String gender = request.getParameter("gender");
             String address = request.getParameter("address");
             String avatar = request.getParameter("avatar");
             String dobStr = request.getParameter("dateOfBirth");
-            
+
             // Validate required fields
-            if (email == null || email.trim().isEmpty() || 
-                password == null || password.trim().isEmpty() ||
-                name == null || name.trim().isEmpty()) {
+            if (email == null || email.trim().isEmpty()
+                    || password == null || password.trim().isEmpty()
+                    || name == null || name.trim().isEmpty()) {
                 session.setAttribute("flash_error", "Email, password and name are required!");
                 response.sendRedirect(request.getContextPath() + "/manage-staff?action=add");
                 return;
             }
-            
+
             // Check if email exists
             if (staffDAO.isEmailExists(email)) {
                 session.setAttribute("flash_error", "Email already exists!");
                 response.sendRedirect(request.getContextPath() + "/manage-staff?action=add");
                 return;
             }
-            
+
             // Create staff object
             Staff staff = new Staff();
             staff.setEmail(email.trim());
@@ -229,7 +213,7 @@ public class ManageStaffServlet extends HttpServlet {
             staff.setGender(gender);
             staff.setAddress(address);
             staff.setAvatar(avatar);
-            
+
             // Parse date of birth
             if (dobStr != null && !dobStr.trim().isEmpty()) {
                 try {
@@ -238,7 +222,7 @@ public class ManageStaffServlet extends HttpServlet {
                     System.err.println("Invalid date format: " + dobStr);
                 }
             }
-            
+
             // Create staff
             if (staffDAO.createStaff(staff)) {
                 session.setAttribute("flash_success", "Staff created successfully!");
@@ -246,15 +230,15 @@ public class ManageStaffServlet extends HttpServlet {
             } else {
                 session.setAttribute("flash_error", "Failed to create staff!");
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
-        
+
         response.sendRedirect(request.getContextPath() + "/manage-staff");
     }
-    
+
     // ===== UPDATE STAFF =====
     private void updateStaff(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws ServletException, IOException {
@@ -268,7 +252,7 @@ public class ManageStaffServlet extends HttpServlet {
             String address = request.getParameter("address");
             String dobStr = request.getParameter("dateOfBirth");
             String avatar = request.getParameter("avatar");
-            
+
             // Get existing staff
             Staff staff = staffDAO.getStaffById(staffId);
             if (staff == null) {
@@ -276,7 +260,7 @@ public class ManageStaffServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/manage-staff");
                 return;
             }
-            
+
             // Validate & update email
             if (email == null || email.trim().isEmpty()) {
                 session.setAttribute("flash_error", "Email is required!");
@@ -306,7 +290,7 @@ public class ManageStaffServlet extends HttpServlet {
             staff.setGender(gender);
             staff.setAddress(address);
             staff.setAvatar(avatar);
-            
+
             // Parse date of birth
             if (dobStr != null && !dobStr.trim().isEmpty()) {
                 try {
@@ -315,7 +299,7 @@ public class ManageStaffServlet extends HttpServlet {
                     System.err.println("Invalid date format: " + dobStr);
                 }
             }
-            
+
             // Update staff
             if (staffDAO.updateStaff(staff)) {
                 session.setAttribute("flash_success", "Staff updated successfully!");
@@ -323,21 +307,21 @@ public class ManageStaffServlet extends HttpServlet {
             } else {
                 session.setAttribute("flash_error", "Failed to update staff!");
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
-        
+
         response.sendRedirect(request.getContextPath() + "/manage-staff");
     }
-    
+
     // ===== DELETE STAFF =====
     private void deleteStaff(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws ServletException, IOException {
         try {
             int staffId = Integer.parseInt(request.getParameter("id"));
-            
+
             // Check if staff exists
             Staff staff = staffDAO.getStaffById(staffId);
             if (staff == null) {
@@ -345,7 +329,7 @@ public class ManageStaffServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/manage-staff");
                 return;
             }
-            
+
             // Delete staff
             if (staffDAO.deleteStaff(staffId)) {
                 session.setAttribute("flash_success", "Staff deleted successfully!");
@@ -353,15 +337,15 @@ public class ManageStaffServlet extends HttpServlet {
             } else {
                 session.setAttribute("flash_error", "Failed to delete staff!");
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
-        
+
         response.sendRedirect(request.getContextPath() + "/manage-staff");
     }
-    
+
     // ===== SHOW ADD FORM =====
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

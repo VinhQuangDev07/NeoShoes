@@ -188,37 +188,37 @@
                             <div class="col-md-9">
                                 <div class="filter-section">
                                     <span class="filter-label">Rating:</span>
-                                    <button type="button" onclick="return filterReviews('all', 'all')" class="filter-btn" data-rating="all">
+                                    <button type="button" onclick="return setRatingFilter('all')" class="filter-btn" data-rating="all">
                                         All
                                     </button>
-                                    <button type="button" onclick="return filterReviews('5', 'all')" class="filter-btn" data-rating="5">
+                                    <button type="button" onclick="return setRatingFilter('5')" class="filter-btn" data-rating="5">
                                         5 <i class="fas fa-star"></i>
                                     </button>
-                                    <button type="button" onclick="return filterReviews('4', 'all')" class="filter-btn" data-rating="4">
+                                    <button type="button" onclick="return setRatingFilter('4')" class="filter-btn" data-rating="4">
                                         4 <i class="fas fa-star"></i>
                                     </button>
-                                    <button type="button" onclick="return filterReviews('3', 'all')" class="filter-btn" data-rating="3">
+                                    <button type="button" onclick="return setRatingFilter('3')" class="filter-btn" data-rating="3">
                                         3 <i class="fas fa-star"></i>
                                     </button>
-                                    <button type="button" onclick="return filterReviews('2', 'all')" class="filter-btn" data-rating="2">
+                                    <button type="button" onclick="return setRatingFilter('2')" class="filter-btn" data-rating="2">
                                         2 <i class="fas fa-star"></i>
                                     </button>
-                                    <button type="button" onclick="return filterReviews('1', 'all')" class="filter-btn" data-rating="1">
+                                    <button type="button" onclick="return setRatingFilter('1')" class="filter-btn" data-rating="1">
                                         1 <i class="fas fa-star"></i>
                                     </button>
                                 </div>
                                 <div class="filter-section">
                                     <span class="filter-label">Time Posted:</span>
-                                    <button type="button" onclick="return filterReviews('all', 'all')" class="filter-btn" data-time="all">
+                                    <button type="button" onclick="return setTimeFilter('all')" class="filter-btn" data-time="all">
                                         All Time
                                     </button>
-                                    <button type="button" onclick="return filterReviews('all', 'today')" class="filter-btn" data-time="today">
+                                    <button type="button" onclick="return setTimeFilter('today')" class="filter-btn" data-time="today">
                                         Today
                                     </button>
-                                    <button type="button" onclick="return filterReviews('all', 'week')" class="filter-btn" data-time="week">
+                                    <button type="button" onclick="return setTimeFilter('week')" class="filter-btn" data-time="week">
                                         This Week
                                     </button>
-                                    <button type="button" onclick="return filterReviews('all', 'month')" class="filter-btn" data-time="month">
+                                    <button type="button" onclick="return setTimeFilter('month')" class="filter-btn" data-time="month">
                                         This Month
                                     </button>
                                 </div>
@@ -412,7 +412,75 @@
             }
             
             
-            // Simple filter function
+            // Get current filter values from URL or active buttons
+            function getCurrentFilters() {
+                // Try to get from URL parameters first
+                const urlParams = new URLSearchParams(window.location.search);
+                let currentRating = urlParams.get('rating') || 'all';
+                let currentTime = urlParams.get('time') || 'all';
+                
+                // If not in URL, get from active buttons
+                if (currentRating === 'all' && currentTime === 'all') {
+                    const activeRatingBtn = document.querySelector('.filter-btn[data-rating].active');
+                    const activeTimeBtn = document.querySelector('.filter-btn[data-time].active');
+                    
+                    if (activeRatingBtn) {
+                        currentRating = activeRatingBtn.getAttribute('data-rating') || 'all';
+                    }
+                    if (activeTimeBtn) {
+                        currentTime = activeTimeBtn.getAttribute('data-time') || 'all';
+                    }
+                }
+                
+                return { rating: currentRating, time: currentTime };
+            }
+            
+            // Set rating filter (keep current time filter)
+            function setRatingFilter(rating) {
+                const filters = getCurrentFilters();
+                applyFilter(rating, filters.time);
+                return false;
+            }
+            
+            // Set time filter (keep current rating filter)
+            function setTimeFilter(time) {
+                const filters = getCurrentFilters();
+                applyFilter(filters.rating, time);
+                return false;
+            }
+            
+            // Apply filter and reload page with URL parameters (server-side filter)
+            function applyFilter(rating, time) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('productId');
+                
+                if (!productId) {
+                    // If no productId, use client-side filter
+                    filterReviews(rating, time);
+                    return;
+                }
+                
+                // Build new URL with filters
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('productId', productId);
+                
+                if (rating && rating !== 'all') {
+                    newUrl.searchParams.set('rating', rating);
+                } else {
+                    newUrl.searchParams.delete('rating');
+                }
+                
+                if (time && time !== 'all') {
+                    newUrl.searchParams.set('time', time);
+                } else {
+                    newUrl.searchParams.delete('time');
+                }
+                
+                // Reload page with new filters (server will handle filtering)
+                window.location.href = newUrl.toString();
+            }
+            
+            // Client-side filter function (for when server-side filtering is not available)
             function filterReviews(rating, time) {
                 // Prevent any default behavior
                 if (window.event) {
@@ -548,8 +616,17 @@
             // Initialize on page load
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('Reviews page initialized');
-                // Set initial active state - only "All" buttons should be active
-                updateActiveButtons('all', 'all');
+                
+                // Get initial filter values from URL or defaults
+                const urlParams = new URLSearchParams(window.location.search);
+                const rating = urlParams.get('rating') || 'all';
+                const time = urlParams.get('time') || 'all';
+                
+                // Set initial active state based on URL parameters
+                updateActiveButtons(rating, time);
+                
+                // Apply client-side filter if needed (for cases where server-side filter wasn't applied)
+                // This handles the case when page loads with filters already applied from server
             });
             
         </script>

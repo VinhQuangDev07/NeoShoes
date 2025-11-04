@@ -71,13 +71,14 @@ public class ReviewDAO extends DB.DBContext {
     }
     
     /**
-     * Retrieves reviews filtered by rating for a specific product
+     * Retrieves reviews filtered by rating, keyword, and time for a specific product
      * @param productId The product ID to get reviews for
      * @param rating The rating to filter by (null for all ratings)
      * @param keyword The keyword to search in review content (null for no keyword filter)
+     * @param timeFilter The time filter ("today", "week", "month", or "all"/null for all time)
      * @return List of filtered Review objects
      */
-    public List<Review> getReviewsByFilter(int productId, Integer rating, String keyword) {
+    public List<Review> getReviewsByFilter(int productId, Integer rating, String keyword, String timeFilter) {
         List<Review> reviews = new ArrayList<>();
         
         StringBuilder sql = new StringBuilder("SELECT r.ReviewId, r.ProductVariantId, r.CustomerId, r.Star, r.ReviewContent, " +
@@ -105,6 +106,11 @@ public class ReviewDAO extends DB.DBContext {
             sql.append(" AND (r.ReviewContent LIKE ? OR c.Name LIKE ?)");
         }
         
+        // Add time filter if specified
+        if (timeFilter != null && !timeFilter.trim().isEmpty() && !"all".equalsIgnoreCase(timeFilter)) {
+            sql.append(" AND r.CreatedAt >= ?");
+        }
+        
         sql.append(" ORDER BY r.CreatedAt DESC");
         
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql.toString())) {
@@ -119,6 +125,14 @@ public class ReviewDAO extends DB.DBContext {
                 String searchPattern = "%" + keyword.trim() + "%";
                 ps.setString(paramIndex++, searchPattern);
                 ps.setString(paramIndex++, searchPattern);
+            }
+            
+            // Add time filter parameter if specified
+            if (timeFilter != null && !timeFilter.trim().isEmpty() && !"all".equalsIgnoreCase(timeFilter)) {
+                java.time.LocalDateTime cutoff = calculateTimeCutoff(timeFilter);
+                if (cutoff != null) {
+                    ps.setTimestamp(paramIndex++, java.sql.Timestamp.valueOf(cutoff));
+                }
             }
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -144,6 +158,29 @@ public class ReviewDAO extends DB.DBContext {
         }
         
         return reviews;
+    }
+    
+    /**
+     * Helper method to calculate cutoff date for time filter
+     * @param timeFilter The time filter parameter ("today", "week", "month")
+     * @return LocalDateTime cutoff date, or null if invalid timeFilter
+     */
+    private java.time.LocalDateTime calculateTimeCutoff(String timeFilter) {
+        if (timeFilter == null || timeFilter.trim().isEmpty()) {
+            return null;
+        }
+        
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        switch (timeFilter.toLowerCase()) {
+            case "today":
+                return now.minusDays(1);
+            case "week":
+                return now.minusWeeks(1);
+            case "month":
+                return now.minusMonths(1);
+            default:
+                return null; // Unknown time filter, no cutoff
+        }
     }
     
     /**
@@ -246,6 +283,59 @@ public class ReviewDAO extends DB.DBContext {
         }
         
         return null;
+    }
+    
+    /**
+     * Batch load reviews for multiple product variants by a customer
+     * Optimizes N+1 query problem when loading reviews for order items
+     * @param productVariantIds List of product variant IDs
+     * @param customerId The customer ID
+     * @return Map of ProductVariantId -> Review (null if no review exists)
+     */
+    public java.util.Map<Integer, Review> getReviewsByProductVariantsAndCustomer(List<Integer> productVariantIds, int customerId) {
+        java.util.Map<Integer, Review> reviewMap = new java.util.HashMap<>();
+        
+        if (productVariantIds == null || productVariantIds.isEmpty()) {
+            return reviewMap;
+        }
+        
+        // Build IN clause for multiple product variant IDs
+        StringBuilder placeholders = new StringBuilder();
+        for (int i = 0; i < productVariantIds.size(); i++) {
+            if (i > 0) placeholders.append(",");
+            placeholders.append("?");
+        }
+        
+        String sql = "SELECT r.ReviewId, r.ProductVariantId, r.CustomerId, r.Star, r.ReviewContent, " +
+                     "r.CreatedAt, r.UpdatedAt, r.IsDeleted, " +
+                     "c.Name as CustomerName, " +
+                     "p.Name as ProductName, " +
+                     "pv.Color " +
+                     "FROM Review r " +
+                     "INNER JOIN Customer c ON r.CustomerId = c.CustomerId " +
+                     "INNER JOIN ProductVariant pv ON r.ProductVariantId = pv.ProductVariantId " +
+                     "INNER JOIN Product p ON pv.ProductId = p.ProductId " +
+                     "WHERE r.ProductVariantId IN (" + placeholders.toString() + ") " +
+                     "AND r.CustomerId = ? AND r.IsDeleted = 0";
+        
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            int paramIndex = 1;
+            for (Integer variantId : productVariantIds) {
+                ps.setInt(paramIndex++, variantId);
+            }
+            ps.setInt(paramIndex, customerId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Review review = createReviewFromResultSet(rs);
+                    reviewMap.put(review.getProductVariantId(), review);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return reviewMap;
     }
     
     /**
