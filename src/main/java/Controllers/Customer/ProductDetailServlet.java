@@ -5,9 +5,7 @@
 package Controllers.Customer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-
 import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import DAOs.ReviewDAO;
@@ -37,22 +35,18 @@ public class ProductDetailServlet extends HttpServlet {
         productDAO = new ProductDAO();
         variantDAO = new ProductVariantDAO();
         reviewDAO = new ReviewDAO();
-    }
-
+    } 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String productIdParam = request.getParameter("id");
-
+    throws ServletException, IOException {
+        String productIdParam = request.getParameter("id");     
         if (productIdParam == null || productIdParam.trim().isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Product ID is required");
             return;
         }
-
         try {
             int productId = Integer.parseInt(productIdParam);
-            Product product = productDAO.getById(productId);
-
+            Product product = productDAO.getById(productId);          
             if (product == null) {
                 request.getSession().setAttribute("flash_error", "Product not found");
                 response.sendRedirect(request.getContextPath() + "/producs");
@@ -82,20 +76,16 @@ public class ProductDetailServlet extends HttpServlet {
             }
 
             // Load reviews for the product (filtered or all)
+            // All filters (rating and time) are now handled at database level
             List<Review> reviews;
-            if (rating != null) {
-                // Get filtered reviews by rating
-                reviews = reviewDAO.getReviewsByFilter(productId, rating, null);
+            if (rating != null || (timeParam != null && !timeParam.trim().isEmpty() && !"all".equals(timeParam))) {
+                // Get filtered reviews by rating and/or time
+                reviews = reviewDAO.getReviewsByFilter(productId, rating, null, timeParam);
             } else {
                 // Get all reviews for the product
                 reviews = reviewDAO.getReviewsByProduct(productId);
             }
-
-            // Apply time filter if specified
-            if (timeParam != null && !timeParam.trim().isEmpty() && !"all".equals(timeParam)) {
-                reviews = filterReviewsByTime(reviews, timeParam);
-            }
-
+            
             // Load all reviews for statistics calculation (unfiltered)
             List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
 
@@ -122,7 +112,6 @@ public class ProductDetailServlet extends HttpServlet {
             request.setAttribute("reviews", reviews);
             request.setAttribute("totalReviews", totalReviews);
             request.setAttribute("averageRating", averageRating);
-            request.setAttribute("formattedRating", formatRating(averageRating));
             request.setAttribute("ratingCounts", ratingCounts);
 
             // Set filter attributes for JSP
@@ -154,49 +143,7 @@ public class ProductDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         doGet(request, response);
     }
-
-    /**
-     * Format average rating to 1 decimal place
-     */
-    private String formatRating(double rating) {
-        return String.format("%.1f", rating);
-    }
-
-    /**
-     * Filter reviews by time period
-     *
-     * @param reviews List of reviews to filter
-     * @param timeParam Time filter parameter (today, week, month)
-     * @return Filtered list of reviews
-     */
-    private List<Review> filterReviewsByTime(List<Review> reviews, String timeParam) {
-        if (reviews == null || reviews.isEmpty()) {
-            return reviews;
-        }
-
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        java.time.LocalDateTime cutoff;
-
-        switch (timeParam.toLowerCase()) {
-            case "today":
-                cutoff = now.minusDays(1);
-                break;
-            case "week":
-                cutoff = now.minusWeeks(1);
-                break;
-            case "month":
-                cutoff = now.minusMonths(1);
-                break;
-            default:
-                return reviews; // No filtering for unknown time periods
-        }
-
-        return reviews.stream()
-                .filter(review -> review.getCreatedAt().isAfter(cutoff))
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    /**
+    /** 
      * Returns a short description of the servlet.
      *
      * @return a String containing servlet description

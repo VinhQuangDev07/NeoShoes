@@ -226,10 +226,10 @@
 </head>
 <body>
     <!-- Include Staff Header -->
-    <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp" />
+    <jsp:include page="/WEB-INF/views/Staff/common/staff-header.jsp" />
     
     <!-- Include Staff Sidebar -->
-    <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp" />
+    <jsp:include page="/WEB-INF/views/Staff/common/staff-sidebar.jsp" />
     
     <div class="container" style="margin-top: 80px; margin-left: 300px;">
         <div class="header">

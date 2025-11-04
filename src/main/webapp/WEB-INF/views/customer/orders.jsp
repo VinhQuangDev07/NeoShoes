@@ -226,6 +226,13 @@
                 margin-right: 15px;
             }
             
+            .item-review-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: auto;
+            }
+            
             .delivery-info {
                 background: #f8f9fa;
                 padding: 15px 20px;
@@ -462,63 +469,6 @@
                                         <div class="order-actions">
                                             <span class="order-total">$<c:out value="${order.totalAmount}"/></span>
                                             <div class="action-buttons">
-                                                <c:choose>
-                                                    <c:when test="${(order.paymentStatusId == completeStatusId || order.status == 'COMPLETED') && not empty order.items && order.status != null && order.status != ''}">
-                                                        <!-- Order is completed/delivered -->
-                                                        <c:choose>
-                                                            <c:when test="${not empty order.items[0].review}">
-                                                                <!-- Review exists -->
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-warning"
-                                                                        data-action="edit"
-                                                                        data-review-id="${order.items[0].review.reviewId}"
-                                                                        data-star="${order.items[0].review.star}"
-                                                                        data-content="${fn:escapeXml(order.items[0].review.reviewContent)}"
-                                                                        data-variant-id="${order.items[0].productVariantId}"
-                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
-                                                                    <i class="fas fa-edit"></i> Edit Review
-                                                                </button>
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-danger"
-                                                                        data-action="delete"
-                                                                        data-review-id="${order.items[0].review.reviewId}">
-                                                                    <i class="fas fa-trash"></i> Delete
-                                                                </button>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <!-- No review -->
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-primary"
-                                                                        data-action="create"
-                                                                        data-variant-id="${order.items[0].productVariantId}"
-                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
-                                                                    <i class="fas fa-star"></i> Write Review
-                                                                </button>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </c:when>
-                                                    <c:when test="${order.status == 'CANCELLED'}">
-                                                        <!-- Order is cancelled -->
-                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
-                                                                title="Cannot review cancelled orders">
-                                                            <i class="fas fa-ban"></i> Cancelled
-                                                        </button>
-                                                    </c:when>
-                                                    <c:when test="${order.paymentStatusId == 4}">
-                                                        <!-- Payment is cancelled -->
-                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
-                                                                title="Payment cancelled - cannot review">
-                                                            <i class="fas fa-ban"></i> Payment Cancelled
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <!-- Order not completed -->
-                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
-                                                                title="You can only review products after delivery">
-                                                            <i class="fas fa-star"></i> Review
-                                                        </button>
-                                                    </c:otherwise>
-                                                </c:choose>
                                                 <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
                                                    class="details-btn">
                                                     <i class="fas fa-eye"></i>
@@ -567,6 +517,67 @@
                                                             <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
                                                         </div>
                                                         <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
+                                                        
+                                                        <!-- Review Buttons for each item (on the right) -->
+                                                        <div class="item-review-actions">
+                                                            <c:choose>
+                                                                <c:when test="${(order.paymentStatusId == completeStatusId || order.status == 'COMPLETED') && order.status != null && order.status != ''}">
+                                                                    <!-- Order is completed/delivered - show review button for this item -->
+                                                                    <c:choose>
+                                                                        <c:when test="${not empty item.review}">
+                                                                            <!-- Review exists -->
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-warning"
+                                                                                    data-action="edit"
+                                                                                    data-review-id="${item.review.reviewId}"
+                                                                                    data-star="${item.review.star}"
+                                                                                    data-content="${fn:escapeXml(item.review.reviewContent)}"
+                                                                                    data-variant-id="${item.productVariantId}"
+                                                                                    data-product-name="${fn:escapeXml(item.productName)}">
+                                                                                <i class="fas fa-edit"></i> Edit Review
+                                                                            </button>
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-danger"
+                                                                                    data-action="delete"
+                                                                                    data-review-id="${item.review.reviewId}">
+                                                                                <i class="fas fa-trash"></i> Delete
+                                                                            </button>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <!-- No review -->
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-primary"
+                                                                                    data-action="create"
+                                                                                    data-variant-id="${item.productVariantId}"
+                                                                                    data-product-name="${fn:escapeXml(item.productName)}">
+                                                                                <i class="fas fa-star"></i> Write Review
+                                                                            </button>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </c:when>
+                                                                <c:when test="${order.status == 'CANCELLED'}">
+                                                                    <!-- Order is cancelled -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="Cannot review cancelled orders">
+                                                                        <i class="fas fa-ban"></i> Cancelled
+                                                                    </button>
+                                                                </c:when>
+                                                                <c:when test="${order.paymentStatusId == 4}">
+                                                                    <!-- Payment is cancelled -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="Payment cancelled - cannot review">
+                                                                        <i class="fas fa-ban"></i> Payment Cancelled
+                                                                    </button>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <!-- Order not completed -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="You can only review products after delivery">
+                                                                        <i class="fas fa-star"></i> Review
+                                                                    </button>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </div>
                                                     </div>
                                                 </c:forEach>
                                             </c:when>
@@ -773,7 +784,7 @@
                     // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '${pageContext.request.contextPath}/orders';
+                    form.action = '${pageContext.request.contextPath}/reviews';
                     
                     const fields = {
                         action: this.currentAction + 'Review',
@@ -805,7 +816,7 @@
                     
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '${pageContext.request.contextPath}/orders';
+                    form.action = '${pageContext.request.contextPath}/reviews';
                     
                     const actionInput = document.createElement('input');
                     actionInput.type = 'hidden';
