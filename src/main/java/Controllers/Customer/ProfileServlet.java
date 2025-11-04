@@ -34,10 +34,10 @@ public class ProfileServlet extends HttpServlet {
 
     private CustomerDAO customerDAO;
     private AddressDAO addressDAO;
-    
+
     @Override
     public void init() throws ServletException {
-        super.init(); 
+        super.init();
         customerDAO = new CustomerDAO();
         addressDAO = new AddressDAO();
     }
@@ -62,7 +62,7 @@ public class ProfileServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
+
         List<Address> addressList;
 
         int customerId = customer.getId();
@@ -153,12 +153,14 @@ public class ProfileServlet extends HttpServlet {
 
             if (newPassword == null || newPassword.length() < 8 || !newPassword.equals(confirmPassword)) {
                 session.setAttribute("flash_error", "Password must be >= 8 chars and match confirmation.");
+            } else if (!customerDAO.verifyCurrentPassword(customerId, currentPassword)) {
+                session.setAttribute("flash_error", "Current password is incorrect.");
             } else {
-                success = customerDAO.changePassword(customerId, currentPassword, newPassword);
+                success = customerDAO.changePassword(customerId, newPassword);
                 if (success) {
                     session.setAttribute("flash", "Password changed successfully.");
                 } else {
-                    session.setAttribute("flash_error", "Current password is incorrect.");
+                    session.setAttribute("flash_error", "Failed to change password. Please try again.");
                 }
             }
         } else if ("deleteAddress".equals(action)) {

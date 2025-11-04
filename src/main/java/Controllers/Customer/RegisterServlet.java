@@ -10,8 +10,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.time.LocalDateTime;
-import Utils.Utils;
 import Utils.EmailService;
 
 /**
@@ -125,7 +123,7 @@ public class RegisterServlet extends HttpServlet {
                 // ========================================
                 // STEP 5: GENERATE & SAVE VERIFICATION CODE
                 // ========================================
-                String verificationCode = Utils.EmailService.generateVerificationCode();
+                String verificationCode = EmailService.generateVerificationCode();
                 java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusMinutes(10);
 
                 boolean codeCreated = customerDAO.createVerificationCode(customerId, verificationCode, expiry);
@@ -141,7 +139,7 @@ public class RegisterServlet extends HttpServlet {
                 // ========================================
                 // STEP 6: SEND EMAIL
                 // ========================================
-                boolean emailSent = Utils.EmailService.sendVerificationCode(
+                boolean emailSent = EmailService.sendVerificationCode(
                         email.trim(),
                         name.trim(),
                         verificationCode

@@ -138,21 +138,51 @@ public class CustomerDAO extends DB.DBContext {
         }
     }
 
-    public boolean changePassword(int id, String currentPlain, String newPlain) {
-        String sqlGet = "SELECT PasswordHash FROM Customer WHERE CustomerId=? AND IsDeleted=0";
-        String sqlUpd = "UPDATE Customer SET PasswordHash=?, UpdatedAt=GETDATE() WHERE CustomerId=?";
-        try ( ResultSet rs = this.execSelectQuery(sqlGet, new Object[]{id})) {
-            if (rs == null || !rs.next()) {
-                return false;
+    public boolean verifyCurrentPassword(int id, String currentPlain) {
+        String sql = "SELECT PasswordHash FROM Customer WHERE CustomerId=? AND IsDeleted=0";
+
+        try ( ResultSet rs = execSelectQuery(sql, new Object[]{id})) {
+            if (rs.next()) {
+                String dbHash = rs.getString("PasswordHash");
+                return Utils.verifyPassword(currentPlain, dbHash);
             }
-            String oldHash = rs.getString("PasswordHash");
-            if (!Utils.verifyPassword(currentPlain, oldHash)) {
-                return false;
-            }
-            int result = this.execQuery(sqlUpd, new Object[]{Utils.hashPassword(newPlain), id});
-            return result > 0;
         } catch (SQLException e) {
-            System.err.println("changePassword: " + e.getMessage());
+            System.err.println("verifyCurrentPassword: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+//    public boolean changePassword(int id, String currentPlain, String newPlain) {
+//        String sqlGet = "SELECT PasswordHash FROM Customer WHERE CustomerId=? AND IsDeleted=0";
+//        String sqlUpd = "UPDATE Customer SET PasswordHash=?, UpdatedAt=GETDATE() WHERE CustomerId=?";
+//        try ( ResultSet rs = this.execSelectQuery(sqlGet, new Object[]{id})) {
+//            if (rs == null || !rs.next()) {
+//                return false;
+//            }
+//            String oldHash = rs.getString("PasswordHash");
+//            if (!Utils.verifyPassword(currentPlain, oldHash)) {
+//                return false;
+//            }
+//            int result = this.execQuery(sqlUpd, new Object[]{Utils.hashPassword(newPlain), id});
+//            return result > 0;
+//        } catch (SQLException e) {
+//            System.err.println("changePassword: " + e.getMessage());
+//            return false;
+//        }
+//    }
+    
+    public boolean changePassword(int id, String newPlain) {
+        String sql = "UPDATE Customer SET PasswordHash = ?, UpdatedAt = GETDATE() "
+                + "WHERE CustomerId = ? AND IsDeleted = 0";
+
+        String newHash = Utils.hashPassword(newPlain);
+
+        try {
+            int rows = execQuery(sql, new Object[]{newHash, id});
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("updatePassword: " + e.getMessage());
             return false;
         }
     }
