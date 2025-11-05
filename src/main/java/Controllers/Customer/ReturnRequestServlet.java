@@ -378,10 +378,10 @@ public class ReturnRequestServlet extends HttpServlet {
             String accountHolder = request.getParameter("accountHolder");
             String note = request.getParameter("note");
 
-            if (reason == null || reason.isBlank()
-                    || bankName == null || bankName.isBlank()
+            if (reason == null || reason.isEmpty()
+                    || bankName == null || bankName.isEmpty()
                     || accountNumber == null || !accountNumber.matches("\\d{6,20}")
-                    || accountHolder == null || accountHolder.isBlank()) {
+                    || accountHolder == null || accountHolder.isEmpty()) {
                 request.setAttribute("errorMessage", "Invalid Input");
                 request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
                 return;

@@ -8,6 +8,8 @@
 
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
         <!-- Lucide Icons -->
         <script src="https://unpkg.com/lucide@latest"></script>
@@ -212,20 +214,13 @@
 
         <!-- Header & Sidebar cố định -->
         <jsp:include page="common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <jsp:include page="common/staff-sidebar.jsp"/>
 
         <!-- Nội dung -->
         <div class="wrap">
-
-            <!-- Role switch (demo) -->
-            <div class="role-switcher">
-                <strong>Current Role:</strong> <code>${userRole}</code> &nbsp;|&nbsp;
-                <a href="<c:url value='/managebrands'><c:param name='role' value='admin'/></c:url>">Set as Admin</a>
-                <a href="<c:url value='/managebrands'><c:param name='role' value='staff'/></c:url>">Set as Staff</a>
-                </div>
-
-                <!-- Nút Add chỉ hiển thị khi có quyền sửa đổi -->
-            <c:if test="${canModify}">
+            <!-- Nút Add chỉ hiển thị khi có quyền sửa đổi -->
+            <c:if test="${staff.isAdmin}">
                 <div class="toolbar">
                     <a class="btn-add" href="<c:url value='/managebrands/add'><c:param name='role' value='${userRole}'/></c:url>">+ Add New Brand</a>
                     </div>
@@ -238,14 +233,14 @@
                             <col class="col-id"/>
                             <col class="col-name"/>
                             <col class="col-logo"/>
-                            <c:if test="${canModify}"><col class="col-actions"/></c:if>
+                            <c:if test="${staff.isAdmin}"><col class="col-actions"/></c:if>
                             </colgroup>
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Logo</th>
-                                <c:if test="${canModify}"><th>Actions</th></c:if>
+                                <c:if test="${staff.isAdmin}"><th>Actions</th></c:if>
                                 </tr>
                             </thead>
                             <tbody>
@@ -260,21 +255,22 @@
                                             </span>
                                         </c:if>
                                     </td>
-                                    <c:if test="${canModify}">
+                                    <c:if test="${staff.isAdmin}">
                                         <td>
                                             <div class="actions">
                                                 <a class="btn btn-edit"
                                                    href="<c:url value='/managebrands/edit'>
                                                        <c:param name='id' value='${brand.brandId}'/>
-                                                       <c:param name='role' value='${userRole}'/>
+                                                       <%--<c:param name='role' value='${userRole}'/>--%>
                                                    </c:url>">Edit</a>
 
                                                 <a class="btn btn-delete"
-                                                   href="<c:url value='/managebrands/delete'>
-                                                       <c:param name='id' value='${brand.brandId}'/>
-                                                       <c:param name='role' value='${userRole}'/>
-                                                   </c:url>"
-                                                   onclick="return confirm('Are you sure you want to delete this brand?');">Delete</a>
+                                                   href="#"
+                                                   data-bs-toggle="modal"
+                                                   data-bs-target="#confirmDeleteModal"
+                                                   data-brand-id="${brand.brandId}">
+                                                    Delete
+                                                </a>
                                             </div>
                                         </td>
                                     </c:if>
@@ -295,12 +291,8 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-                             // Initialize Lucide icons
-                             lucide.createIcons();
-
-        </script>
-
-        <script>
+            // Initialize Lucide icons
+            lucide.createIcons();
             document.addEventListener('DOMContentLoaded', function () {
                 // đánh dấu sidebar item Brands đang active
                 var el = document.getElementById('brand');
@@ -312,6 +304,36 @@
                     lucide.createIcons();
                 }
             });
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const brandId = button.getAttribute('data-brand-id');
+                const inputId = confirmDeleteModal.querySelector('#deleteBrandId');
+                inputId.value = brandId;
+            });
         </script>
+
+        <!-- Confirm Delete Modal -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p>Are you sure you want to delete this brand?</p>
+                    </div>
+                    <div class="modal-footer border-0 d-flex justify-content-center">
+                        <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/managebrands">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" id="deleteBrandId">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 </html>
