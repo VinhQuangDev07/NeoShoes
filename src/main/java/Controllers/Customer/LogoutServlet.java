@@ -18,9 +18,6 @@ public class LogoutServlet extends HttpServlet {
         
         // 1. Invalidate session
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
         
         // 2. Optional: Remove remember cookie (uncomment if needed)
         // Cookie emailCookie = new Cookie("rememberedEmail", "");
@@ -29,8 +26,26 @@ public class LogoutServlet extends HttpServlet {
         // response.addCookie(emailCookie);
         
         // 3. Redirect to login page with success message
-        response.sendRedirect(request.getContextPath() + "/home");
-        //response.sendRedirect(request.getContextPath() + "/WEB-INF/views/customer/login.jsp");
+        String redirectUrl;
+
+        if (session != null) {
+            // Lưu tạm role trước khi xoá session
+            String role = (String) session.getAttribute("role");
+            session.invalidate();
+
+            // Kiểm tra role để điều hướng
+            if ("staff".equalsIgnoreCase(role) || "admin".equalsIgnoreCase(role)) {
+                redirectUrl = request.getContextPath() + "/staff/login";
+            } else {
+                redirectUrl = request.getContextPath() + "/home";
+            }
+
+        } else {
+            // Không có session thì mặc định về home
+            redirectUrl = request.getContextPath() + "/home";
+        }
+
+        response.sendRedirect(redirectUrl);
     }
     
     @Override

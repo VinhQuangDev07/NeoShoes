@@ -8,6 +8,7 @@ import DAOs.ReturnRequestDAO;
 import DAOs.ReturnRequestDetailDAO;
 import Models.ReturnRequest;
 import Models.ReturnRequestDetail;
+import Models.Staff;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -26,32 +27,6 @@ import java.util.List;
 @WebServlet(name = "ManageReturnRequestServlet", urlPatterns = {"/staff/manage-return-request"})
 public class ManageReturnRequestServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ManageReturnRequestServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ManageReturnRequestServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
@@ -64,6 +39,17 @@ public class ManageReturnRequestServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (!staff.isAdmin()) {
+            session.setAttribute("flash_info", "Access Denied - Admin only");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+            return;
+        }
         String action = request.getParameter("action");
 
         if (("detail".equals(action))) {
@@ -190,9 +176,19 @@ public class ManageReturnRequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
         HttpSession session = request.getSession();
-
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (!staff.isAdmin()) {
+            session.setAttribute("flash_info", "Access Denied - Admin only");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+            return;
+        }
+        String action = request.getParameter("action");
+        
         if ("updateStatus".equals(action)) {
             // ✅ FIX 1: Validate requestId parameter
             String requestIdParam = request.getParameter("requestId");

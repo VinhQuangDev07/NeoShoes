@@ -279,7 +279,7 @@
                                     </td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-sm btn-danger btn-remove">
-                                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                                         </button>
                                     </td>
                                 </tr>

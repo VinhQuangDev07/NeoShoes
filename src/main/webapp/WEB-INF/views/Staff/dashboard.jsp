@@ -51,7 +51,7 @@
                 margin-bottom: 1.5rem;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
-            
+
             .stat-card {
                 border-radius: 1rem;
                 transition: transform 0.2s;
@@ -107,10 +107,13 @@
     </head>
     <body>
         <!-- Header -->
-        <jsp:include page="common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
         <!-- Sidebar -->
-        <jsp:include page="common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <!-- Main Content -->
         <div class="main-content">
@@ -390,317 +393,317 @@
         <!-- Dashboard Script -->
         <script>
 // ====== Order Status Labels and Colors ======
-const ORDER_STATUS_LABELS = ["Pending", "Processing", "Shipped", "Delivered"];
-const ORDER_STATUS_COLORS = [
-    "#0d6efd", // Pending (Bootstrap primary blue)
-    "#a78bfa", // Processing (purple)
-    "#ffc107", // Shipped (Bootstrap warning yellow)
-    "#198754", // Delivered (Bootstrap success green)
-];
+            const ORDER_STATUS_LABELS = ["Pending", "Processing", "Shipped", "Delivered"];
+            const ORDER_STATUS_COLORS = [
+                "#0d6efd", // Pending (Bootstrap primary blue)
+                "#a78bfa", // Processing (purple)
+                "#ffc107", // Shipped (Bootstrap warning yellow)
+                "#198754", // Delivered (Bootstrap success green)
+            ];
 
 // ================== DASHBOARD MAIN FUNCTION ==================
-window.initDashboardTabs = function () {
-    // ---- Chart Cleanup ----
-    if (window.revenueChart && typeof window.revenueChart.destroy === 'function')
-        window.revenueChart.destroy();
-    if (window.statusPieChart && typeof window.statusPieChart.destroy === 'function')
-        window.statusPieChart.destroy();
+            window.initDashboardTabs = function () {
+                // ---- Chart Cleanup ----
+                if (window.revenueChart && typeof window.revenueChart.destroy === 'function')
+                    window.revenueChart.destroy();
+                if (window.statusPieChart && typeof window.statusPieChart.destroy === 'function')
+                    window.statusPieChart.destroy();
 
-    // ---- Format Date ----
-    function formatDate(dateString) {
-        if (!dateString)
-            return '';
-        if (dateString.includes('/'))
-            return dateString;
-        const parts = dateString.split('-');
-        if (parts.length === 3)
-            return parts[2] + '/' + parts[1]; // dd/MM
-        if (parts.length === 2)
-            return parts[1] + '/' + parts[0]; // MM/yyyy
-        return dateString;
-    }
+                // ---- Format Date ----
+                function formatDate(dateString) {
+                    if (!dateString)
+                        return '';
+                    if (dateString.includes('/'))
+                        return dateString;
+                    const parts = dateString.split('-');
+                    if (parts.length === 3)
+                        return parts[2] + '/' + parts[1]; // dd/MM
+                    if (parts.length === 2)
+                        return parts[1] + '/' + parts[0]; // MM/yyyy
+                    return dateString;
+                }
 
-    // ---- Draw Revenue Chart ----
-    function initRevenueChart(data, label) {
-        const canvas = document.getElementById('revenueChart');
-        if (!canvas)
-            return;
-        const noDataMsg = canvas.parentElement.querySelector('.no-data-msg');
-        if (noDataMsg)
-            noDataMsg.remove();
-        if (!data || data.length === 0) {
-            const noData = document.createElement('p');
-            noData.innerHTML = 'No revenue data available';
-            noData.className = 'no-data-msg text-center text-muted py-5';
-            canvas.parentElement.appendChild(noData);
-            canvas.style.display = 'none';
-            return;
-        }
-        canvas.style.display = '';
-        const ctx = canvas.getContext('2d');
-        if (window.revenueChart && typeof window.revenueChart.destroy === 'function')
-            window.revenueChart.destroy();
-        const labels = data.map(d => formatDate(d.period));
-        const revenues = data.map(d => typeof d.revenue === "number" ? d.revenue : parseFloat(d.revenue) || 0);
-        window.revenueChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                        label: label || 'Revenue',
-                        data: revenues,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.10)',
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        fill: true,
-                        tension: 0.35
-                    }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {display: false},
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                    maximumFractionDigits: 0
-                                }).format(ctx.parsed.y)
-                        }
+                // ---- Draw Revenue Chart ----
+                function initRevenueChart(data, label) {
+                    const canvas = document.getElementById('revenueChart');
+                    if (!canvas)
+                        return;
+                    const noDataMsg = canvas.parentElement.querySelector('.no-data-msg');
+                    if (noDataMsg)
+                        noDataMsg.remove();
+                    if (!data || data.length === 0) {
+                        const noData = document.createElement('p');
+                        noData.innerHTML = 'No revenue data available';
+                        noData.className = 'no-data-msg text-center text-muted py-5';
+                        canvas.parentElement.appendChild(noData);
+                        canvas.style.display = 'none';
+                        return;
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value => new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                    maximumFractionDigits: 0
-                                }).format(value)
+                    canvas.style.display = '';
+                    const ctx = canvas.getContext('2d');
+                    if (window.revenueChart && typeof window.revenueChart.destroy === 'function')
+                        window.revenueChart.destroy();
+                    const labels = data.map(d => formatDate(d.period));
+                    const revenues = data.map(d => typeof d.revenue === "number" ? d.revenue : parseFloat(d.revenue) || 0);
+                    window.revenueChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                    label: label || 'Revenue',
+                                    data: revenues,
+                                    borderColor: '#6366f1',
+                                    backgroundColor: 'rgba(99, 102, 241, 0.10)',
+                                    borderWidth: 3,
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    fill: true,
+                                    tension: 0.35
+                                }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {display: false},
+                                tooltip: {
+                                    callbacks: {
+                                        label: ctx => new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND',
+                                                maximumFractionDigits: 0
+                                            }).format(ctx.parsed.y)
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: value => new Intl.NumberFormat('vi-VN', {
+                                                style: 'currency',
+                                                currency: 'VND',
+                                                maximumFractionDigits: 0
+                                            }).format(value)
+                                    }
+                                }
+                            }
                         }
+                    });
+                }
+
+                // ---- Draw Order Status Pie Chart ----
+                function initStatusPieChart(data) {
+                    const canvas = document.getElementById('statusPieChart');
+                    if (!canvas)
+                        return;
+                    if (window.statusPieChart && typeof window.statusPieChart.destroy === 'function')
+                        window.statusPieChart.destroy();
+                    const values = ORDER_STATUS_LABELS.map(key => data && typeof data[key] !== "undefined" ? data[key] : 0);
+                    window.statusPieChart = new Chart(canvas, {
+                        type: 'pie',
+                        data: {
+                            labels: ORDER_STATUS_LABELS,
+                            datasets: [{
+                                    data: values,
+                                    backgroundColor: ORDER_STATUS_COLORS,
+                                    borderColor: '#fff',
+                                    borderWidth: 2
+                                }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'right',
+                                    labels: {
+                                        boxWidth: 18,
+                                        font: {size: 14, family: 'inherit', weight: '500'},
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: context => context.label + ':' + context.parsed
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // ---- Get JSON data from Script Tag ----
+                function getJson(id, def = []) {
+                    const el = document.getElementById(id);
+                    if (!el)
+                        return def;
+                    try {
+                        return JSON.parse(el.textContent);
+                    } catch (e) {
+                        console.error('Error parsing JSON from #' + id + ':', e);
+                        return def;
+                }
+                }
+
+                const revenueDaily = getJson('revenueDailyScript', []);
+                const revenueMonthly = getJson('revenueMonthlyScript', []);
+                const revenueYearly = getJson('revenueYearlyScript', []);
+                const statusPieData = getJson('orderStatusDataScript', {});
+
+                // ---- Show correct Filter Form ----
+                function showFilterForm(type) {
+                    document.querySelectorAll('.filter-form').forEach(f => f.classList.add('d-none'));
+                    const form = document.getElementById('filter-form-' + type);
+                    if (form) {
+                        form.classList.remove('d-none');
+                        const input = form.querySelector('input[name="filterType"]');
+                        if (input)
+                            input.value = type;
                     }
                 }
-            }
-        });
-    }
 
-    // ---- Draw Order Status Pie Chart ----
-    function initStatusPieChart(data) {
-        const canvas = document.getElementById('statusPieChart');
-        if (!canvas)
-            return;
-        if (window.statusPieChart && typeof window.statusPieChart.destroy === 'function')
-            window.statusPieChart.destroy();
-        const values = ORDER_STATUS_LABELS.map(key => data && typeof data[key] !== "undefined" ? data[key] : 0);
-        window.statusPieChart = new Chart(canvas, {
-            type: 'pie',
-            data: {
-                labels: ORDER_STATUS_LABELS,
-                datasets: [{
-                        data: values,
-                        backgroundColor: ORDER_STATUS_COLORS,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'right',
-                        labels: {
-                            boxWidth: 18,
-                            font: {size: 14, family: 'inherit', weight: '500'},
-                            padding: 15
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: context => context.label + ':' + context.parsed
-                        }
-                    }
+                // ---- Tab Switching ----
+                function setTabActive(btn) {
+                    document.querySelectorAll('.chart-tab-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('btn-outline-secondary');
+                    });
+                    btn.classList.add('active');
+                    btn.classList.remove('btn-outline-secondary');
                 }
-            }
-        });
-    }
 
-    // ---- Get JSON data from Script Tag ----
-    function getJson(id, def = []) {
-        const el = document.getElementById(id);
-        if (!el)
-            return def;
-        try {
-            return JSON.parse(el.textContent);
-        } catch (e) {
-            console.error('Error parsing JSON from #' + id + ':', e);
-            return def;
-    }
-    }
+                ['daily', 'monthly', 'yearly'].forEach(type => {
+                    const btn = document.getElementById('btn-' + type);
+                    if (btn) {
+                        btn.onclick = () => {
+                            setTabActive(btn);
+                            showFilterForm(type);
+                            if (type === "daily")
+                                initRevenueChart(revenueDaily, "30 Day Revenue");
+                            else if (type === "monthly")
+                                initRevenueChart(revenueMonthly, "Monthly Revenue");
+                            else
+                                initRevenueChart(revenueYearly, "Yearly Revenue");
+                            initStatusPieChart(statusPieData);
+                        };
+                    }
+                });
 
-    const revenueDaily = getJson('revenueDailyScript', []);
-    const revenueMonthly = getJson('revenueMonthlyScript', []);
-    const revenueYearly = getJson('revenueYearlyScript', []);
-    const statusPieData = getJson('orderStatusDataScript', {});
+                // ---- Filter Submit (validation) ----
+                document.querySelectorAll('.filter-submit-btn').forEach(btn => {
+                    btn.onclick = function (e) {
+                        e.preventDefault();
+                        const form = btn.closest('form');
+                        if (!form)
+                            return;
+                        const type = form.id.replace('filter-form-', '');
+                        let valid = true, msg = "";
 
-    // ---- Show correct Filter Form ----
-    function showFilterForm(type) {
-        document.querySelectorAll('.filter-form').forEach(f => f.classList.add('d-none'));
-        const form = document.getElementById('filter-form-' + type);
-        if (form) {
-            form.classList.remove('d-none');
-            const input = form.querySelector('input[name="filterType"]');
-            if (input)
-                input.value = type;
-        }
-    }
+                        if (type === "daily") {
+                            const from = form.querySelector('input[name="startDate"]').value;
+                            const to = form.querySelector('input[name="endDate"]').value;
+                            if (!from || !to) {
+                                valid = false;
+                                msg = "Please select both start and end dates.";
+                            } else if (from > to) {
+                                valid = false;
+                                msg = "The start date must be before or equal to the end date.";
+                            } else {
+                                const diffDays = Math.ceil((new Date(to) - new Date(from)) / (1000 * 60 * 60 * 24)) + 1;
+                                if (diffDays > 30) {
+                                    valid = false;
+                                    msg = "You can select up to 30 days only.";
+                                }
+                            }
+                        }
 
-    // ---- Tab Switching ----
-    function setTabActive(btn) {
-        document.querySelectorAll('.chart-tab-btn').forEach(b => {
-            b.classList.remove('active');
-            b.classList.add('btn-outline-secondary');
-        });
-        btn.classList.add('active');
-        btn.classList.remove('btn-outline-secondary');
-    }
+                        if (type === "monthly") {
+                            const from = form.querySelector('input[name="startMonth"]').value;
+                            const to = form.querySelector('input[name="endMonth"]').value;
+                            if (!from || !to) {
+                                valid = false;
+                                msg = "Please select both start and end months.";
+                            } else if (from > to) {
+                                valid = false;
+                                msg = "The start month must be before or equal to the end month.";
+                            }
+                        }
 
-    ['daily', 'monthly', 'yearly'].forEach(type => {
-        const btn = document.getElementById('btn-' + type);
-        if (btn) {
-            btn.onclick = () => {
-                setTabActive(btn);
+                        if (type === "yearly") {
+                            const from = Number(form.querySelector('input[name="startYear"]').value);
+                            const to = Number(form.querySelector('input[name="endYear"]').value);
+                            if (!from || !to) {
+                                valid = false;
+                                msg = "Please enter both start and end years.";
+                            } else if (from > to) {
+                                valid = false;
+                                msg = "The start year must be before or equal to the end year.";
+                            } else if (from < 2000 || to > 2100) {
+                                valid = false;
+                                msg = "Years are allowed only from 2000 to 2100.";
+                            }
+                        }
+
+                        if (!valid) {
+                            if (window.Swal) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Validation Error',
+                                    text: msg,
+                                    confirmButtonColor: '#6366f1',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                alert(msg);
+                            }
+                            return false;
+                        }
+
+                        // Build query parameters
+                        const params = [{name: 'filterType', value: type}];
+                        if (type === "daily") {
+                            params.push({name: 'startDate', value: form.querySelector('input[name="startDate"]').value});
+                            params.push({name: 'endDate', value: form.querySelector('input[name="endDate"]').value});
+                        } else if (type === "monthly") {
+                            params.push({name: 'startMonth', value: form.querySelector('input[name="startMonth"]').value});
+                            params.push({name: 'endMonth', value: form.querySelector('input[name="endMonth"]').value});
+                        } else if (type === "yearly") {
+                            params.push({name: 'startYear', value: form.querySelector('input[name="startYear"]').value});
+                            params.push({name: 'endYear', value: form.querySelector('input[name="endYear"]').value});
+                        }
+
+                        // If loadContent function exists (AJAX), use it; otherwise submit form normally
+                        if (typeof loadContent === 'function') {
+                            loadContent('dashboard', true, params);
+                        } else {
+                            form.submit();
+                        }
+                    };
+                });
+
+                // ---- On Page Load (init) ----
+                const filterTypeDefault = document.getElementById('filterTypeValue');
+                const type = filterTypeDefault ? (filterTypeDefault.value || 'daily') : 'daily';
                 showFilterForm(type);
+                const btnActive = document.getElementById('btn-' + type);
+                if (btnActive)
+                    setTabActive(btnActive);
                 if (type === "daily")
                     initRevenueChart(revenueDaily, "30 Day Revenue");
                 else if (type === "monthly")
                     initRevenueChart(revenueMonthly, "Monthly Revenue");
-                else
+                else if (type === "yearly")
                     initRevenueChart(revenueYearly, "Yearly Revenue");
                 initStatusPieChart(statusPieData);
             };
-        }
-    });
-
-    // ---- Filter Submit (validation) ----
-    document.querySelectorAll('.filter-submit-btn').forEach(btn => {
-        btn.onclick = function (e) {
-            e.preventDefault();
-            const form = btn.closest('form');
-            if (!form)
-                return;
-            const type = form.id.replace('filter-form-', '');
-            let valid = true, msg = "";
-
-            if (type === "daily") {
-                const from = form.querySelector('input[name="startDate"]').value;
-                const to = form.querySelector('input[name="endDate"]').value;
-                if (!from || !to) {
-                    valid = false;
-                    msg = "Please select both start and end dates.";
-                } else if (from > to) {
-                    valid = false;
-                    msg = "The start date must be before or equal to the end date.";
-                } else {
-                    const diffDays = Math.ceil((new Date(to) - new Date(from)) / (1000 * 60 * 60 * 24)) + 1;
-                    if (diffDays > 30) {
-                        valid = false;
-                        msg = "You can select up to 30 days only.";
-                    }
-                }
-            }
-
-            if (type === "monthly") {
-                const from = form.querySelector('input[name="startMonth"]').value;
-                const to = form.querySelector('input[name="endMonth"]').value;
-                if (!from || !to) {
-                    valid = false;
-                    msg = "Please select both start and end months.";
-                } else if (from > to) {
-                    valid = false;
-                    msg = "The start month must be before or equal to the end month.";
-                }
-            }
-
-            if (type === "yearly") {
-                const from = Number(form.querySelector('input[name="startYear"]').value);
-                const to = Number(form.querySelector('input[name="endYear"]').value);
-                if (!from || !to) {
-                    valid = false;
-                    msg = "Please enter both start and end years.";
-                } else if (from > to) {
-                    valid = false;
-                    msg = "The start year must be before or equal to the end year.";
-                } else if (from < 2000 || to > 2100) {
-                    valid = false;
-                    msg = "Years are allowed only from 2000 to 2100.";
-                }
-            }
-
-            if (!valid) {
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Validation Error',
-                        text: msg,
-                        confirmButtonColor: '#6366f1',
-                        confirmButtonText: 'OK'
-                    });
-                } else {
-                    alert(msg);
-                }
-                return false;
-            }
-
-            // Build query parameters
-            const params = [{name: 'filterType', value: type}];
-            if (type === "daily") {
-                params.push({name: 'startDate', value: form.querySelector('input[name="startDate"]').value});
-                params.push({name: 'endDate', value: form.querySelector('input[name="endDate"]').value});
-            } else if (type === "monthly") {
-                params.push({name: 'startMonth', value: form.querySelector('input[name="startMonth"]').value});
-                params.push({name: 'endMonth', value: form.querySelector('input[name="endMonth"]').value});
-            } else if (type === "yearly") {
-                params.push({name: 'startYear', value: form.querySelector('input[name="startYear"]').value});
-                params.push({name: 'endYear', value: form.querySelector('input[name="endYear"]').value});
-            }
-
-            // If loadContent function exists (AJAX), use it; otherwise submit form normally
-            if (typeof loadContent === 'function') {
-                loadContent('dashboard', true, params);
-            } else {
-                form.submit();
-            }
-        };
-    });
-
-    // ---- On Page Load (init) ----
-    const filterTypeDefault = document.getElementById('filterTypeValue');
-    const type = filterTypeDefault ? (filterTypeDefault.value || 'daily') : 'daily';
-    showFilterForm(type);
-    const btnActive = document.getElementById('btn-' + type);
-    if (btnActive)
-        setTabActive(btnActive);
-    if (type === "daily")
-        initRevenueChart(revenueDaily, "30 Day Revenue");
-    else if (type === "monthly")
-        initRevenueChart(revenueMonthly, "Monthly Revenue");
-    else if (type === "yearly")
-        initRevenueChart(revenueYearly, "Yearly Revenue");
-    initStatusPieChart(statusPieData);
-};
 
 // Initialize on page load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', window.initDashboardTabs);
-} else {
-    window.initDashboardTabs();
-}
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', window.initDashboardTabs);
+            } else {
+                window.initDashboardTabs();
+            }
         </script>
     </body>
 </html>

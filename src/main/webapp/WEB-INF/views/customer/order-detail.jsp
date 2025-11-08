@@ -729,7 +729,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Approved</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${approvedTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                         <span data-date="${approvedTime}"></span>
@@ -761,7 +761,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Shipping</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${shippedTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                         <span data-date="${shippedTime}"></span>
@@ -790,7 +790,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Delivered</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${deliveredTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'COMPLETED'}">
                                                         <span data-date="${deliveredTime}"></span>

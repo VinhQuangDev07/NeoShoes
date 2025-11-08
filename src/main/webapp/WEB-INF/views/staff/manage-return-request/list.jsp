@@ -16,6 +16,8 @@
         <title>All Active Returns</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <style>
             body {
                 background-color: #f5f5f5;
@@ -23,6 +25,20 @@
             }
             .container-fluid {
                 padding: 20px;
+            }
+
+            .main-wrapper {
+                margin-left: 300px;
+                margin-top: 74px;
+                padding: 20px;
+                min-height: calc(100vh - 74px);
+            }
+            .page-header {
+                background-color: white;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             .page-title {
                 background-color: white;
@@ -71,115 +87,133 @@
         </style>
     </head>
     <body>
-        <div class="container-fluid">
-            <div class="page-title">
-                <h4 class="mb-0">All Active Returns</h4>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
+        <div class="main-wrapper">
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">Return Request Detail</h2>
+                    </div>
+                </div>
             </div>
-
-            <!-- Success/Error Messages -->
-            <c:if test="${not empty sessionScope.successMessage}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> ${fn:escapeXml(sessionScope.successMessage)}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="container-fluid">
+                <div class="page-title">
+                    <h4 class="mb-0">All Active Returns</h4>
                 </div>
-                <c:remove var="successMessage" scope="session"/>
-            </c:if>
-            
-            <c:if test="${not empty sessionScope.errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> ${fn:escapeXml(sessionScope.errorMessage)}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session"/>
-            </c:if>
 
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>Order ID</th>
-                                <th>Customer ID</th>
-                                <th>Created on Date</th>
-                                <th>Return Status</th>
-                                <th>Reason</th>
-                                <th>Bank Account Info</th>
-                                <th>Note</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="r" items="${requests}">
-                                <tr>
-                                    <td>#${r.returnRequestId}</td>
-                                    <td><a href="#" class="order-link">#${r.orderId}</a></td>
-                                    <td>${r.customerId}</td>
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${r.requestDate != null}">
-                                                ${r.requestDate.toLocalDate()}
-                                            </c:when>
-                                            <c:otherwise>
-                                                N/A
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-${r.returnStatus == 'APPROVED' ? 'success' : r.returnStatus == 'PENDING' ? 'warning' : 'danger'}">
-                                            ${fn:escapeXml(r.returnStatus)}
-                                        </span>
-                                    </td>
-                                    <td class="text-truncate-custom" title="${fn:escapeXml(r.reason)}">
-                                        <c:out value="${r.reason}" default="N/A"/>
-                                    </td>
-                                    <td class="text-truncate-custom" title="${fn:escapeXml(r.bankAccountInfo)}">
-                                        <c:out value="${r.bankAccountInfo}" default="N/A"/>
-                                    </td>
-                                    <td class="text-truncate-custom" title="${fn:escapeXml(r.note)}">
-                                        <c:out value="${r.note}" default="N/A"/>
-                                    </td>
-                                    <td class="text-center">
-                                        <button class="btn btn-info btn-sm me-1" 
-                                                data-action="view" 
-                                                data-request-id="${r.returnRequestId}">
-                                            <i class="fas fa-eye"></i> View
-                                        </button>
-                                        <button class="btn btn-warning btn-sm me-1" 
-                                                data-action="edit"
-                                                data-request-id="${r.returnRequestId}" 
-                                                data-status="${fn:escapeXml(r.returnStatus)}">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <c:choose>
-                                            <c:when test="${r.returnStatus == 'APPROVED' || r.returnStatus == 'REJECTED'}">
-                                                <button class="btn btn-danger btn-sm" 
-                                                        data-action="delete"
-                                                        data-request-id="${r.returnRequestId}" 
-                                                        data-order-id="${r.orderId}">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <button class="btn btn-secondary btn-sm" disabled 
-                                                        title="Only finalized (APPROVED/REJECTED) requests can be deleted">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </tr>
-                            </c:forEach>
+                <!-- Success/Error Messages -->
+                <c:if test="${not empty sessionScope.successMessage}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle"></i> ${fn:escapeXml(sessionScope.successMessage)}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <c:remove var="successMessage" scope="session"/>
+                </c:if>
 
-                            <c:if test="${empty requests}">
+                <c:if test="${not empty sessionScope.errorMessage}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> ${fn:escapeXml(sessionScope.errorMessage)}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <c:remove var="errorMessage" scope="session"/>
+                </c:if>
+
+                <div class="table-container">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">
-                                        No return requests found
-                                    </td>
+                                    <th>Request ID</th>
+                                    <th>Order ID</th>
+                                    <th>Customer ID</th>
+                                    <th>Created on Date</th>
+                                    <th>Return Status</th>
+                                    <th>Reason</th>
+                                    <th>Bank Account Info</th>
+                                    <th>Note</th>
+                                    <th>Action</th>
                                 </tr>
-                            </c:if>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="r" items="${requests}">
+                                    <tr>
+                                        <td>#${r.returnRequestId}</td>
+                                        <td><a href="#" class="order-link">#${r.orderId}</a></td>
+                                        <td>${r.customerId}</td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${r.requestDate != null}">
+                                                    ${r.requestDate.toLocalDate()}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    N/A
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-${r.returnStatus == 'APPROVED' ? 'success' : r.returnStatus == 'PENDING' ? 'warning' : 'danger'}">
+                                                ${fn:escapeXml(r.returnStatus)}
+                                            </span>
+                                        </td>
+                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.reason)}">
+                                            <c:out value="${r.reason}" default="N/A"/>
+                                        </td>
+                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.bankAccountInfo)}">
+                                            <c:out value="${r.bankAccountInfo}" default="N/A"/>
+                                        </td>
+                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.note)}">
+                                            <c:out value="${r.note}" default="N/A"/>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-info btn-sm me-1" 
+                                                    data-action="view" 
+                                                    data-request-id="${r.returnRequestId}">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <button class="btn btn-warning btn-sm me-1" 
+                                                    data-action="edit"
+                                                    data-request-id="${r.returnRequestId}" 
+                                                    data-status="${fn:escapeXml(r.returnStatus)}">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <c:choose>
+                                                <c:when test="${r.returnStatus == 'APPROVED' || r.returnStatus == 'REJECTED'}">
+                                                    <button class="btn btn-danger btn-sm" 
+                                                            data-action="delete"
+                                                            data-request-id="${r.returnRequestId}" 
+                                                            data-order-id="${r.orderId}">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <button class="btn btn-secondary btn-sm" disabled 
+                                                            title="Only finalized (APPROVED/REJECTED) requests can be deleted">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+
+                                <c:if test="${empty requests}">
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">
+                                            No return requests found
+                                        </td>
+                                    </tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -291,9 +325,10 @@
                 deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
                 // Event delegation for action buttons
-                document.querySelector('.table-responsive').addEventListener('click', function(e) {
+                document.querySelector('.table-responsive').addEventListener('click', function (e) {
                     const btn = e.target.closest('button[data-action]');
-                    if (!btn) return;
+                    if (!btn)
+                        return;
 
                     const action = btn.dataset.action;
                     const requestId = parseInt(btn.dataset.requestId);
@@ -304,7 +339,7 @@
                         return;
                     }
 
-                    switch(action) {
+                    switch (action) {
                         case 'view':
                             viewDetail(requestId);
                             break;
@@ -325,7 +360,7 @@
 
                 // Form validation for edit form
                 const editForm = document.getElementById('editForm');
-                editForm.addEventListener('submit', function(e) {
+                editForm.addEventListener('submit', function (e) {
                     if (!editForm.checkValidity()) {
                         e.preventDefault();
                         e.stopPropagation();
@@ -333,14 +368,14 @@
                         // Double check before submission
                         const status = document.getElementById('editStatus').value;
                         const currentStatus = document.getElementById('currentStatus').value;
-                        
+
                         if (currentStatus === 'PENDING' && (status === 'APPROVED' || status === 'REJECTED')) {
                             if (!confirm('Are you sure you want to finalize this status? This action cannot be undone.')) {
                                 e.preventDefault();
                                 return;
                             }
                         }
-                        
+
                         // Disable submit button to prevent double submission
                         document.getElementById('saveBtn').disabled = true;
                     }
@@ -348,11 +383,11 @@
                 });
 
                 // Status change warning
-                document.getElementById('editStatus').addEventListener('change', function() {
+                document.getElementById('editStatus').addEventListener('change', function () {
                     const currentStatus = document.getElementById('currentStatus').value;
                     const newStatus = this.value;
                     const warning = document.getElementById('statusWarning');
-                    
+
                     if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
                         warning.style.display = 'block';
                     } else {
@@ -362,7 +397,7 @@
 
                 // Prevent double submission for delete form
                 const deleteForm = document.getElementById('deleteForm');
-                deleteForm.addEventListener('submit', function() {
+                deleteForm.addEventListener('submit', function () {
                     document.getElementById('confirmDeleteBtn').disabled = true;
                 });
             });
@@ -400,7 +435,7 @@
                 document.getElementById('editRequestId').value = requestId;
                 document.getElementById('currentStatus').value = status;
                 document.getElementById('editStatus').value = status;
-                
+
                 editModal.show();
             }
 
@@ -408,9 +443,9 @@
                 // Validate inputs
                 requestId = parseInt(requestId);
                 orderId = parseInt(orderId);
-                
-                if (!requestId || isNaN(requestId) || requestId <= 0 || 
-                    !orderId || isNaN(orderId) || orderId <= 0) {
+
+                if (!requestId || isNaN(requestId) || requestId <= 0 ||
+                        !orderId || isNaN(orderId) || orderId <= 0) {
                     alert('Invalid request or order ID');
                     return;
                 }
@@ -423,7 +458,7 @@
                 document.getElementById('deleteOrderIdHidden').value = orderId;
                 document.getElementById('deleteRequestIdDisplay').textContent = requestId;
                 document.getElementById('deleteOrderId').textContent = orderId;
-                
+
                 deleteModal.show();
             }
         </script>

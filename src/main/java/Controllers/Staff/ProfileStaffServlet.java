@@ -9,9 +9,10 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.annotation.MultipartConfig;
 import DAOs.StaffDAO;
 import Models.Staff;
+import Utils.CloudinaryConfig;
 
 @MultipartConfig
-@WebServlet(name = "ProfileStaffServlet", urlPatterns = {"/profilestaff"})
+@WebServlet(name = "ProfileStaffServlet", urlPatterns = {"/staff/profile"})
 public class ProfileStaffServlet extends HttpServlet {
 
     private StaffDAO staffDAO;
@@ -22,45 +23,27 @@ public class ProfileStaffServlet extends HttpServlet {
         staffDAO = new StaffDAO();
     }
 
-    /**
-     * Ưu tiên lấy từ session; nếu DEV thì cho phép ?asStaffId= và cache lại vào
-     * session
-     */
-    private Integer resolveStaffId(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        
-        Integer staffId = (Integer) session.getAttribute("staffId");
-        if (staffId == null && DEV_ALLOW_AS_PARAM) {
-            String asStaffId = request.getParameter("asStaffId");
-            if (asStaffId != null && !asStaffId.trim().isEmpty()) {
-                if (!asStaffId.matches("\\d+")) {
-                    return null;
-                }
-                staffId = Integer.parseInt(asStaffId);
-                session.setAttribute("staffId", staffId);
-            }
-        }
-        return staffId;
-    }
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-//        Integer staffId = resolveStaffId(request);
-//        if (staffId == null) {
-//            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
-//            return;
-//        }
-        int staffId = 4;
-        Staff staff = staffDAO.getStaffById(staffId);
+
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        Staff staff = (Staff) session.getAttribute("staff");
         if (staff == null) {
-            
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (staff.isDeleted()) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/staff/login");
             return;
         }
         request.setAttribute("staff", staff);
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/staff/ProfileStaff.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/staff/profile-staff.jsp");
         rd.forward(request, response);
     }
 
@@ -68,36 +51,46 @@ public class ProfileStaffServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding(StandardCharsets.UTF_8.name());
-        HttpSession session = request.getSession();
-//        Integer staffId = resolveStaffId(request);
-//        if (staffId == null) {
-//            session.setAttribute("flash_error", "Phiên đăng nhập hết hạn!");
-//            response.sendRedirect(request.getContextPath() + "/staff-login.jsp");
-//            return;
-//        }
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (staff.isDeleted()) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
         String action = safe(request.getParameter("action"));
 
         // Lấy bản ghi hiện tại để fallback khi param thiếu (do input bị disabled)
-        int staffId = 4;
+        int staffId = staff.getStaffId();
         Staff current = staffDAO.getStaffById(staffId);
         if (current == null) {
-flash(request, "Staff not found.", "error");
-            forwardForm(request, response, staffId);
+            flash(request, "Staff not found.", "error");
+            response.sendRedirect(request.getContextPath() + "/staff/login");
             return;
         }
 
         if ("updateProfile".equals(action)) {
             // Lấy param (có thể null nếu input disabled)
             String phoneParam = request.getParameter("phoneNumber");
-            String avatarParam = request.getParameter("avatar");
+            Part avatarPart = request.getPart("avatar");
             String genderParam = request.getParameter("gender");
             String addressParam = request.getParameter("address");
             String dobStr = request.getParameter("dateOfBirth");
 
             // Fallback sang giá trị hiện tại nếu param trống/không gửi
             String phone = (phoneParam == null || phoneParam.trim().isEmpty()) ? current.getPhoneNumber() : phoneParam.trim();
-            String avatar = (avatarParam == null || avatarParam.trim().isEmpty()) ? current.getAvatar() : avatarParam.trim();
+            String avatarUrl = (avatarPart.getSize() == 0 || avatarPart.getSubmittedFileName() == "") 
+                    ? current.getAvatar() 
+                    : CloudinaryConfig.uploadSingleImage(avatarPart);
             String gender = (genderParam == null || genderParam.trim().isEmpty()) ? current.getGender() : genderParam.trim();
             String address = (addressParam == null || addressParam.trim().isEmpty()) ? current.getAddress() : addressParam.trim();
 
@@ -120,7 +113,7 @@ flash(request, "Staff not found.", "error");
                 return;
             }
 
-            boolean ok = staffDAO.updateProfile(staffId, phone, avatar, gender, address, dob);
+            boolean ok = staffDAO.updateProfile(staffId, phone, avatarUrl, gender, address, dob);
             flash(request, ok ? "Profile updated successfully!" : "Failed to update profile!", ok ? "success" : "error");
             forwardForm(request, response, staffId);
             return;
@@ -137,7 +130,7 @@ flash(request, "Staff not found.", "error");
             // 1) Validate strength: 8+ ký tự, 1 hoa, 1 thường, 1 số
             boolean strong = newPw.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$");
             if (!strong) {
-flash(request, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.", "error");
+                flash(request, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit.", "error");
                 forwardForm(request, response, staffId);
                 return;
             }
@@ -183,6 +176,6 @@ flash(request, "Password must have 8+ chars, 1 uppercase, 1 lowercase, 1 digit."
     private void forwardForm(HttpServletRequest req, HttpServletResponse resp, int staffId)
             throws ServletException, IOException {
         req.setAttribute("staff", staffDAO.getStaffById(staffId));
-        req.getRequestDispatcher("/WEB-INF/views/staff/ProfileStaff.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/views/staff/profile-staff.jsp").forward(req, resp);
     }
 }

@@ -23,10 +23,10 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Detail - NeoShoes Staff</title>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Detail - NeoShoes Staff</title>
 
         <!-- Bootstrap 5 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -34,13 +34,13 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        
-    <style>
+
+        <style>
             body {
                 background: #f8f9fa;
                 padding: 20px 0;
             }
-            
+
             .order-detail-modal {
                 background: white;
                 border-radius: 12px;
@@ -49,24 +49,24 @@
                 margin: 20px auto;
                 overflow: hidden;
             }
-            
+
             .container {
                 margin-top: 100px;
             }
-            
+
             .order-header {
                 background: #f8f9fa;
                 padding: 20px;
                 border-bottom: 1px solid #e0e0e0;
             }
-            
+
             .order-title {
                 display: flex;
                 align-items: center;
                 gap: 12px;
                 margin-bottom: 8px;
             }
-            
+
             .order-icon {
                 width: 40px;
                 height: 40px;
@@ -78,7 +78,7 @@
                 color: white;
                 font-size: 18px;
             }
-            
+
             .order-meta {
                 display: flex;
                 align-items: center;
@@ -86,7 +86,7 @@
                 margin-top: 10px;
                 flex-wrap: wrap;
             }
-            
+
             .order-date {
                 display: flex;
                 align-items: center;
@@ -94,61 +94,61 @@
                 color: #666;
                 font-size: 14px;
             }
-            
+
             .status-badge {
                 font-size: 0.8rem;
                 padding: 0.25rem 0.5rem;
             }
-            
+
             .status-PENDING {
                 background: #ffc107;
                 color: #000;
             }
-            
+
             .status-APPROVED {
                 background: #007bff;
                 color: white;
             }
-            
+
             .status-SHIPPING {
                 background: #17a2b8;
                 color: white;
             }
-            
+
             .status-DELIVERED {
                 background: #28a745;
                 color: white;
             }
-            
+
             .status-CANCELED {
                 background: #dc3545;
                 color: white;
             }
-            
+
             .status-RETURNED {
                 background: #6c757d;
                 color: white;
             }
-            
+
             .progress-section {
                 padding: 20px;
                 border-bottom: 1px solid #e0e0e0;
             }
-            
+
             .progress-timeline {
                 position: relative;
                 padding-left: 30px;
             }
-            
+
             .progress-step {
                 position: relative;
                 margin-bottom: 20px;
             }
-            
+
             .progress-step:last-child {
                 margin-bottom: 0;
             }
-            
+
             .progress-step::before {
                 content: '';
                 position: absolute;
@@ -158,15 +158,15 @@
                 height: 40px;
                 background: #e9ecef;
             }
-            
+
             .progress-step.completed::before {
                 background: #28a745;
             }
-            
+
             .progress-step:last-child::before {
                 display: none;
             }
-            
+
             .step-circle {
                 position: absolute;
                 left: -30px;
@@ -183,20 +183,20 @@
                 font-weight: bold;
                 border: 2px solid #e9ecef;
             }
-            
+
             .step-circle.completed {
                 background: #28a745;
                 color: white;
                 border-color: #28a745;
             }
-            
+
             .step-circle.current {
                 background: #007bff;
                 color: white;
                 border-color: #007bff;
                 animation: pulse 2s infinite;
             }
-            
+
             @keyframes pulse {
                 0% {
                     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
@@ -208,22 +208,22 @@
                     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
                 }
             }
-            
+
             .step-info {
                 display: flex;
                 align-items: center;
                 gap: 10px;
             }
-            
+
             .step-text {
                 flex: 1;
             }
-            
+
             .step-date {
                 color: #666;
                 font-size: 14px;
             }
-            
+
             .order-summary {
                 padding: 20px;
                 display: grid;
@@ -231,19 +231,19 @@
                 gap: 30px;
                 border-bottom: 1px solid #e0e0e0;
             }
-            
+
             .summary-section h6 {
                 font-weight: 600;
                 margin-bottom: 15px;
                 color: #333;
             }
-            
+
             .summary-item {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 8px;
             }
-            
+
             .summary-total {
                 font-weight: bold;
                 color: #007bff;
@@ -252,7 +252,7 @@
                 border-top: 1px solid #e0e0e0;
                 margin-top: 8px;
             }
-            
+
             .payment-badge {
                 padding: 6px 12px;
                 border-radius: 20px;
@@ -261,45 +261,45 @@
                 display: inline-block;
                 margin-right: 8px;
             }
-            
+
             .payment-cod {
                 background: #28a745;
                 color: white;
             }
-            
+
             .payment-completed {
                 background: #17a2b8;
                 color: white;
             }
-            
+
             .payment-cancelled {
                 background: #dc3545;
                 color: white;
             }
-            
+
             .shipping-section {
                 padding: 15px 20px;
                 border-bottom: 1px solid #e0e0e0;
             }
-            
+
             .shipping-section h6 {
                 font-weight: 600;
                 margin-bottom: 8px;
                 color: #333;
                 font-size: 16px;
             }
-            
+
             .address-info {
                 line-height: 1.4;
             }
-            
+
             .address-horizontal {
                 display: flex;
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 12px;
             }
-            
+
             .address-item {
                 display: inline-flex;
                 align-items: center;
@@ -307,32 +307,32 @@
                 color: #555;
                 font-size: 14px;
             }
-            
+
             .address-item a {
                 color: #0A437F;
                 text-decoration: none;
             }
-            
+
             .address-item a:hover {
                 color: #083063;
                 text-decoration: underline;
             }
-            
+
             .address-separator {
                 color: #999;
                 font-size: 12px;
             }
-            
+
             .address-line {
                 margin-bottom: 4px;
                 color: #555;
                 font-size: 14px;
             }
-            
+
             .address-line:last-child {
                 margin-bottom: 0;
             }
-            
+
             @media (max-width: 576px) {
                 .address-horizontal {
                     flex-direction: column;
@@ -343,17 +343,17 @@
                     display: none;
                 }
             }
-            
+
             .products-section {
                 padding: 20px;
             }
-            
+
             .products-section h6 {
                 font-weight: 600;
                 margin-bottom: 15px;
                 color: #333;
             }
-            
+
             .product-item {
                 display: flex;
                 align-items: center;
@@ -361,11 +361,11 @@
                 padding: 15px 0;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .product-item:last-child {
                 border-bottom: none;
             }
-            
+
             .product-image {
                 width: 60px;
                 height: 60px;
@@ -373,33 +373,33 @@
                 border-radius: 8px;
                 border: 1px solid #e0e0e0;
             }
-            
+
             .product-info {
                 flex: 1;
             }
-            
+
             .product-name {
                 font-weight: 600;
                 margin-bottom: 4px;
                 color: #333;
             }
-            
+
             .product-variant {
                 color: #999;
                 font-size: 13px;
                 margin-bottom: 2px;
             }
-            
+
             .product-quantity {
                 color: #666;
                 font-size: 14px;
             }
-            
+
             .product-price {
                 font-weight: 600;
                 color: #333;
             }
-            
+
             .modal-footer {
                 padding: 20px;
                 text-align: right;
@@ -409,7 +409,7 @@
                 gap: 10px;
                 flex-wrap: wrap;
             }
-            
+
             .btn-action {
                 border: none;
                 padding: 10px 24px;
@@ -422,86 +422,92 @@
                 align-items: center;
                 gap: 8px;
             }
-            
+
             .close-btn {
                 background: #007bff;
                 color: white;
             }
-            
+
             .close-btn:hover {
                 background: #0056b3;
                 color: white;
             }
-            
+
             /* Status History Section */
             .status-history-section {
                 padding: 20px;
                 border-top: 1px solid #e0e0e0;
                 background: #f8f9fa;
             }
-            
+
             .status-history-section h6 {
                 font-weight: 600;
                 margin-bottom: 15px;
                 color: #333;
             }
-            
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-            
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #dee2e6;
-        }
-            
-        .timeline-item {
-            position: relative;
-            margin-bottom: 20px;
-            padding-left: 20px;
-        }
-            
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -22px;
-            top: 5px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #0A437F;
-            border: 3px solid white;
-            box-shadow: 0 0 0 3px #dee2e6;
-        }
-            
+
+            .timeline {
+                position: relative;
+                padding-left: 30px;
+            }
+
+            .timeline::before {
+                content: '';
+                position: absolute;
+                left: 15px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: #dee2e6;
+            }
+
+            .timeline-item {
+                position: relative;
+                margin-bottom: 20px;
+                padding-left: 20px;
+            }
+
+            .timeline-item::before {
+                content: '';
+                position: absolute;
+                left: -22px;
+                top: 5px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #0A437F;
+                border: 3px solid white;
+                box-shadow: 0 0 0 3px #dee2e6;
+            }
+
             /* Responsive */
             @media (max-width: 768px) {
                 .order-summary {
                     grid-template-columns: 1fr;
                     gap: 20px;
                 }
-                
+
                 .modal-footer {
                     flex-direction: column;
                 }
-                
+
                 .btn-action {
                     width: 100%;
                     justify-content: center;
                 }
-        }
-    </style>
-</head>
-<body>
-    <!-- Include Staff Header -->
-        <jsp:include page="/WEB-INF/views/Staff/common/staff-header.jsp" />
-        
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-10 col-xl-8">
@@ -511,7 +517,7 @@
                             <div class="order-title">
                                 <div class="order-icon">
                                     <i class="fas fa-receipt"></i>
-                    </div>
+                                </div>
                                 <h4 class="mb-0">Order Detail #<c:out value="${order.orderId}"/></h4>
                             </div>
                             <div class="order-meta">
@@ -544,87 +550,58 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </span>
-                    </div>
-                </div>
-
-                        <!-- Order Progress Timeline -->
-                        <c:if test="${order.status != 'CANCELLED'}">
-                            <div class="progress-section">
-                                <h6>Order Progress</h6>
-                                <div class="progress-timeline">
-                                <!-- Step 1: Order Placed -->
-                                <div class="progress-step completed">
-                                    <div class="step-circle completed">
-                                        <i class="fas fa-check"></i>
-                                    </div>
-                                    <div class="step-info">
-                                        <div class="step-text">
-                                            <div>Pending</div>
-                                </div>
                             </div>
                         </div>
 
-                                <!-- Step 2: Approved -->
-                                <div class="progress-step ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'PENDING' ? '' : 'current')}">
-                                                <c:choose>
-                                            <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
-                                                <i class="fas fa-check"></i>
-                                            </c:when>
-                                            <c:when test="${order.status == 'PENDING'}">
-                                                <i class="fas fa-clock"></i>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                <i class="fas fa-check-circle"></i>
-                                                    </c:otherwise>
-                                                </c:choose>
+                        <!-- Status History Section -->
+                        <c:if test="${not empty statusHistory}">
+                            <div class="status-history-section">
+                                <h6><i class="fas fa-history"></i> Order Progress</h6>
+                                <div class="timeline">
+                                    <c:forEach var="history" items="${statusHistory}">
+                                        <div class="timeline-item">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <c:choose>
+                                                            <c:when test="${history.orderStatus == 'PENDING'}">
+                                                                <i class="fas fa-clock me-2 text-warning"></i>
+                                                            </c:when>
+                                                            <c:when test="${history.orderStatus == 'APPROVED'}">
+                                                                <i class="fas fa-check-circle me-2 text-info"></i>
+                                                            </c:when>
+                                                            <c:when test="${history.orderStatus == 'SHIPPED'}">
+                                                                <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                                                            </c:when>
+                                                            <c:when test="${history.orderStatus == 'COMPLETED'}">
+                                                                <i class="fas fa-check-double me-2 text-success"></i>
+                                                            </c:when>
+                                                            <c:when test="${history.orderStatus == 'CANCELLED'}">
+                                                                <i class="fas fa-times-circle me-2 text-danger"></i>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <i class="fas fa-info-circle me-2 text-secondary"></i>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <strong class="me-2">
+                                                            <c:choose>
+                                                                <c:when test="${history.orderStatus == 'SHIPPED'}">Shipping</c:when>
+                                                                <c:otherwise>${history.orderStatus}</c:otherwise>
+                                                            </c:choose>
+                                                        </strong>
+                                                    </div>
+                                                    <p class="text-muted mb-1 small">
+                                                        <i class="fas fa-user me-1" style="color: #0A437F;"></i>Changed by: ${history.changedByName}
+                                                    </p>
+                                                </div>
+                                                <small class="text-muted">
+                                                    <span class="status-date" data-date="${history.changedAt}"></span>
+                                                </small>
+                                            </div>
                                         </div>
-                                    <div class="step-info">
-                                        <div class="step-text">
-                                            <div>Approved</div>
-                                        </div>
-                                    </div>
+                                    </c:forEach>
                                 </div>
-                                
-                                <!-- Step 3: Shipping -->
-                                <div class="progress-step ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'APPROVED' ? 'current' : '')}">
-                                                <c:choose>
-                                            <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
-                                                <i class="fas fa-check"></i>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                <i class="fas fa-truck"></i>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                    </div>
-                                    <div class="step-info">
-                                        <div class="step-text">
-                                            <div>Shipping</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Step 4: Delivered -->
-                                <div class="progress-step ${order.status == 'COMPLETED' ? 'completed' : ''}">
-                                    <div class="step-circle ${order.status == 'COMPLETED' ? 'completed' : (order.status == 'SHIPPED' ? 'current' : '')}">
-                                        <c:choose>
-                                            <c:when test="${order.status == 'COMPLETED'}">
-                                                <i class="fas fa-check"></i>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <i class="fas fa-home"></i>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
-                                    <div class="step-info">
-                                        <div class="step-text">
-                                            <div>Delivered</div>
-                                        </div>
-                                </div>
-                                </div>
-                    </div>
-                </div>
+                            </div>
                         </c:if>
 
                         <!-- Order Summary -->
@@ -642,7 +619,7 @@
                                 <div class="summary-item summary-total">
                                     <span>Total Amount:</span>
                                     <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
-                                    </div>
+                                </div>
                             </div>
                             <div class="summary-section">
                                 <h6>Payment Method</h6>
@@ -670,8 +647,8 @@
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
                         <!-- Customer Information -->
                         <div class="shipping-section">
@@ -681,26 +658,26 @@
                                 <c:set var="hasCustomerEmail" value="${not empty order.customerEmail}" />
                                 <c:set var="hasCustomerPhone" value="${not empty order.customerPhone}" />
                                 <c:set var="hasAnyCustomerData" value="${hasCustomerName || hasCustomerEmail || hasCustomerPhone}" />
-                                
+
                                 <c:choose>
                                     <c:when test="${hasAnyCustomerData}">
                                         <div class="address-horizontal">
                                             <c:if test="${hasCustomerName}">
                                                 <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.customerName}"/></strong></span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasCustomerName && (hasCustomerEmail || hasCustomerPhone)}">
                                                 <span class="address-separator">•</span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasCustomerEmail}">
                                                 <span class="address-item"><i class="fas fa-envelope"></i> <c:out value="${order.customerEmail}"/></span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasCustomerEmail && hasCustomerPhone}">
                                                 <span class="address-separator">•</span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasCustomerPhone}">
                                                 <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.customerPhone}"/></span>
                                             </c:if>
@@ -726,26 +703,26 @@
                                 <c:set var="hasAddressDetails" value="${not empty order.addressDetails}" />
                                 <c:set var="hasRecipientPhone" value="${not empty order.recipientPhone}" />
                                 <c:set var="hasAnyAddressData" value="${hasRecipientName || hasAddressDetails || hasRecipientPhone}" />
-                                
+
                                 <c:choose>
                                     <c:when test="${hasAnyAddressData}">
                                         <div class="address-horizontal">
                                             <c:if test="${hasRecipientName}">
                                                 <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.recipientName}"/></strong></span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasRecipientName && (hasAddressDetails || hasRecipientPhone)}">
                                                 <span class="address-separator">•</span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasAddressDetails}">
                                                 <span class="address-item"><i class="fas fa-map-marker-alt"></i> <c:out value="${order.addressDetails}"/></span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasAddressDetails && hasRecipientPhone}">
                                                 <span class="address-separator">•</span>
                                             </c:if>
-                                            
+
                                             <c:if test="${hasRecipientPhone}">
                                                 <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></span>
                                             </c:if>
@@ -805,9 +782,9 @@
                                                 <div class="product-variant">
                                                     <c:if test="${not empty item.color}">Color: ${item.color}</c:if>
                                                     <c:if test="${not empty item.size}"> • Size: ${item.size}</c:if>
-                                                </div>
-                                                <div class="product-quantity">
-                                                    Quantity: x<c:out value="${item.detailQuantity}"/>
+                                                    </div>
+                                                    <div class="product-quantity">
+                                                        Quantity: x<c:out value="${item.detailQuantity}"/>
                                                 </div>
                                             </div>
                                             <div class="product-price">
@@ -825,58 +802,9 @@
                                     </div>
                                 </c:otherwise>
                             </c:choose>
-                    </div>
+                        </div>
 
-                        <!-- Status History Section -->
-                        <c:if test="${not empty statusHistory}">
-                            <div class="status-history-section">
-                                <h6><i class="fas fa-history"></i> Status History</h6>
-                                <div class="timeline">
-                                    <c:forEach var="history" items="${statusHistory}">
-                                        <div class="timeline-item">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                            <div class="d-flex align-items-center mb-1">
-                                                                <c:choose>
-                                                                    <c:when test="${history.orderStatus == 'PENDING'}">
-                                                                        <i class="fas fa-clock me-2 text-warning"></i>
-                                                                    </c:when>
-                                                                    <c:when test="${history.orderStatus == 'APPROVED'}">
-                                                                        <i class="fas fa-check-circle me-2 text-info"></i>
-                                                                    </c:when>
-                                                                    <c:when test="${history.orderStatus == 'SHIPPED'}">
-                                                                        <i class="fas fa-shipping-fast me-2 text-primary"></i>
-                                                                    </c:when>
-                                                            <c:when test="${history.orderStatus == 'COMPLETED'}">
-                                                                        <i class="fas fa-check-double me-2 text-success"></i>
-                                                                    </c:when>
-                                                                    <c:when test="${history.orderStatus == 'CANCELLED'}">
-                                                                        <i class="fas fa-times-circle me-2 text-danger"></i>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        <i class="fas fa-info-circle me-2 text-secondary"></i>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                                <strong class="me-2">
-                                                                    <c:choose>
-                                                                        <c:when test="${history.orderStatus == 'SHIPPED'}">Shipping</c:when>
-                                                                        <c:otherwise>${history.orderStatus}</c:otherwise>
-                                                                    </c:choose>
-                                                                </strong>
-                                                            </div>
-                                                            <p class="text-muted mb-1 small">
-                                                                <i class="fas fa-user me-1" style="color: #0A437F;"></i>Changed by: ${history.changedByName}
-                                                            </p>
-                                                </div>
-                                                        <small class="text-muted">
-                                                    <span class="status-date" data-date="${history.changedAt}"></span>
-                                                        </small>
-                                            </div>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </div>
-                        </c:if>
+
 
                         <!-- Footer Actions -->
                         <div class="modal-footer">
@@ -913,7 +841,7 @@
                     }
                 }
             });
-            
+
         </script>
-</body>
+    </body>
 </html>

@@ -11,6 +11,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <title>Create New Product</title>
         <style>
             * {
@@ -35,7 +38,7 @@
             }
 
             .container {
-                max-width: 900px;
+                max-width: 73rem;
                 margin: 0 auto;
             }
 
@@ -309,6 +312,14 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <div class="main-wrapper">
             <div class="container">
                 <!-- Page Header -->
@@ -317,9 +328,6 @@
                         <span>➕</span>
                         Create New Product
                     </h1>
-                    <a href="${pageContext.request.contextPath}/staff/product" class="btn-back">
-                        ← Back to Products
-                    </a>
                 </div>
 
                 <!-- Error Message -->
@@ -444,7 +452,7 @@
                         <!-- Product Status Section -->
                         <div class="form-section">
                             <h2 class="section-title">Product Status</h2>
-                            
+
                             <div class="status-toggle">
                                 <label class="toggle-switch">
                                     <input type="checkbox" 
@@ -479,7 +487,7 @@
 
         <script>
             // Update status text when toggle changes
-            document.getElementById('isActiveToggle').addEventListener('change', function() {
+            document.getElementById('isActiveToggle').addEventListener('change', function () {
                 const statusText = document.getElementById('statusText');
                 if (this.checked) {
                     statusText.textContent = 'This product will be active and visible to customers';

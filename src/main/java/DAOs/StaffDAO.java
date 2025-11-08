@@ -194,8 +194,9 @@ public class StaffDAO extends DBContext {
         try (ResultSet rs = this.execSelectQuery(sqlGet, new Object[]{staffId})) {
             if (rs == null || !rs.next()) return false;
             String stored = rs.getString("PasswordHash");
-            if (!Objects.equals(stored, current)) return false;
-            int result = this.execQuery(sqlUpd, new Object[]{newPwd, staffId});
+            String newHash = Utils.hashPassword(newPwd);
+            if (!Utils.verifyPassword(current, stored)) return false;
+            int result = this.execQuery(sqlUpd, new Object[]{newHash, staffId});
             return result > 0;
         } catch (SQLException e) {
             System.err.println("changePassword: " + e.getMessage());

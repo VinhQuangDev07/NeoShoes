@@ -196,7 +196,7 @@ public class OrderDAO extends DB.DBContext {
                     // Load payment info
                     order.setPaymentMethodName(rs.getString("PaymentMethodName"));
                     order.setPaymentStatusName(rs.getString("PaymentStatusName"));
-                    
+
                     // Load address info (try snapshot first, fallback to current address)
                     Address orderAddressSnapshot = getOrderAddressSnapshot(orderId);
                     if (orderAddressSnapshot != null) {
@@ -212,7 +212,7 @@ public class OrderDAO extends DB.DBContext {
                         order.setRecipientName(rs.getString("RecipientName"));
                         order.setRecipientPhone(rs.getString("RecipientPhone"));
                     }
-                    
+
                     // Load order items
                     order.setItems(getOrderItems(order.getOrderId()));
                     return order;
@@ -562,13 +562,15 @@ public class OrderDAO extends DB.DBContext {
 
             try {
                 // Calculate total amount from cart items
-                BigDecimal totalAmount = calculateCartTotal(customerId, cartItemIds);
-                BigDecimal shippingFee = new BigDecimal("10.00"); // Fixed shipping fee
+                BigDecimal subtotal = calculateCartTotal(customerId, cartItemIds);
+                BigDecimal shippingFee = new BigDecimal("10.00");
+                BigDecimal totalBeforeDiscount = subtotal.add(shippingFee);
+                BigDecimal totalAmount = totalBeforeDiscount;
 
                 // Apply voucher discount if provided
                 if (voucherId != null) {
-                    BigDecimal discount = calculateVoucherDiscount(voucherId, totalAmount);
-                    totalAmount = totalAmount.subtract(discount);
+                    BigDecimal discount = calculateVoucherDiscount(voucherId, totalBeforeDiscount);
+                    totalAmount = totalBeforeDiscount.subtract(discount);
                 }
 
                 // Create order
@@ -609,7 +611,7 @@ public class OrderDAO extends DB.DBContext {
                     con.rollback();
                     return -1;
                 }
-                
+
                 ProductVariantDAO productVariantDAO = new ProductVariantDAO();
                 String variantSql = "SELECT ProductVariantId, Quantity FROM CartItem WHERE CartItemId = ?";
                 for (int cartItemId : cartItemIds) {
@@ -619,7 +621,7 @@ public class OrderDAO extends DB.DBContext {
                             if (rs.next()) {
                                 int variantId = rs.getInt("ProductVariantId");
                                 int quantity = rs.getInt("Quantity");
-                                
+
                                 productVariantDAO.decreaseQuantityAvailable(variantId, quantity);
                             }
                         }

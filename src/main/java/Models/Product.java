@@ -15,8 +15,8 @@ public class Product {
     private String description;
     private String defaultImageUrl;
     private String material;
-    private double minPrice;
-    private double maxPrice;
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
     private int totalQuantity;
     private String availableColors;
     private String availableSizes;
@@ -41,7 +41,7 @@ public class Product {
     public Product() {
     }
 
-    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, int variantCount, String isActive, List<ProductVariant> variants, List<String> colors, List<String> sizes, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, BigDecimal minPrice, BigDecimal maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, int variantCount, String isActive, List<ProductVariant> variants, List<String> colors, List<String> sizes, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.productId = productId;
         this.brandId = brandId;
         this.categoryId = categoryId;
@@ -128,19 +128,19 @@ public class Product {
         this.material = material;
     }
 
-    public double getMinPrice() {
+    public BigDecimal getMinPrice() {
         return minPrice;
     }
 
-    public void setMinPrice(double minPrice) {
+    public void setMinPrice(BigDecimal minPrice) {
         this.minPrice = minPrice;
     }
 
-    public double getMaxPrice() {
+    public BigDecimal getMaxPrice() {
         return maxPrice;
     }
 
-    public void setMaxPrice(double maxPrice) {
+    public void setMaxPrice(BigDecimal maxPrice) {
         this.maxPrice = maxPrice;
     }
 

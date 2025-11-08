@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class AddressDAO extends DB.DBContext {
 
     /**
-     * ✅ Thêm địa chỉ mới
+     * Thêm địa chỉ mới
      * NOTE: Nên gọi clearDefaultAddress trước nếu isDefault = true
      */
     public void addAddress(int customerId, String addressName, String addressDetails, 

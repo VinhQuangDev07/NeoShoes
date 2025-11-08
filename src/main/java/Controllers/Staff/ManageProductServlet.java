@@ -14,6 +14,7 @@ import DAOs.ReviewDAO;
 import Models.Product;
 import Models.ProductVariant;
 import Models.Review;
+import Models.Staff;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +73,12 @@ public class ManageProductServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
         String action = request.getParameter("action");
         ProductDAO pDAO = new ProductDAO();
         ProductVariantDAO pvDAO = new ProductVariantDAO();
@@ -129,6 +137,12 @@ public class ManageProductServlet extends HttpServlet {
             }
 
         } else if ("create".equals(action)) {
+
+            if (!staff.isAdmin()) {
+                session.setAttribute("flash_info", "Access Denied - Admin only");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+                return;
+            }
             // Load brands và categories
             BrandDAO brandDAO = new BrandDAO();
             CategoryDAO categoryDAO = new CategoryDAO();
@@ -141,6 +155,12 @@ public class ManageProductServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/create.jsp")
                     .forward(request, response);
         } else if ("edit".equals(action)) {
+
+            if (!staff.isAdmin()) {
+                session.setAttribute("flash_info", "Access Denied - Admin only");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+                return;
+            }
             int productId = Integer.parseInt(request.getParameter("productId"));
             // Load product info
             BrandDAO brandDAO = new BrandDAO();
@@ -170,21 +190,21 @@ public class ManageProductServlet extends HttpServlet {
 
             List<Product> listProduct = pDAO.getAllProductsForStaff(offset, recordsPerPage);
             Map<Integer, List<ProductVariant>> productVariantsMap = new HashMap<>();
-            
+
             for (Product p : listProduct) {
                 List<ProductVariant> variants = pvDAO.getVariantListByProductId(p.getProductId());
                 productVariantsMap.put(p.getProductId(), variants);
             }
 
-// 4. Lấy tổng số records để tính số trang
+            // 4. Lấy tổng số records để tính số trang
             int totalProduct = pDAO.getTotalProductStaff();
             int totalPages = (int) Math.ceil((double) totalProduct / recordsPerPage);
 
-// 5. Lấy các thống kê
+            // 5. Lấy các thống kê
             int totalQuantity = pvDAO.getTotalQuantityAvailable();
             BigDecimal totalPrice = pvDAO.getTotalInventoryValue();
 
-// 6. Set attributes
+            // 6. Set attributes
             request.setAttribute("productVariantsMap", productVariantsMap);
             request.setAttribute("listProduct", listProduct);
             request.setAttribute("currentPage", currentPage);
@@ -211,9 +231,20 @@ public class ManageProductServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
         String action = request.getParameter("action");
         ProductDAO productDAO = new ProductDAO();
         if ("create".equals(action)) {
+            if (!staff.isAdmin()) {
+                session.setAttribute("flash_info", "Access Denied - Admin only");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+                return;
+            }
             try {
                 // Get và validate parameters
                 String name = request.getParameter("name");
@@ -255,6 +286,11 @@ public class ManageProductServlet extends HttpServlet {
                 request.getRequestDispatcher("/staff/create-product.jsp").forward(request, response);
             }
         } else if ("update".equals(action)) {
+            if (!staff.isAdmin()) {
+                session.setAttribute("flash_info", "Access Denied - Admin only");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+                return;
+            }
             try {
                 // Parse và validate
                 int productId = Integer.parseInt(request.getParameter("productId"));
@@ -300,6 +336,11 @@ public class ManageProductServlet extends HttpServlet {
                 }
             }
         } else if ("delete".equals(action)) {
+            if (!staff.isAdmin()) {
+                session.setAttribute("flash_info", "Access Denied - Admin only");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+                return;
+            }
             try {
                 int productId = Integer.parseInt(request.getParameter("productId"));
 
@@ -307,51 +348,49 @@ public class ManageProductServlet extends HttpServlet {
                 boolean success = productDAO.deleteProduct(productId);
 
                 if (success) {
-                    request.getSession().setAttribute("successMessage",
+                    request.getSession().setAttribute("flash",
                             "Product deleted successfully!");
                 } else {
-                    request.getSession().setAttribute("errorMessage",
+                    request.getSession().setAttribute("flash_error",
                             "Failed to delete product! It may not exist or already deleted.");
                 }
 
                 response.sendRedirect(request.getContextPath() + "/staff/product");
 
             } catch (Exception e) {
-                request.getSession().setAttribute("errorMessage",
-                        "Error: " + e.getMessage());
+                e.printStackTrace();
                 response.sendRedirect(request.getContextPath() + "/staff/product");
             }
         }
 
-        
         if ("reply-review".equals(action)) {
             // Handle staff reply to review
             try {
                 int reviewId = Integer.parseInt(request.getParameter("reviewId"));
                 int productId = Integer.parseInt(request.getParameter("productId"));
                 String replyContent = request.getParameter("replyContent");
-                
+
                 if (replyContent == null || replyContent.trim().isEmpty()) {
                     response.sendRedirect("product?action=detail&productId=" + productId + "&error=Reply content cannot be empty");
                     return;
                 }
-                
+
                 // Get staff ID from session (you may need to adjust this based on your session management)
                 Integer staffId = (Integer) request.getSession().getAttribute("staffId");
                 if (staffId == null) {
                     response.sendRedirect("product?action=detail&productId=" + productId + "&error=Staff not logged in");
                     return;
                 }
-                
+
                 ReviewDAO reviewDAO = new ReviewDAO();
                 boolean success = reviewDAO.addStaffReply(reviewId, replyContent, staffId);
-                
+
                 if (success) {
                     response.sendRedirect("product?action=detail&productId=" + productId + "&success=Reply sent successfully");
                 } else {
                     response.sendRedirect("product?action=detail&productId=" + productId + "&error=Failed to send reply");
                 }
-                
+
             } catch (NumberFormatException e) {
                 response.sendRedirect("product?action=detail&error=Invalid review ID");
             }

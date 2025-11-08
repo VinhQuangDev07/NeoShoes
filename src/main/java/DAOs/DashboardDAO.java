@@ -234,32 +234,4 @@ public class DashboardDAO extends DB.DBContext {
             return data;
         }
 
-    /**
-     * Get default date range (last 30 days)
-     */
-    public String[] getDefaultDateRange() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusDays(29);
-        return new String[]{startDate.toString(), endDate.toString()};
-    }
-    
-    /**
-     * Get default month range (last 12 months)
-     */
-    public String[] getDefaultMonthRange() {
-        LocalDate endDate = LocalDate.now();
-        LocalDate startDate = endDate.minusMonths(11).withDayOfMonth(1);
-        return new String[]{
-            startDate.toString().substring(0, 7),
-            endDate.toString().substring(0, 7)
-        };
-    }
-    
-    /**
-     * Get default year range (last 5 years)
-     */
-    public int[] getDefaultYearRange() {
-        int currentYear = LocalDate.now().getYear();
-        return new int[]{currentYear - 4, currentYear};
-    }
 }

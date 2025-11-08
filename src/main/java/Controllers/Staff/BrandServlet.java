@@ -3,15 +3,18 @@ package Controllers.Staff;
 import DAOs.BrandDAO;
 import Models.Brand;
 import Models.Staff;
+import Utils.CloudinaryConfig;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/managebrands", "/managebrands/*"})
+@WebServlet(urlPatterns = {"/staff/manage-brands", "/staff/manage-brands/*"})
+@MultipartConfig
 public class BrandServlet extends HttpServlet {
 
     private BrandDAO brandDAO;
@@ -31,7 +34,6 @@ public class BrandServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/staff/login");
             return;
         }
-        request.setAttribute("userRole", session.getAttribute("role"));
 
         String action = getAction(request);
 
@@ -43,11 +45,15 @@ public class BrandServlet extends HttpServlet {
                 case "add":
                     if (staff.isAdmin()) {
                         showAddForm(request, response);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 case "edit":
                     if (staff.isAdmin()) {
                         showEditForm(request, response);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 default:
@@ -69,7 +75,6 @@ public class BrandServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/staff/login");
             return;
         }
-        request.setAttribute("userRole", session.getAttribute("role"));
 
         String action = getAction(request);
 
@@ -77,25 +82,27 @@ public class BrandServlet extends HttpServlet {
             switch (action) {
                 case "add":
                     if (staff.isAdmin()) {
-                        addBrand(request, response);
+                        addBrand(request, response, session);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 case "update":
                     if (staff.isAdmin()) {
-                        updateBrand(request, response);
+                        updateBrand(request, response, session);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 case "delete":
                     if (staff.isAdmin()) {
-                        deleteBrand(request, response);
+                        deleteBrand(request, response, session);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 default:
-                    listBrands(request, response); // Mặc định vẫn cho xem danh sách
+                    listBrands(request, response);
                     break;
             }
         } catch (SQLException ex) {
@@ -107,9 +114,40 @@ public class BrandServlet extends HttpServlet {
     private void listBrands(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         List<Brand> brands = brandDAO.getAllBrands();
-        request.setAttribute("brands", brands);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Brand-list.jsp");
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        int recordsPerPage = 10;
+
+        int totalRecords = brands.size();
+
+        // Calculate start and end positions
+        int startIndex = (currentPage - 1) * recordsPerPage;
+        int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+
+        // 5. Lấy dữ liệu cho trang hiện tại
+        List<Brand> pageData;
+        if (startIndex < totalRecords) {
+            pageData = brands.subList(startIndex, endIndex);
+        } else {
+            pageData = new ArrayList<>();
+        }
+
+        // Set attributes
+        request.setAttribute("brands", pageData);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("recordsPerPage", recordsPerPage);
+        request.setAttribute("baseUrl", request.getRequestURI());
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-list.jsp");
         dispatcher.forward(request, response);
     }
 
@@ -123,94 +161,143 @@ public class BrandServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Brand brand = brandDAO.getBrandById(id);
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        Brand brand = brandDAO.getBrandById(id);
-
-        if (brand != null) {
-            request.setAttribute("brand", brand);
-            request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
-            dispatcher.forward(request, response);
-        } else {
-            response.sendError(404, "Brand not found");
+            if (brand != null) {
+                request.setAttribute("brand", brand);
+                request.setAttribute("formAction", "update");
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
+                dispatcher.forward(request, response);
+            } else {
+                request.getSession().setAttribute("flash_error", "Brand not found");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void addBrand(HttpServletRequest request, HttpServletResponse response)
+    private void addBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException, ServletException {
+        try {
+            String name = request.getParameter("name");
 
-        String name = request.getParameter("name");
-        String logo = request.getParameter("logo");
+            // Validate tên rỗng
+            if (name == null || name.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Brand name is required.");
+                showAddForm(request, response);
+                return;
+            }
 
-        if (name == null || name.trim().isEmpty()) {
-            request.setAttribute("error", "Brand name is required");
-            showAddForm(request, response);
-            return;
-        }
+            // Upload logo (nếu có)
+            String logoUrl = null;
+            Part logoPart = request.getPart("logoFile");
+            if (logoPart != null && logoPart.getSize() > 0) {
+                try {
+                    logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    session.setAttribute("flash_error", "Logo upload failed!");
+                    showAddForm(request, response);
+                    return;
+                }
+            }
 
-        Brand brand = new Brand();
-        brand.setName(name.trim());
-        brand.setLogo(logo);
+            Brand brand = new Brand();
+            brand.setName(name.trim());
+            brand.setLogo(logoUrl);
 
-        boolean success = brandDAO.addBrand(brand);
+            boolean success = brandDAO.addBrand(brand);
 
-        if (success) {
-            String currentRole = (String) request.getAttribute("userRole");
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=added");
-        } else {
-            request.setAttribute("error", "Failed to add brand");
-            showAddForm(request, response);
+            if (success) {
+                session.setAttribute("flash", "Brand added successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            } else {
+                session.setAttribute("flash_error", "Failed to add brand!");
+                showAddForm(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void updateBrand(HttpServletRequest request, HttpServletResponse response)
+    private void updateBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException, ServletException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String name = request.getParameter("name");
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        String name = request.getParameter("name");
-        String logo = request.getParameter("logo");
+            // Lấy brand hiện tại
+            Brand existingBrand = brandDAO.getBrandById(id);
+            if (existingBrand == null) {
+                session.setAttribute("flash_error", "Brand not found!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+                return;
+            }
 
-        if (name == null || name.trim().isEmpty()) {
-            request.setAttribute("error", "Brand name is required");
+            // Validate tên rỗng
+            if (name == null || name.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Brand name is required.");
+                request.setAttribute("brand", existingBrand);
+                request.setAttribute("formAction", "update");
+                request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp").forward(request, response);
+                return;
+            }
+
+            // Upload logo mới (nếu có)
+            String logoUrl = existingBrand.getLogo();
+            Part logoPart = request.getPart("logoFile");
+            if (logoPart != null && logoPart.getSize() > 0) {
+                try {
+                    logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    session.setAttribute("flash_error", "Logo upload failed!");
+                    showEditForm(request, response);
+                    return;
+                }
+            }
+
             Brand brand = new Brand();
             brand.setBrandId(id);
-            brand.setName(name);
-            brand.setLogo(logo);
-            request.setAttribute("brand", brand);
-            request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
-            dispatcher.forward(request, response);
-            return;
-        }
+            brand.setName(name.trim());
+            brand.setLogo(logoUrl);
 
-        Brand brand = new Brand();
-        brand.setBrandId(id);
-        brand.setName(name.trim());
-        brand.setLogo(logo);
+            boolean success = brandDAO.updateBrand(brand);
 
-        boolean success = brandDAO.updateBrand(brand);
-
-        if (success) {
-            String currentRole = (String) request.getAttribute("userRole");
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=updated");
-        } else {
-            request.setAttribute("error", "Failed to update brand");
-            showEditForm(request, response);
+            if (success) {
+                session.setAttribute("flash", "Brand updated successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            } else {
+                session.setAttribute("flash_error", "Failed to update brand!");
+                showEditForm(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void deleteBrand(HttpServletRequest request, HttpServletResponse response)
+    private void deleteBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean success = brandDAO.deleteBrand(id);
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        boolean success = brandDAO.deleteBrand(id);
-
-        String currentRole = (String) request.getAttribute("userRole");
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=deleted");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&error=delete_failed");
+            if (success) {
+                session.setAttribute("flash", "Deleted successfully");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands/list");
+            } else {
+                session.setAttribute("flash_error", "Failed to delete brand");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands/list");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 

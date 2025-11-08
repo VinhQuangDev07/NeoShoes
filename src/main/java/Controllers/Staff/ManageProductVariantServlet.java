@@ -8,6 +8,7 @@ import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.Product;
 import Models.ProductVariant;
+import Models.Staff;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -73,6 +74,17 @@ public class ManageProductVariantServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (!staff.isAdmin()) {
+            session.setAttribute("flash_info", "Access Denied - Admin only");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+            return;
+        }
         String view = request.getParameter("view");
         if ("create".equalsIgnoreCase(view)) {
             String paramProductId = request.getParameter("productId");
@@ -96,6 +108,17 @@ public class ManageProductVariantServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (!staff.isAdmin()) {
+            session.setAttribute("flash_info", "Access Denied - Admin only");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
+            return;
+        }
         String action = request.getParameter("action");
         if ("create".equalsIgnoreCase(action)) {
             createVariant(request, response);

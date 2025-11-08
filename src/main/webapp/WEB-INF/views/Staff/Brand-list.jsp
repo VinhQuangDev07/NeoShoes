@@ -2,338 +2,249 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Brand Management</title>
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Brands - NeoShoes</title>
 
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-        <!-- Lucide Icons -->
-        <script src="https://unpkg.com/lucide@latest"></script>
-        <style>
-            :root{
-                --header-h:74px;   /* chiều cao header cố định (staff-header.jsp) */
-                --sidebar-w:300px; /* chiều rộng sidebar cố định (staff-sidebar.jsp) */
-                --bg:#f5f6f8;
-                --text:#111827;
-                --line:#e5e7eb;
-            }
+    <style>
+        body {
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
 
-            *{
-                box-sizing:border-box;
-                font-family:Arial, Helvetica, sans-serif;
-            }
-            html,body{
-                height:100%;
-            }
-            body{
-                margin:0;
-                background:var(--bg);
-                color:var(--text);
-                padding-top:var(--header-h); /* bù header fixed */
-            }
+        #main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            padding-top: 74px;
+        }
 
-            /* CONTENT WRAP */
-            .wrap{
-                padding:20px 24px;
-                max-width:1200px;
-                margin:0 0 0 var(--sidebar-w); /* bù sidebar fixed */
+        @media (min-width: 992px) {
+            #main-content {
+                margin-left: 300px;
             }
+        }
 
-            /* Role switch + toolbar */
-            .role-switcher{
-                margin-bottom:12px;
-                padding:10px 12px;
-                background:#f3f4f6;
-                border:1px solid var(--line);
-                border-radius:10px;
-            }
-            .role-switcher a{
-                margin-right:12px;
-                text-decoration:none;
-                color:#2563eb;
-                font-weight:600;
-            }
-            .toolbar{
-                margin:14px 0 18px;
-            }
-            .btn-add{
-                display:inline-block;
-                padding:10px 14px;
-                border-radius:10px;
-                background:#111827;
-                color:#fff;
-                text-decoration:none;
-                font-weight:700;
-                transition:.15s;
-            }
-            .btn-add:hover{
-                filter:brightness(.9);
-                transform:translateY(-1px);
-            }
+        .page-header {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-            /* Table card + responsive scroll */
-            .table-card{
-                background:#fff;
-                border:1px solid var(--line);
-                border-radius:12px;
-                overflow:hidden;
-                box-shadow:0 10px 20px rgba(17,24,39,.04);
-            }
-            .table-scroll{
-                width:100%;
-                overflow-x:auto;
-            }
+        .brand-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-            table{
-                width:100%;
-                border-collapse:collapse;
-                table-layout:fixed;
-            }
-            colgroup col.col-id{
-                width:12%;
-            }
-            colgroup col.col-name{
-                width:auto;
-            }  /* chiếm phần còn lại */
-            colgroup col.col-logo{
-                width:18%;
-            }
-            colgroup col.col-actions{
-                width:22%;
-            }
+        .table thead {
+            background-color: #f8f9fa;
+        }
 
-            thead th{
-                background:#111827;
-                color:#fff;
-                padding:12px 14px;
-                text-align:left;
-                font-weight:700;
-                letter-spacing:.2px;
-            }
-            tbody td{
-                padding:12px 14px;
-                border-top:1px solid #f1f5f9;
-                vertical-align:middle;
-                overflow:hidden;
-                text-overflow:ellipsis;
-                white-space:nowrap;
-            }
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: #fff;
+        }
 
-            /* Logo cell */
-            .logo-box{
-                display:inline-flex;
-                align-items:center;
-                justify-content:center;
-                width:56px;
-                height:56px;
-                border:1px solid var(--line);
-                border-radius:10px;
-                background:#fff;
-            }
-            .logo-box img{
-                max-width:52px;
-                max-height:52px;
-                border-radius:8px;
-            }
+        /* Action Buttons */
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin: 0 2px;
+        }
 
-            /* Action buttons */
-            .actions{
-                display:flex;
-                gap:10px;
-            }
-            .btn{
-                display:inline-flex;
-                align-items:center;
-                justify-content:center;
-                padding:9px 12px;
-                border-radius:10px;
-                border:1px solid transparent;
-                text-decoration:none;
-                cursor:pointer;
-                font-weight:700;
-                font-size:14px;
-                transition:.15s;
-            }
-            .btn-edit{
-                background:#eef2ff;
-                color:#3730a3;
-                border-color:#c7d2fe;
-            }
-            .btn-edit:hover{
-                background:#e0e7ff;
-                transform:translateY(-1px);
-            }
-            .btn-delete{
-                background:#fef2f2;
-                color:#991b1b;
-                border-color:#fecaca;
-            }
-            .btn-delete:hover{
-                background:#fee2e2;
-                transform:translateY(-1px);
-            }
+        .btn-edit {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
 
-            .empty{
-                padding:16px;
-                color:#6b7280;
-                background:#fff;
-                border-top:1px solid #f1f5f9;
-            }
+        .btn-edit:hover {
+            background-color: #1976d2;
+            color: white;
+            transform: scale(1.1);
+        }
 
-            /* Responsive */
-            @media (max-width:992px){
-                :root{
-                    --sidebar-w:0px;
-                }        /* ẩn/thu gọn sidebar -> nội dung full width */
-                .wrap{
-                    margin-left:0;
-                    padding:16px;
-                }
-                colgroup col.col-id{
-                    width:18%;
-                }
-                colgroup col.col-logo{
-                    width:22%;
-                }
-                colgroup col.col-actions{
-                    width:30%;
-                }
-                .actions{
-                    flex-wrap:wrap;
-                }
-            }
+        .btn-delete {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
 
+        .btn-delete:hover {
+            background-color: #d32f2f;
+            color: white;
+            transform: scale(1.1);
+        }
 
-        </style>
-    </head>
-    <body>
+        .page-header .btn-add {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+        }
 
-        <!-- Header & Sidebar cố định -->
-        <jsp:include page="common/staff-header.jsp"/>
-        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
-        <jsp:include page="common/staff-sidebar.jsp"/>
+        .page-header .btn-add:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+        }
 
-        <!-- Nội dung -->
-        <div class="wrap">
-            <!-- Nút Add chỉ hiển thị khi có quyền sửa đổi -->
-            <c:if test="${staff.isAdmin}">
-                <div class="toolbar">
-                    <a class="btn-add" href="<c:url value='/managebrands/add'><c:param name='role' value='${userRole}'/></c:url>">+ Add New Brand</a>
-                    </div>
-            </c:if>
+        .empty-message {
+            text-align: center;
+            padding: 24px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
-            <div class="table-card">
-                <div class="table-scroll"><!-- responsive container -->
-                    <table>
-                        <colgroup>
-                            <col class="col-id"/>
-                            <col class="col-name"/>
-                            <col class="col-logo"/>
-                            <c:if test="${staff.isAdmin}"><col class="col-actions"/></c:if>
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Logo</th>
-                                <c:if test="${staff.isAdmin}"><th>Actions</th></c:if>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <c:forEach var="brand" items="${brands}">
-                                <tr>
-                                    <td>${brand.brandId}</td>
-                                    <td title="${brand.name}">${brand.name}</td>
-                                    <td>
-                                        <c:if test="${not empty brand.logo}">
-                                            <span class="logo-box">
-                                                <img src="${brand.logo}" alt="${brand.name} logo">
-                                            </span>
-                                        </c:if>
-                                    </td>
-                                    <c:if test="${staff.isAdmin}">
-                                        <td>
-                                            <div class="actions">
-                                                <a class="btn btn-edit"
-                                                   href="<c:url value='/managebrands/edit'>
-                                                       <c:param name='id' value='${brand.brandId}'/>
-                                                       <%--<c:param name='role' value='${userRole}'/>--%>
-                                                   </c:url>">Edit</a>
+    <!-- Sidebar -->
+    <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
 
-                                                <a class="btn btn-delete"
-                                                   href="#"
-                                                   data-bs-toggle="modal"
-                                                   data-bs-target="#confirmDeleteModal"
-                                                   data-brand-id="${brand.brandId}">
-                                                    Delete
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </c:if>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
+    <!-- Notification -->
+    <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div class="container-fluid p-4">
+            <!-- Page Header -->
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1 fw-bold">Brand List</h2>
+                    <p class="text-muted mb-0 mt-1">Manage and view all brands</p>
                 </div>
-
-                <c:if test="${empty brands}">
-                    <div class="empty">No brands found.</div>
+                <c:if test="${sessionScope.role eq 'admin'}">
+                    <a href="${pageContext.request.contextPath}/staff/manage-brands/add" class="btn-add">
+                        <i data-lucide="plus" style="width:18px; height:18px;"></i>
+                        New Brand
+                    </a>
                 </c:if>
             </div>
 
-        </div>
+            <!-- Brand Table -->
+            <div class="card border-0 shadow-sm brand-table">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-3" style="width: 80px;">#</th>
+                                    <th class="py-3">NAME</th>
+                                    <th class="py-3">LOGO</th>
+                                    <c:if test="${sessionScope.role eq 'admin'}">
+                                        <th class="py-3 text-center">ACTIONS</th>
+                                    </c:if>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${empty brands}">
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">No brands found</td>
+                                        </tr>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="brand" items="${brands}" varStatus="status">
+                                            <tr>
+                                                <td class="px-4">${status.index + 1}</td>
+                                                <td>${brand.name}</td>
+                                                <td>
+                                                    <c:if test="${not empty brand.logo}">
+                                                        <img src="${brand.logo}" alt="${brand.name}" class="brand-logo"
+                                                             onerror="this.src='https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png'">
+                                                    </c:if>
+                                                    <c:if test="${empty brand.logo}">
+                                                        <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png" class="brand-logo" alt="No logo">
+                                                    </c:if>
+                                                </td>
+                                                <c:if test="${sessionScope.role eq 'admin'}">
+                                                    <td class="text-center">
+                                                        <div class="d-inline-flex align-items-center">
+                                                            <a href="${pageContext.request.contextPath}/staff/manage-brands/edit?id=${brand.brandId}" 
+                                                               class="action-btn btn-edit" title="Edit">
+                                                                <i data-lucide="edit"></i>
+                                                            </a>
 
-        <!-- Bootstrap JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-        <script>
-            // Initialize Lucide icons
-            lucide.createIcons();
-            document.addEventListener('DOMContentLoaded', function () {
-                // đánh dấu sidebar item Brands đang active
-                var el = document.getElementById('brand');
-                if (el)
-                    el.classList.add('active');
-
-                // lucide icons (nếu có)
-                if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
-                    lucide.createIcons();
-                }
-            });
-            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
-            confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const brandId = button.getAttribute('data-brand-id');
-                const inputId = confirmDeleteModal.querySelector('#deleteBrandId');
-                inputId.value = brandId;
-            });
-        </script>
-
-        <!-- Confirm Delete Modal -->
-        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-sm">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title fw-bold">Confirm Delete</h5>
-                    </div>
-                    <div class="modal-body text-center">
-                        <p>Are you sure you want to delete this brand?</p>
-                    </div>
-                    <div class="modal-footer border-0 d-flex justify-content-center">
-                        <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/managebrands">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" id="deleteBrandId">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                                                            <button type="button" 
+                                                                    class="action-btn btn-delete"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#confirmDeleteModal"
+                                                                    data-brand-id="${brand.brandId}">
+                                                                <i data-lucide="trash-2"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </c:if>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-    </body>
+            <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-sm">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <p>Are you sure you want to delete this brand?</p>
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-center">
+                    <form id="deleteForm" method="post" action="${pageContext.request.contextPath}/staff/manage-brands">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" id="deleteBrandId">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const brandId = button.getAttribute('data-brand-id');
+            document.getElementById('deleteBrandId').value = brandId;
+        });
+    </script>
+</body>
 </html>

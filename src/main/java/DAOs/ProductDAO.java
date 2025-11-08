@@ -10,6 +10,7 @@ import java.util.List;
 
 import DB.DBContext;
 import Models.Product;
+import java.math.BigDecimal;
 
 public class ProductDAO extends DBContext {
 
@@ -78,14 +79,14 @@ public class ProductDAO extends DBContext {
         product.setMaterial(rs.getString("Material"));
 
         // Xử lý giá
-        double minPrice = rs.getDouble("MinPrice");
-        double maxPrice = rs.getDouble("MaxPrice");
+        BigDecimal minPrice = rs.getBigDecimal("MinPrice");
+        BigDecimal maxPrice = rs.getBigDecimal("MaxPrice");
         if (!rs.wasNull()) {
             product.setMinPrice(minPrice);
             product.setMaxPrice(maxPrice);
         } else {
-            product.setMinPrice(0.0);
-            product.setMaxPrice(0.0);
+            product.setMinPrice(null);
+            product.setMaxPrice(null);
         }
 
         // Brand và Category name

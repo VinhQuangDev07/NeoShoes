@@ -19,6 +19,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
         <!-- Font Awesome -->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
             * {
@@ -36,6 +37,13 @@
             .container {
                 max-width: 1400px;
                 margin: 0 auto;
+            }
+
+            .main-wrapper {
+                margin-left: 300px;
+                margin-top: 74px;
+                padding: 20px;
+                min-height: calc(100vh - 74px);
             }
 
             /* Header */
@@ -679,326 +687,336 @@
         </style>
     </head>
     <body>
-        <div class="container">
-            <!-- Header -->
-            <div class="page-header">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <a href="${pageContext.request.contextPath}/staff/product" class="back-btn">
-                        ← Back
-                    </a>
-                    <h1 class="page-title">${product.name}</h1>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+        <div class="main-wrapper">
+            <div class="container">
+                <!-- Header -->
+                <div class="page-header">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <a href="${pageContext.request.contextPath}/staff/product" class="back-btn">
+                            ← Back
+                        </a>
+                        <h1 class="page-title">${product.name}</h1>
+                    </div>
+
                 </div>
 
-            </div>
-
-            <!-- Success/Error Messages -->
-            <c:if test="${not empty param.success}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle me-2"></i>
-                    ${param.success}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            </c:if>
-
-            <c:if test="${not empty param.error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    ${param.error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            </c:if>
-
-            <!-- Main Content -->
-            <div class="content-grid">
-                <!-- Left Column: Image Gallery -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Product Image</h2>
+                <!-- Success/Error Messages -->
+                <c:if test="${not empty param.success}">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${param.success}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                    <div class="card-body">
-                        <div class="image-gallery">
-                            <img src="${product.defaultImageUrl}" alt="${product.name}" class="main-image" id="mainImage">
+                </c:if>
 
-                            <c:if test="${not empty productImages}">
-                                <div class="thumbnail-list">
-                                    <c:forEach var="image" items="${productImages}" varStatus="status">
-                                        <img src="${image.imageUrl}" 
-                                             alt="Ảnh ${status.index + 1}" 
-                                             class="thumbnail ${status.index == 0 ? 'active' : ''}"
-                                             onclick="changeMainImage('${image.imageUrl}', this)">
-                                    </c:forEach>
-                                </div>
-                            </c:if>
-
-
-                        </div>
+                <c:if test="${not empty param.error}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${param.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                </div>
+                </c:if>
 
-                <!-- Right Column: Product Info -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Product Information</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="info-row">
-                            <div class="info-label">Product ID:</div>
-                            <div class="info-value"><strong>#${product.productId}</strong></div>
+                <!-- Main Content -->
+                <div class="content-grid">
+                    <!-- Left Column: Image Gallery -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Product Image</h2>
                         </div>
+                        <div class="card-body">
+                            <div class="image-gallery">
+                                <img src="${product.defaultImageUrl}" alt="${product.name}" class="main-image" id="mainImage">
 
-                        <div class="info-row">
-                            <div class="info-label">Product Name:</div>
-                            <div class="info-value"><strong>${product.name}</strong></div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Brand:</div>
-                            <div class="info-value">
-                                <span class="tag blue">${product.brandName}</span>
-                            </div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Category:</div>
-                            <div class="info-value">
-                                <span class="tag green">${product.categoryName}</span>
-                            </div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Material:</div>
-                            <div class="info-value">${product.material}</div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Status:</div>
-                            <div class="info-value">
-                                <span class="tag green">Active</span>
-                            </div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Created Date:</div>
-                            <div class="info-value">
-                                <i class="fas fa-calendar-alt me-1"></i>${product.formattedCreatedAt}
-                            </div>
-                        </div>
-
-                        <div class="info-row">
-                            <div class="info-label">Last Updated:</div>
-                            <div class="info-value">
-                                <i class="fas fa-clock me-1"></i>${product.formattedUpdatedAt}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Description -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Product Description</h2>
-                    </div>
-                    <div class="card-body">
-                        <c:choose>
-                            <c:when test="${not empty product.description}">
-                                <div class="description">${product.description}</div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">📝</div>
-                                    <div class="empty-state-text">No description available</div>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-
-                <!-- Reviews Section -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-star me-2"></i>Product Reviews
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="reviews-summary">
-                            <div class="review-stats">
-                                <div class="review-count">
-                                    <div class="count-number">${reviews.size()}</div>
-                                    <div class="count-label">Total Reviews</div>
-                                </div>
-                                <div class="review-actions">
-                                    <a href="<c:url value='/reviews?productId=${product.productId}&showReplyButton=true'/>" 
-                                       class="btn btn-primary btn-lg" target="_blank">
-                                        <i class="fas fa-eye me-2"></i>View All Reviews
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Statistics -->
-                <div class="card" style="grid-column: 1 / -1;">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <i class="fas fa-chart-bar me-2"></i>Product Statistics
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="stats-row">
-                            <div class="stat-box">
-                                <div class="stat-label">Total Quantity</div>
-                                <div class="stat-value">${totalQuantity}</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-label">Variants</div>
-                                <div class="stat-value">${fn:length(productVariants)}</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-label">Price Range</div>
-                                <div class="stat-value">
-                                    <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/> - 
-                                    <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
-                                </div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-label">Reviews</div>
-                                <div class="stat-value">${reviews.size()} reviews</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Variants Table -->
-                <div class="card variants-section">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 class="card-title">Variant List</h2>
-                        <button class="btn btn-primary" onclick="addVariant()">
-                            ➕ Add Variant
-                        </button>
-                    </div>
-                    <div class="card-body" style="padding: 0;">
-                        <c:choose>
-                            <c:when test="${not empty productVariants}">
-                                <table class="variant-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Image</th>
-                                            <th>Size/Color</th>
-                                            <th>Brand</th>
-                                            <th>Price</th>
-                                            <th>Quantity</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <c:forEach var="variant" items="${productVariants}">
-                                            <tr>
-                                                <!-- Image - SỬA: Dùng variant.image thay vì product.defaultImageUrl -->
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${not empty variant.image}">
-                                                            <img src="${variant.image}" alt="${product.name}" 
-                                                                 style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;"
-                                                                 onerror="this.src='https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png'">
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <img src="https://nftcalendar.io/storage/uploads/2022/02/21/image-not-found_0221202211372462137974b6c1a.png" 
-                                                                 alt="No image" 
-                                                                 style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </td>
-
-                                                <!-- Size/Color -->
-                                                <td>
-                                                    <c:if test="${not empty variant.size}">
-                                                        <span class="tag purple">Size: ${variant.size}</span>
-                                                    </c:if>
-                                                    <c:if test="${not empty variant.color}">
-                                                        <span class="tag blue">Color: ${variant.color}</span>
-                                                    </c:if>
-                                                    <c:if test="${empty variant.size && empty variant.color}">
-                                                        <span class="tag">Default</span>
-                                                    </c:if>
-                                                </td>
-
-                                                <!-- Brand -->
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${not empty product.brandName}">
-                                                            <span class="tag purple">${product.brandName}</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span style="color: #94a3b8;">-</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </td>
-
-                                                <!-- Price -->
-                                                <td>
-                                                    <strong style="color: #059669;">
-                                                        <fmt:formatNumber value="${variant.price}" pattern="#,###" groupingUsed="true"/>$
-                                                    </strong>
-                                                </td>
-
-                                                <!-- Quantity -->
-                                                <td>
-                                                    <strong style="font-size: 15px;">
-                                                        ${variant.quantityAvailable}
-                                                    </strong>
-                                                </td>
-
-                                                <!-- Status -->
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${variant.quantityAvailable > 10}">
-                                                            <span class="status-badge in-stock">Available</span>
-                                                        </c:when>
-                                                        <c:when test="${variant.quantityAvailable > 0}">
-                                                            <span class="status-badge low-stock">Nearly out of stock</span>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <span class="status-badge out-of-stock">Out of stock</span>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </td>
-
-                                                <!-- Actions - SỬA: Dùng data attribute thay vì truyền string trực tiếp -->
-                                                <td>
-                                                    <div class="variant-actions">
-                                                        <button class="icon-btn edit" 
-                                                                onclick="editVariant(${variant.productVariantId})" 
-                                                                title="Edit Variant">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button class="icon-btn delete" 
-                                                                data-variant-id="${variant.productVariantId}"
-                                                                data-variant-size="${variant.size}"
-                                                                data-variant-color="${variant.color}"
-                                                                onclick="deleteVariant(this)" 
-                                                                title="Delete Variant">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                <c:if test="${not empty productImages}">
+                                    <div class="thumbnail-list">
+                                        <c:forEach var="image" items="${productImages}" varStatus="status">
+                                            <img src="${image.imageUrl}" 
+                                                 alt="Ảnh ${status.index + 1}" 
+                                                 class="thumbnail ${status.index == 0 ? 'active' : ''}"
+                                                 onclick="changeMainImage('${image.imageUrl}', this)">
                                         </c:forEach>
+                                    </div>
+                                </c:if>
 
-                                    </tbody>
-                                </table>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">📦</div>
-                                    <div class="empty-state-text">Empty Variant</div>
 
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Product Info -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Product Information</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <div class="info-label">Product ID:</div>
+                                <div class="info-value"><strong>#${product.productId}</strong></div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Product Name:</div>
+                                <div class="info-value"><strong>${product.name}</strong></div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Brand:</div>
+                                <div class="info-value">
+                                    <span class="tag blue">${product.brandName}</span>
                                 </div>
-                            </c:otherwise>
-                        </c:choose>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Category:</div>
+                                <div class="info-value">
+                                    <span class="tag green">${product.categoryName}</span>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Material:</div>
+                                <div class="info-value">${product.material}</div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Status:</div>
+                                <div class="info-value">
+                                    <span class="tag green">Active</span>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Created Date:</div>
+                                <div class="info-value">
+                                    <i class="fas fa-calendar-alt me-1"></i>${product.formattedCreatedAt}
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Last Updated:</div>
+                                <div class="info-value">
+                                    <i class="fas fa-clock me-1"></i>${product.formattedUpdatedAt}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Product Description</h2>
+                        </div>
+                        <div class="card-body">
+                            <c:choose>
+                                <c:when test="${not empty product.description}">
+                                    <div class="description">${product.description}</div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">📝</div>
+                                        <div class="empty-state-text">No description available</div>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-star me-2"></i>Product Reviews
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="reviews-summary">
+                                <div class="review-stats">
+                                    <div class="review-count">
+                                        <div class="count-number">${reviews.size()}</div>
+                                        <div class="count-label">Total Reviews</div>
+                                    </div>
+                                    <div class="review-actions">
+                                        <a href="<c:url value='/reviews?productId=${product.productId}&showReplyButton=true'/>" 
+                                           class="btn btn-primary btn-lg" target="_blank">
+                                            <i class="fas fa-eye me-2"></i>View All Reviews
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-bar me-2"></i>Product Statistics
+                            </h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="stats-row">
+                                <div class="stat-box">
+                                    <div class="stat-label">Total Quantity</div>
+                                    <div class="stat-value">${totalQuantity}</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Variants</div>
+                                    <div class="stat-value">${fn:length(productVariants)}</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Price Range</div>
+                                    <div class="stat-value">
+                                        <fmt:formatNumber value="${minPrice}" type="currency" currencySymbol="$"/> - 
+                                        <fmt:formatNumber value="${maxPrice}" type="currency" currencySymbol="$"/>
+                                    </div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">Reviews</div>
+                                    <div class="stat-value">${reviews.size()} reviews</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Variants Table -->
+                    <div class="card variants-section">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="card-title">Variant List</h2>
+                            <button class="btn btn-primary" onclick="addVariant()">
+                                ➕ Add Variant
+                            </button>
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <c:choose>
+                                <c:when test="${not empty productVariants}">
+                                    <table class="variant-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th>Size/Color</th>
+                                                <th>Brand</th>
+                                                <th>Price</th>
+                                                <th>Quantity</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:forEach var="variant" items="${productVariants}">
+                                                <tr>
+                                                    <!-- Image - SỬA: Dùng variant.image thay vì product.defaultImageUrl -->
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty variant.image}">
+                                                                <img src="${variant.image}" alt="${product.name}" 
+                                                                     style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;"
+                                                                     onerror="this.src='https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png'">
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png" 
+                                                                     alt="No image" 
+                                                                     style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+
+                                                    <!-- Size/Color -->
+                                                    <td>
+                                                        <c:if test="${not empty variant.size}">
+                                                            <span class="tag purple">Size: ${variant.size}</span>
+                                                        </c:if>
+                                                        <c:if test="${not empty variant.color}">
+                                                            <span class="tag blue">Color: ${variant.color}</span>
+                                                        </c:if>
+                                                        <c:if test="${empty variant.size && empty variant.color}">
+                                                            <span class="tag">Default</span>
+                                                        </c:if>
+                                                    </td>
+
+                                                    <!-- Brand -->
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${not empty product.brandName}">
+                                                                <span class="tag purple">${product.brandName}</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color: #94a3b8;">-</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+
+                                                    <!-- Price -->
+                                                    <td>
+                                                        <strong style="color: #059669;">
+                                                            <fmt:formatNumber value="${variant.price}" pattern="#,###" groupingUsed="true"/>$
+                                                        </strong>
+                                                    </td>
+
+                                                    <!-- Quantity -->
+                                                    <td>
+                                                        <strong style="font-size: 15px;">
+                                                            ${variant.quantityAvailable}
+                                                        </strong>
+                                                    </td>
+
+                                                    <!-- Status -->
+                                                    <td>
+                                                        <c:choose>
+                                                            <c:when test="${variant.quantityAvailable > 10}">
+                                                                <span class="status-badge in-stock">Available</span>
+                                                            </c:when>
+                                                            <c:when test="${variant.quantityAvailable > 0}">
+                                                                <span class="status-badge low-stock">Nearly out of stock</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="status-badge out-of-stock">Out of stock</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+
+                                                    <!-- Actions - SỬA: Dùng data attribute thay vì truyền string trực tiếp -->
+                                                    <td>
+                                                        <div class="variant-actions">
+                                                            <button class="icon-btn edit" 
+                                                                    onclick="editVariant(${variant.productVariantId})" 
+                                                                    title="Edit Variant">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button class="icon-btn delete" 
+                                                                    data-variant-id="${variant.productVariantId}"
+                                                                    data-variant-size="${variant.size}"
+                                                                    data-variant-color="${variant.color}"
+                                                                    onclick="deleteVariant(this)" 
+                                                                    title="Delete Variant">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+
+                                        </tbody>
+                                    </table>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">📦</div>
+                                        <div class="empty-state-text">Empty Variant</div>
+
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1113,7 +1131,7 @@
                 const colorTag = row.querySelector('.tag.blue');
                 const sizeTag = row.querySelector('.tag.purple');
                 const price = row.querySelector('td:nth-child(4) strong').textContent.replace(/[^0-9.]/g, '');
-               
+
                 const image = row.querySelector('img').src;
                 // Extract color and size from tags
                 const color = colorTag ? colorTag.textContent.replace('Color: ', '').trim() : '';
@@ -1123,7 +1141,7 @@
                 document.getElementById('edit_color').value = color;
                 document.getElementById('edit_size').value = size;
                 document.getElementById('edit_price').value = price;
-              
+
                 document.getElementById('edit_image').value = image;
                 // Show preview
                 const preview = document.getElementById('editImagePreview');

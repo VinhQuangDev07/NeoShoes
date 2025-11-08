@@ -16,6 +16,8 @@
         <title>Return Request Detail - #${returnRequest.returnRequestId}</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <style>
             body {
                 background-color: #f5f5f5;
@@ -25,6 +27,14 @@
                 padding: 20px;
                 max-width: 1400px;
             }
+
+            .main-wrapper {
+                margin-left: 300px;
+                margin-top: 74px;
+                padding: 20px;
+                min-height: calc(100vh - 74px);
+            }
+
             .page-header {
                 background-color: white;
                 padding: 20px;
@@ -212,355 +222,373 @@
         </style>
     </head>
     <body>
-        <!-- ✅ FIX 1: Check returnRequest null -->
-        <c:if test="${empty returnRequest}">
-            <div class="container-fluid">
-                <div class="error-container">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h4>Return Request Not Found</h4>
-                    <p class="text-muted">The requested return request could not be found.</p>
-                    <a href="${pageContext.request.contextPath}/admin/manage-return-request" class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Back to All Returns
-                    </a>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+
+        <div class="main-wrapper">
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">Return Request Detail</h2>
+                    </div>
                 </div>
             </div>
-        </c:if>
-
-        <c:if test="${not empty returnRequest}">
-            <div class="container-fluid">
-                <div class="page-header">
-                    <a href="${pageContext.request.contextPath}/admin/manage-return-request" class="back-btn">
-                        <i class="fas fa-arrow-left"></i> Back to All Returns
-                    </a>
-                    <h4 class="mb-0">Return Request Detail - #${returnRequest.returnRequestId}</h4>
+            <!-- ✅ FIX 1: Check returnRequest null -->
+            <c:if test="${empty returnRequest}">
+                <div class="container-fluid">
+                    <div class="error-container">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h4>Return Request Not Found</h4>
+                        <p class="text-muted">The requested return request could not be found.</p>
+                        <a href="${pageContext.request.contextPath}/staff/manage-return-request" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Back to All Returns
+                        </a>
+                    </div>
                 </div>
+            </c:if>
 
-                <!-- Success/Error Messages -->
-                <c:if test="${not empty sessionScope.successMessage}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle"></i> <c:out value="${sessionScope.successMessage}"/>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <c:if test="${not empty returnRequest}">
+                <div class="container-fluid">
+                    <div class="page-header">
+                        <a href="${pageContext.request.contextPath}/staff/manage-return-request" class="back-btn">
+                            <i class="fas fa-arrow-left"></i> Back to All Returns
+                        </a>
+                        <h4 class="mb-0">Return Request Detail - #${returnRequest.returnRequestId}</h4>
                     </div>
-                    <c:remove var="successMessage" scope="session"/>
-                </c:if>
 
-                <c:if test="${not empty sessionScope.errorMessage}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle"></i> <c:out value="${sessionScope.errorMessage}"/>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    <c:remove var="errorMessage" scope="session"/>
-                </c:if>
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <!-- Return Request Information -->
-                        <div class="info-card">
-                            <div class="card-title">
-                                <i class="fas fa-info-circle"></i> Return Request Information
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Request ID:</div>
-                                <div class="info-value">#${returnRequest.returnRequestId}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Order ID:</div>
-                                <div class="info-value">
-
-                                    #${returnRequest.orderId}
-
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Customer ID:</div>
-                                <div class="info-value">${returnRequest.customerId}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Created Date:</div>
-                                <div class="info-value">
-                                    <c:out value="${returnRequest.formattedRequestDate}" default="N/A"/>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Decision Date:</div>
-                                <div class="info-value">
-                                    <c:out value="${returnRequest.formattedDecideDate}" default="N/A"/>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Return Status:</div>
-                                <div class="info-value">
-                                    <!-- ✅ FIX 2: Sửa logic status badge - case insensitive -->
-                                    <c:set var="statusUpper" value="${fn:toUpperCase(returnRequest.returnStatus)}"/>
-                                    <span class="badge bg-${statusUpper == 'APPROVED' ? 'success' : statusUpper == 'PENDING' ? 'warning' : statusUpper == 'REJECTED' ? 'danger' : 'secondary'}">
-                                        <c:out value="${returnRequest.returnStatus}"/>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Reason:</div>
-                                <!-- ✅ FIX 3: Escape XSS -->
-                                <div class="info-value">
-                                    <c:out value="${returnRequest.reason}" default="N/A"/>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Bank Account Info:</div>
-                                <div class="info-value">
-                                    <c:out value="${returnRequest.bankAccountInfo}" default="N/A"/>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Note:</div>
-                                <div class="info-value">
-                                    <c:out value="${returnRequest.note}" default="No additional notes"/>
-                                </div>
-                            </div>
+                    <!-- Success/Error Messages -->
+                    <c:if test="${not empty sessionScope.successMessage}">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> <c:out value="${sessionScope.successMessage}"/>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
+                        <c:remove var="successMessage" scope="session"/>
+                    </c:if>
 
-                        <!-- Return Items -->
-                        <div class="table-container">
-                            <div class="card-title">
-                                <i class="fas fa-box"></i> Return Items
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Variant ID</th>
-                                            <th class="text-center">Quantity</th>
-                                            <th class="text-end">Amount</th>
-                                            <th>Note</th>
-                                            <th>Refund Date</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- ✅ FIX 4: Check returnDetails not empty -->
-                                        <c:if test="${not empty returnDetails}">
-                                            <c:forEach var="detail" items="${returnDetails}">
-                                                <tr>
-                                                    <td>
-                                                        <div class="product-info">
-                                                            <img src="${pageContext.request.contextPath}/images/product-placeholder.png" 
-                                                                 alt="Product" class="product-image">
-                                                            <div>
-                                                                <div>Product Variant</div>
-                                                                <small class="text-muted">ID: ${detail.productVariantId}</small>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>${detail.productVariantId}</td>
-                                                    <td class="text-center">${detail.quantity}</td>
-                                                    <td class="text-end">
-                                                        <!-- ✅ FIX 5: Handle null amount -->
-                                                        <c:choose>
-                                                            <c:when test="${detail.amount != null}">
-                                                                <fmt:formatNumber value="${detail.amount}" type="currency" currencySymbol="$"/>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                $0.00
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </td>
-                                                    <td>
-                                                        <c:out value="${detail.note}" default="-"/>
-                                                    </td>
-                                                    <td>
-                                                        <c:choose>
-                                                            <c:when test="${detail.refundDate != null}">
-                                                                <c:out value="${detail.formattedRefundDate}"/>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="text-muted">Not refunded</span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </td>
-                                                </tr>
-                                            </c:forEach>
-                                        </c:if>
+                    <c:if test="${not empty sessionScope.errorMessage}">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle"></i> <c:out value="${sessionScope.errorMessage}"/>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <c:remove var="errorMessage" scope="session"/>
+                    </c:if>
 
-                                        <c:if test="${empty returnDetails}">
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted">
-                                                    No items found for this return request
-                                                </td>
-                                            </tr>
-                                        </c:if>
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Return Request Information -->
+                            <div class="info-card">
+                                <div class="card-title">
+                                    <i class="fas fa-info-circle"></i> Return Request Information
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Request ID:</div>
+                                    <div class="info-value">#${returnRequest.returnRequestId}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Order ID:</div>
+                                    <div class="info-value">
 
-                            <!-- Total Section -->
-                            <c:if test="${not empty returnDetails}">
-                                <div class="total-section">
-                                    <div class="total-label">Total Refund Amount:</div>
-                                    <div class="total-amount">
-                                        <!-- ✅ FIX 6: Safe total calculation -->
-                                        <c:set var="totalAmount" value="0"/>
-                                        <c:forEach var="detail" items="${returnDetails}">
-                                            <c:if test="${detail.amount != null}">
-                                                <c:set var="totalAmount" value="${totalAmount + detail.amount}"/>
-                                            </c:if>
-                                        </c:forEach>
-                                        <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="$"/>
+                                        #${returnRequest.orderId}
+
                                     </div>
                                 </div>
-                            </c:if>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <!-- ✅ FIX 7: Case-insensitive status check -->
-                        <c:set var="statusUpper" value="${fn:toUpperCase(returnRequest.returnStatus)}"/>
-
-                        <c:if test="${statusUpper == 'PENDING'}">
-                            <div class="action-buttons">
-                                <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
-                                    <input type="hidden" name="action" value="updateStatus">
-                                    <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
-                                    <input type="hidden" name="status" value="APPROVED">
-                                    <button type="submit" class="btn-approve" onclick="return confirm('Are you sure you want to approve this return request?')">
-                                        <i class="fas fa-check"></i> Approve Request
-                                    </button>
-                                </form>
-                                <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
-                                    <input type="hidden" name="action" value="updateStatus">
-                                    <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
-                                    <input type="hidden" name="status" value="REJECTED">
-                                    <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this return request?')">
-                                        <i class="fas fa-times"></i> Reject Request
-                                    </button>
-                                </form>
+                                <div class="info-row">
+                                    <div class="info-label">Customer ID:</div>
+                                    <div class="info-value">${returnRequest.customerId}</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Created Date:</div>
+                                    <div class="info-value">
+                                        <c:out value="${returnRequest.formattedRequestDate}" default="N/A"/>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Decision Date:</div>
+                                    <div class="info-value">
+                                        <c:out value="${returnRequest.formattedDecideDate}" default="N/A"/>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Return Status:</div>
+                                    <div class="info-value">
+                                        <!-- ✅ FIX 2: Sửa logic status badge - case insensitive -->
+                                        <c:set var="statusUpper" value="${fn:toUpperCase(returnRequest.returnStatus)}"/>
+                                        <span class="badge bg-${statusUpper == 'APPROVED' ? 'success' : statusUpper == 'PENDING' ? 'warning' : statusUpper == 'REJECTED' ? 'danger' : 'secondary'}">
+                                            <c:out value="${returnRequest.returnStatus}"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Reason:</div>
+                                    <!-- ✅ FIX 3: Escape XSS -->
+                                    <div class="info-value">
+                                        <c:out value="${returnRequest.reason}" default="N/A"/>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Bank Account Info:</div>
+                                    <div class="info-value">
+                                        <c:out value="${returnRequest.bankAccountInfo}" default="N/A"/>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Note:</div>
+                                    <div class="info-value">
+                                        <c:out value="${returnRequest.note}" default="No additional notes"/>
+                                    </div>
+                                </div>
                             </div>
-                        </c:if>
 
-                        <!-- ✅ FIX 8: Chỉ hiện nút Process Refund nếu chưa refund -->
-                        <c:if test="${statusUpper == 'APPROVED'}">
-                            <!-- Check if any detail is not yet refunded -->
-                            <c:set var="hasUnrefunded" value="false"/>
-                            <c:forEach var="detail" items="${returnDetails}">
-                                <c:if test="${detail.refundDate == null}">
-                                    <c:set var="hasUnrefunded" value="true"/>
+                            <!-- Return Items -->
+                            <div class="table-container">
+                                <div class="card-title">
+                                    <i class="fas fa-box"></i> Return Items
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Variant ID</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-end">Amount</th>
+                                                <th>Note</th>
+                                                <th>Refund Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- ✅ FIX 4: Check returnDetails not empty -->
+                                            <c:if test="${not empty returnDetails}">
+                                                <c:forEach var="detail" items="${returnDetails}">
+                                                    <tr>
+                                                        <td>
+                                                            <div class="product-info">
+                                                                <img src="${pageContext.request.contextPath}/images/product-placeholder.png" 
+                                                                     alt="Product" class="product-image">
+                                                                <div>
+                                                                    <div>Product Variant</div>
+                                                                    <small class="text-muted">ID: ${detail.productVariantId}</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>${detail.productVariantId}</td>
+                                                        <td class="text-center">${detail.quantity}</td>
+                                                        <td class="text-end">
+                                                            <!-- ✅ FIX 5: Handle null amount -->
+                                                            <c:choose>
+                                                                <c:when test="${detail.amount != null}">
+                                                                    <fmt:formatNumber value="${detail.amount}" type="currency" currencySymbol="$"/>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    $0.00
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td>
+                                                            <c:out value="${detail.note}" default="-"/>
+                                                        </td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${detail.refundDate != null}">
+                                                                    <c:out value="${detail.formattedRefundDate}"/>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="text-muted">Not refunded</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </c:if>
+
+                                            <c:if test="${empty returnDetails}">
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">
+                                                        No items found for this return request
+                                                    </td>
+                                                </tr>
+                                            </c:if>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Total Section -->
+                                <c:if test="${not empty returnDetails}">
+                                    <div class="total-section">
+                                        <div class="total-label">Total Refund Amount:</div>
+                                        <div class="total-amount">
+                                            <!-- ✅ FIX 6: Safe total calculation -->
+                                            <c:set var="totalAmount" value="0"/>
+                                            <c:forEach var="detail" items="${returnDetails}">
+                                                <c:if test="${detail.amount != null}">
+                                                    <c:set var="totalAmount" value="${totalAmount + detail.amount}"/>
+                                                </c:if>
+                                            </c:forEach>
+                                            <fmt:formatNumber value="${totalAmount}" type="currency" currencySymbol="$"/>
+                                        </div>
+                                    </div>
                                 </c:if>
-                            </c:forEach>
+                            </div>
 
-                            <c:if test="${hasUnrefunded}">
+                            <!-- Action Buttons -->
+                            <!-- ✅ FIX 7: Case-insensitive status check -->
+                            <c:set var="statusUpper" value="${fn:toUpperCase(returnRequest.returnStatus)}"/>
+
+                            <c:if test="${statusUpper == 'PENDING'}">
                                 <div class="action-buttons">
                                     <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
-                                        <input type="hidden" name="action" value="processRefund">
+                                        <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
-                                        <button type="submit" class="btn-refund" onclick="return confirm('Are you sure you want to process the refund?')">
-                                            <i class="fas fa-money-bill-wave"></i> Process Refund
+                                        <input type="hidden" name="status" value="APPROVED">
+                                        <button type="submit" class="btn-approve" onclick="return confirm('Are you sure you want to approve this return request?')">
+                                            <i class="fas fa-check"></i> Approve Request
+                                        </button>
+                                    </form>
+                                    <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
+                                        <input type="hidden" name="action" value="updateStatus">
+                                        <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
+                                        <input type="hidden" name="status" value="REJECTED">
+                                        <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this return request?')">
+                                            <i class="fas fa-times"></i> Reject Request
                                         </button>
                                     </form>
                                 </div>
                             </c:if>
-                        </c:if>
-                    </div>
 
-                    <div class="col-md-4">
-                        <!-- Timeline -->
-                        <div class="info-card">
-                            <div class="card-title">
-                                <i class="fas fa-clock"></i> Timeline
-                            </div>
-                            <div class="timeline">
-                                <div class="timeline-item">
-                                    <div class="timeline-date">
-                                        <c:out value="${returnRequest.formattedRequestDate}" default="N/A"/>
-                                    </div>
-                                    <div class="timeline-content">
-                                        <strong>Return Request Created</strong><br>
-                                        Customer submitted return request
-                                    </div>
-                                </div>
+                            <!-- ✅ FIX 8: Chỉ hiện nút Process Refund nếu chưa refund -->
+                            <c:if test="${statusUpper == 'APPROVED'}">
+                                <!-- Check if any detail is not yet refunded -->
+                                <c:set var="hasUnrefunded" value="false"/>
+                                <c:forEach var="detail" items="${returnDetails}">
+                                    <c:if test="${detail.refundDate == null}">
+                                        <c:set var="hasUnrefunded" value="true"/>
+                                    </c:if>
+                                </c:forEach>
 
-                                <!-- ✅ FIX 9: Case-insensitive check -->
-                                <c:if test="${statusUpper == 'APPROVED' || statusUpper == 'REJECTED'}">
-                                    <div class="timeline-item">
-                                        <div class="timeline-date">
-                                            <c:out value="${returnRequest.formattedDecideDate}" default="N/A"/>
-                                        </div>
-                                        <div class="timeline-content">
-                                            <strong>Request ${fn:toLowerCase(statusUpper) == 'approved' ? 'Approved' : 'Rejected'}</strong><br>
-                                            Return request was ${fn:toLowerCase(statusUpper)} by admin
-                                        </div>
+                                <c:if test="${hasUnrefunded}">
+                                    <div class="action-buttons">
+                                        <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
+                                            <input type="hidden" name="action" value="processRefund">
+                                            <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
+                                            <button type="submit" class="btn-refund" onclick="return confirm('Are you sure you want to process the refund?')">
+                                                <i class="fas fa-money-bill-wave"></i> Process Refund
+                                            </button>
+                                        </form>
                                     </div>
                                 </c:if>
+                            </c:if>
+                        </div>
 
-                                <!-- Show refund timeline if applicable -->
-                                <c:if test="${statusUpper == 'APPROVED'}">
-                                    <c:set var="hasRefunded" value="false"/>
-                                    <c:set var="refundDate" value=""/>
-                                    <c:forEach var="detail" items="${returnDetails}">
-                                        <c:if test="${detail.refundDate != null && !hasRefunded}">
-                                            <c:set var="hasRefunded" value="true"/>
-                                            <c:set var="refundDate" value="${detail.formattedRefundDate}"/>
-                                        </c:if>
-                                    </c:forEach>
+                        <div class="col-md-4">
+                            <!-- Timeline -->
+                            <div class="info-card">
+                                <div class="card-title">
+                                    <i class="fas fa-clock"></i> Timeline
+                                </div>
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-date">
+                                            <c:out value="${returnRequest.formattedRequestDate}" default="N/A"/>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <strong>Return Request Created</strong><br>
+                                            Customer submitted return request
+                                        </div>
+                                    </div>
 
-                                    <c:if test="${hasRefunded}">
+                                    <!-- ✅ FIX 9: Case-insensitive check -->
+                                    <c:if test="${statusUpper == 'APPROVED' || statusUpper == 'REJECTED'}">
                                         <div class="timeline-item">
-                                            <div class="timeline-date"><c:out value="${refundDate}"/></div>
+                                            <div class="timeline-date">
+                                                <c:out value="${returnRequest.formattedDecideDate}" default="N/A"/>
+                                            </div>
                                             <div class="timeline-content">
-                                                <strong>Refund Processed</strong><br>
-                                                Payment has been refunded to customer
+                                                <strong>Request ${fn:toLowerCase(statusUpper) == 'approved' ? 'Approved' : 'Rejected'}</strong><br>
+                                                Return request was ${fn:toLowerCase(statusUpper)} by admin
                                             </div>
                                         </div>
                                     </c:if>
-                                </c:if>
-                            </div>
-                        </div>
 
-                        <!-- Quick Stats -->
-                        <div class="info-card">
-                            <div class="card-title">
-                                <i class="fas fa-chart-bar"></i> Quick Stats
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Total Items:</div>
-                                <!-- ✅ FIX 10: Safe size check -->
-                                <div class="info-value">
-                                    <c:choose>
-                                        <c:when test="${not empty returnDetails}">
-                                            ${fn:length(returnDetails)}
-                                        </c:when>
-                                        <c:otherwise>
-                                            0
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Total Quantity:</div>
-                                <div class="info-value">
-                                    <c:set var="totalQty" value="0"/>
-                                    <c:if test="${not empty returnDetails}">
+                                    <!-- Show refund timeline if applicable -->
+                                    <c:if test="${statusUpper == 'APPROVED'}">
+                                        <c:set var="hasRefunded" value="false"/>
+                                        <c:set var="refundDate" value=""/>
                                         <c:forEach var="detail" items="${returnDetails}">
-                                            <c:set var="totalQty" value="${totalQty + detail.quantity}"/>
+                                            <c:if test="${detail.refundDate != null && !hasRefunded}">
+                                                <c:set var="hasRefunded" value="true"/>
+                                                <c:set var="refundDate" value="${detail.formattedRefundDate}"/>
+                                            </c:if>
                                         </c:forEach>
+
+                                        <c:if test="${hasRefunded}">
+                                            <div class="timeline-item">
+                                                <div class="timeline-date"><c:out value="${refundDate}"/></div>
+                                                <div class="timeline-content">
+                                                    <strong>Refund Processed</strong><br>
+                                                    Payment has been refunded to customer
+                                                </div>
+                                            </div>
+                                        </c:if>
                                     </c:if>
-                                    ${totalQty}
                                 </div>
                             </div>
-                            <div class="info-row">
-                                <div class="info-label">Processing Time:</div>
-                                <div class="info-value">
-                                    <c:choose>
-                                        <c:when test="${statusUpper == 'PENDING'}">
-                                            <span class="text-warning">In Progress</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="text-success">Completed</span>
-                                        </c:otherwise>
-                                    </c:choose>
+
+                            <!-- Quick Stats -->
+                            <div class="info-card">
+                                <div class="card-title">
+                                    <i class="fas fa-chart-bar"></i> Quick Stats
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Total Items:</div>
+                                    <!-- ✅ FIX 10: Safe size check -->
+                                    <div class="info-value">
+                                        <c:choose>
+                                            <c:when test="${not empty returnDetails}">
+                                                ${fn:length(returnDetails)}
+                                            </c:when>
+                                            <c:otherwise>
+                                                0
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Total Quantity:</div>
+                                    <div class="info-value">
+                                        <c:set var="totalQty" value="0"/>
+                                        <c:if test="${not empty returnDetails}">
+                                            <c:forEach var="detail" items="${returnDetails}">
+                                                <c:set var="totalQty" value="${totalQty + detail.quantity}"/>
+                                            </c:forEach>
+                                        </c:if>
+                                        ${totalQty}
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Processing Time:</div>
+                                    <div class="info-value">
+                                        <c:choose>
+                                            <c:when test="${statusUpper == 'PENDING'}">
+                                                <span class="text-warning">In Progress</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-success">Completed</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </c:if>
+            </c:if>
+        </div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     </body>

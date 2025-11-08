@@ -67,7 +67,7 @@ public class StaffLoginServlet extends HttpServlet {
         if (redirect != null && !redirect.isEmpty()) {
             response.sendRedirect(redirect);
         } else {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
         }
     }
 }

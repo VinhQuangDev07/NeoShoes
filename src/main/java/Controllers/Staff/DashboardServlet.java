@@ -9,6 +9,8 @@ import Models.Dashboard;
 import Models.OrderStatus;
 import Models.Product;
 import Models.Revenue;
+import Models.Staff;
+import Utils.Utils;
 import com.google.gson.Gson;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -16,6 +18,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,6 +56,13 @@ public class DashboardServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+
         // Get filter type (default: daily)
         String filterType = request.getParameter("filterType");
         if (filterType == null || filterType.isEmpty()) {
@@ -93,7 +103,7 @@ public class DashboardServlet extends HttpServlet {
 
                 // Use default if not provided
                 if (startDate == null || endDate == null) {
-                    String[] defaultRange = dashboardDAO.getDefaultDateRange();
+                    String[] defaultRange = Utils.getDefaultDateRange();
                     startDate = defaultRange[0];
                     endDate = defaultRange[1];
                 }
@@ -109,7 +119,7 @@ public class DashboardServlet extends HttpServlet {
 
                 // Use default if not provided
                 if (startMonth == null || endMonth == null) {
-                    String[] defaultRange = dashboardDAO.getDefaultMonthRange();
+                    String[] defaultRange = Utils.getDefaultMonthRange();
                     startMonth = defaultRange[0];
                     endMonth = defaultRange[1];
                 }
@@ -125,7 +135,7 @@ public class DashboardServlet extends HttpServlet {
 
                 // Use default if not provided
                 if (startYear == null || endYear == null) {
-                    int[] defaultRange = dashboardDAO.getDefaultYearRange();
+                    int[] defaultRange = Utils.getDefaultYearRange();
                     startYear = String.valueOf(defaultRange[0]);
                     endYear = String.valueOf(defaultRange[1]);
                 }

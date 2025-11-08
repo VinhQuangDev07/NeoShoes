@@ -312,14 +312,13 @@
         </style>
     </head>
     <body>
-
-
         <!-- Header -->
-        <jsp:include page="common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
         <!-- Sidebar -->
-        <jsp:include page="common/staff-sidebar.jsp"/>
-        
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <div class="wrap">
@@ -335,7 +334,7 @@
                 </div>
 
 
-            <!-- Add button (Admin only) -->
+                <!-- Add button (Admin only) -->
             <c:if test="${canModify}">
                 <div class="toolbar">
                     <a class="btn-add" href="<c:url value='/vouchermanage/add'><c:param name='role' value='${userRole}'/></c:url>">
@@ -522,33 +521,33 @@
 
         </script>
 
-<!--        <script>
-            // 1) Tự ẩn sau 3 giây
-            window.addEventListener('DOMContentLoaded', () => {
-                document.querySelectorAll('.alert').forEach(el => {
-                    setTimeout(() => {
-                        // dùng API của Bootstrap 5 để đóng alert
-                        const inst = bootstrap.Alert.getOrCreateInstance(el);
-                        inst.close();
-                    }, 3000); // đổi 3000 -> 5000 nếu muốn lâu hơn
-                });
-            });
-
-            // 2) Xóa param success/error khỏi URL sau khi đã render
-            (function removeMsgParams() {
-                const url = new URL(window.location.href);
-                let changed = false;
-                ['success', 'error'].forEach(k => {
-                    if (url.searchParams.has(k)) {
-                        url.searchParams.delete(k);
-                        changed = true;
-                    }
-                });
-                if (changed) {
-                    window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-                }
-            })();
-        </script>-->
+        <!--        <script>
+                    // 1) Tự ẩn sau 3 giây
+                    window.addEventListener('DOMContentLoaded', () => {
+                        document.querySelectorAll('.alert').forEach(el => {
+                            setTimeout(() => {
+                                // dùng API của Bootstrap 5 để đóng alert
+                                const inst = bootstrap.Alert.getOrCreateInstance(el);
+                                inst.close();
+                            }, 3000); // đổi 3000 -> 5000 nếu muốn lâu hơn
+                        });
+                    });
+        
+                    // 2) Xóa param success/error khỏi URL sau khi đã render
+                    (function removeMsgParams() {
+                        const url = new URL(window.location.href);
+                        let changed = false;
+                        ['success', 'error'].forEach(k => {
+                            if (url.searchParams.has(k)) {
+                                url.searchParams.delete(k);
+                                changed = true;
+                            }
+                        });
+                        if (changed) {
+                            window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+                        }
+                    })();
+                </script>-->
 
     </body>
 </html>

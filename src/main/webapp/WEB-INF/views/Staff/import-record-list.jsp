@@ -100,10 +100,13 @@
     </head>
     <body>
         <!-- Header -->
-        <jsp:include page="common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
         <!-- Sidebar -->
-        <jsp:include page="common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <!-- Main Content -->
         <div class="main-content">

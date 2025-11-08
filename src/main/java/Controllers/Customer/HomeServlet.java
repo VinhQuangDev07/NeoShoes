@@ -119,7 +119,7 @@ public class HomeServlet extends HttpServlet {
         request.setAttribute("products", products);
         request.setAttribute("searchTerm", searchTerm);
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/home.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/product-list.jsp");
         dispatcher.forward(request, response);
     }
 

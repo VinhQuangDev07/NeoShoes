@@ -35,7 +35,6 @@
 
         /* Wrapper cho content chính */
         .main-wrapper {
-            margin-left: 300px;
             margin-top: 74px;
             padding: 20px;
             min-height: calc(100vh - 74px);

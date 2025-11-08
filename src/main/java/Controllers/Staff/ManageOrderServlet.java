@@ -103,7 +103,7 @@ public class ManageOrderServlet extends HttpServlet {
         request.setAttribute("baseUrl", request.getRequestURI());
 
         // Forward to JSP
-        request.getRequestDispatcher("/WEB-INF/views/Staff/orders-management.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/staff/orders-management.jsp").forward(request, response);
     }
     
     /**
@@ -141,7 +141,7 @@ public class ManageOrderServlet extends HttpServlet {
             request.setAttribute("statusHistory", statusHistory);
             
             // Forward to order detail JSP
-            request.getRequestDispatcher("/WEB-INF/views/Staff/order-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/staff/order-detail.jsp").forward(request, response);
             
         } catch (NumberFormatException e) {
             session.setAttribute("flash_error", "Invalid Order ID!");

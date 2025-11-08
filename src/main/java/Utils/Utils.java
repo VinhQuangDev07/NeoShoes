@@ -5,6 +5,7 @@
 package Utils;
 
 import java.security.MessageDigest;
+import java.time.LocalDate;
 
 /**
  *
@@ -32,6 +33,35 @@ public class Utils {
         }
         String hashedInput = hashPassword(plainPassword);
         return hashedInput.equalsIgnoreCase(storedHash);
+    }
+    
+    /**
+     * Get default date range (last 30 days)
+     */
+    public static String[] getDefaultDateRange() {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(29);
+        return new String[]{startDate.toString(), endDate.toString()};
+    }
+    
+    /**
+     * Get default month range (last 12 months)
+     */
+    public static String[] getDefaultMonthRange() {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusMonths(11).withDayOfMonth(1);
+        return new String[]{
+            startDate.toString().substring(0, 7),
+            endDate.toString().substring(0, 7)
+        };
+    }
+    
+    /**
+     * Get default year range (last 5 years)
+     */
+    public static int[] getDefaultYearRange() {
+        int currentYear = LocalDate.now().getYear();
+        return new int[]{currentYear - 4, currentYear};
     }
 
 }

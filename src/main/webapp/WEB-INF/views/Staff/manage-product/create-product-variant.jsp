@@ -12,6 +12,11 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <title>Create Product Variant</title>
         <style>
             * {
@@ -35,7 +40,7 @@
             }
 
             .container {
-                max-width: 900px;
+                max-width: 73rem;
                 margin: 0 auto;
             }
 
@@ -339,6 +344,14 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <div class="main-wrapper">
             <div class="container">
                 <!-- Page Header -->
@@ -474,7 +487,7 @@
                                        required
                                        onchange="previewImage()">
                                 <div class="helper-text">Enter a valid image URL for this variant</div>
-                                
+
                                 <!-- Image Preview -->
                                 <div class="image-preview" id="imagePreview">
                                     <c:choose>
@@ -511,7 +524,7 @@
             function previewImage() {
                 const url = document.getElementById('image').value;
                 const preview = document.getElementById('imagePreview');
-                
+
                 if (url) {
                     preview.innerHTML = '<img src="' + url + '" alt="Variant Image" id="previewImg" onerror="imageLoadError()">';
                 } else {
@@ -526,7 +539,7 @@
             }
 
             // Form validation
-            document.getElementById('variantForm').addEventListener('submit', function(e) {
+            document.getElementById('variantForm').addEventListener('submit', function (e) {
                 const color = document.getElementById('color').value.trim();
                 const size = document.getElementById('size').value.trim();
                 const price = parseFloat(document.getElementById('price').value);
@@ -567,7 +580,7 @@
             });
 
             // Auto-focus first input
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('color').focus();
             });
         </script>

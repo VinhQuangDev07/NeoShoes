@@ -1,16 +1,10 @@
-<%-- 
-    Document   : Category-form
-    Created on : 22-10-2025, 20:43:19
-    Author     : Asus
---%>
-
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>${formAction == 'add' ? 'Add' : 'Edit'} Category</title>
+        <title>${formAction == 'add' ? 'Add' : 'Edit'} Category - NeoShoes</title>
 
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,328 +13,233 @@
         <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
-            :root {
-                --header-h: 74px;
-                --sidebar-w: 300px;
-                --bg: #f5f6f8;
-                --text: #111827;
-                --line: #e5e7eb;
-            }
-
-            * {
-                box-sizing: border-box;
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            html, body {
-                height: 100%;
-            }
-
             body {
-                margin: 0;
-                background: var(--bg);
-                color: var(--text);
-                padding-top: var(--header-h);
+                background-color: #f8f9fa;
+                overflow-x: hidden;
             }
 
-            .wrap {
-                padding: 20px 24px;
-                max-width: 800px;
-                margin: 0 auto 0 var(--sidebar-w);
+            #main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+                padding-top: 74px;
+            }
+
+            @media (min-width: 992px) {
+                #main-content {
+                    margin-left: 300px;
+                }
+            }
+
+            .page-header {
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
 
             .form-card {
-                background: #fff;
-                border: 1px solid var(--line);
-                border-radius: 12px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 padding: 32px;
-                box-shadow: 0 10px 20px rgba(17, 24, 39, .04);
-            }
-
-            .form-title {
-                font-size: 24px;
-                font-weight: 700;
-                margin-bottom: 24px;
-                color: var(--text);
-            }
-
-            .form-group {
-                margin-bottom: 20px;
             }
 
             .form-label {
-                display: block;
-                margin-bottom: 8px;
                 font-weight: 600;
                 color: #374151;
             }
 
             .form-control {
-                width: 100%;
-                padding: 10px 12px;
-                border: 1px solid var(--line);
                 border-radius: 8px;
-                font-size: 14px;
-                transition: border-color 0.15s;
+                padding: 10px 12px;
             }
 
             .form-control:focus {
-                outline: none;
-                border-color: #3b82f6;
-                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
             }
 
-            .form-check {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .form-check-input {
-                width: 20px;
-                height: 20px;
-                cursor: pointer;
-            }
-
-            .image-preview {
-                margin-top: 12px;
-                max-width: 300px;
-                border: 1px solid var(--line);
+            .image-upload {
+                border: 2px dashed #dee2e6;
                 border-radius: 8px;
-                overflow: hidden;
-            }
-
-            .image-preview img {
-                width: 100%;
-                height: auto;
-                display: block;
-            }
-
-            .btn-group {
-                display: flex;
-                gap: 12px;
-                margin-top: 24px;
-            }
-
-            .btn {
-                padding: 10px 20px;
-                border-radius: 8px;
-                border: none;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.15s;
-                text-decoration: none;
-                display: inline-block;
+                padding: 20px;
                 text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
+            }
+
+            .form-check-label {
+                font-weight: 500;
+                color: #374151;
             }
 
             .btn-primary {
-                background: #111827;
-                color: #fff;
+                background-color: #0d6efd;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 20px;
+                font-weight: 500;
             }
 
             .btn-primary:hover {
-                filter: brightness(0.9);
-                transform: translateY(-1px);
+                background-color: #0b5ed7;
             }
 
             .btn-secondary {
-                background: #f3f4f6;
+                background-color: #f3f4f6;
                 color: #374151;
-                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 10px 20px;
+                border: 1px solid #dee2e6;
             }
 
             .btn-secondary:hover {
-                background: #e5e7eb;
-                color: #374151;
-                text-decoration: none;
-            }
-
-            .alert {
-                padding: 12px 16px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-            }
-
-            .alert-danger {
-                background: #fee2e2;
-                color: #991b1b;
-                border: 1px solid #fecaca;
-            }
-
-            @media (max-width: 992px) {
-                :root {
-                    --sidebar-w: 0px;
-                }
-                .wrap {
-                    margin-left: 0;
-                    padding: 16px;
-                }
+                background-color: #e5e7eb;
+                color: #111;
             }
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
-        <!-- Header & Sidebar -->
-        <jsp:include page="common/staff-header.jsp"/>
-        <jsp:include page="common/staff-sidebar.jsp"/>
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
 
-        <div class="wrap">
-            <div class="form-card">
-                <h2 class="form-title">
-                    ${formAction == 'add' ? 'Add New Category' : 'Edit Category'}
-                </h2>
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger">${error}</div>
-                </c:if>
+        <!-- Main -->
+        <div id="main-content">
+            <div class="container-fluid p-4">
 
-                <form method="post" 
-                      action="<c:url value='/managecategoriesforstaff/${formAction}'>
-                          <c:param name='role' value='${userRole}'/>
-                      </c:url>"
-                      enctype="multipart/form-data">
-
-                    <c:if test="${formAction == 'update'}">
-                        <input type="hidden" name="id" value="${category.categoryId}">
-                    </c:if>
-
-                    <div class="form-group">
-                        <label class="form-label" for="name">Category Name *</label>
-                        <input type="text" 
-                               class="form-control" 
-                               id="name" 
-                               name="name" 
-                               value="${category.name}" 
-                               required
-                               maxlength="255"
-                               placeholder="Enter category name...">
+                <!-- Page Header -->
+                <div class="page-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1 fw-bold">${formAction == 'add' ? 'Add New Category' : 'Edit Category'}</h2>
+                        <p class="text-muted mb-0 mt-1">Fill in the category details below</p>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <div class="image-upload d-flex flex-column align-items-center" id="imageUpload">
-                            <img src="${empty category.image ? 'https://i.pinimg.com/originals/24/bd/d9/24bdd9ec59a9f8966722063fe7791183.jpg' : category.image}" id="imagePreview" 
-                                 class="image-preview img-thumbnail mb-2 " 
-                                 style="width:160px;height:160px;object-fit:cover" />
-                            <span id="imageText" class="text-muted">Drag and drop or click on image to select file</span>
-                            <input type="file" name="image" id="imageInput" accept="image/*" class="d-none">
+                <!-- Form -->
+                <div class="form-card">
+                    <form method="post" 
+                          action="<c:url value='/staff/manage-categories/${formAction}'/>"
+                          enctype="multipart/form-data">
+
+                        <c:if test="${formAction == 'update'}">
+                            <input type="hidden" name="id" value="${category.categoryId}">
+                        </c:if>
+
+                        <!-- Category Name -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Category Name *</label>
+                            <input type="text" 
+                                   class="form-control"
+                                   id="name" 
+                                   name="name"
+                                   value="${category.name}"
+                                   required
+                                   maxlength="255"
+                                   placeholder="Enter category name...">
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input type="checkbox" 
-                                   class="form-check-input" 
-                                   id="isActive" 
-                                   name="isActive"
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Category Image</label>
+                            <div class="image-upload" id="imageUpload">
+                                <img src="${empty category.image ? 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png' : category.image}" 
+                                     id="imagePreview"
+                                     alt="Category Image Preview" />
+                                <div class="text-muted small">Click or drag & drop an image</div>
+                                <input type="file" name="image" id="imageInput" accept="image/*" class="d-none">
+                            </div>
+                        </div>
+
+                        <!-- Active Checkbox -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="isActive" name="isActive"
                                    ${category.isActive || formAction == 'add' ? 'checked' : ''}>
                             <label class="form-check-label" for="isActive">
-                                Active category
+                                Active Category
                             </label>
                         </div>
-                    </div>
 
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">
-                            ${formAction == 'add' ? 'Add Category' : 'Update'}
-                        </button>
-                        <a href="<c:url value='/managecategoriesforstaff/list'>
-                               <c:param name='role' value='${userRole}'/>
-                           </c:url>" 
-                           class="btn btn-secondary">
-                            Cancel
-                        </a>
-                    </div>
-                </form>
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="${formAction == 'add' ? 'plus' : 'save'}" style="width:18px; height:18px;"></i>
+                                ${formAction == 'add' ? 'Add Category' : 'Save Changes'}
+                            </button>
+                            <a href="${pageContext.request.contextPath}/staff/manage-categories" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- Bootstrap JS -->
+        <!-- JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
         <script>
-            // Preview image
-            function previewImage(url) {
-                const preview = document.getElementById('imagePreview');
-                const img = document.getElementById('previewImg');
+            lucide.createIcons();
 
-                if (url && url.trim() !== '') {
-                    img.src = url;
-                    preview.style.display = 'block';
+            // Active sidebar highlight
+            const el = document.getElementById('category');
+            if (el)
+                el.classList.add('active');
 
-                    img.onerror = function () {
-                        preview.style.display = 'none';
-                    };
-                } else {
-                    preview.style.display = 'none';
-                }
-            }
+            // Image upload preview
+            const uploadArea = document.getElementById('imageUpload');
+            const fileInput = document.getElementById('imageInput');
+            const preview = document.getElementById('imagePreview');
 
-            // Load preview on page load
-            document.addEventListener('DOMContentLoaded', function () {
-                const imageInput = document.getElementById('image');
-                if (imageInput && imageInput.value) {
-                    previewImage(imageInput.value);
-                }
+            uploadArea.addEventListener('click', () => fileInput.click());
 
-                // Active sidebar
-                var el = document.getElementById('category');
-                if (el)
-                    el.classList.add('active');
-
-                // Lucide icons
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            });
-
-            // image upload preview
-            const imageUpload = document.getElementById('imageUpload');
-            const imageInput = document.getElementById('imageInput');
-            const imagePreview = document.getElementById('imagePreview');
-
-            imageUpload.addEventListener('click', () => {
-                imageInput.click();
-            });
-
-            imageInput.addEventListener('change', (e) => {
+            fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
-                    const file = e.target.files[0];
                     const reader = new FileReader();
-
-                    reader.onload = (e) => {
-                        imagePreview.src = e.target.result;
-                        imagePreview.style.display = 'block';
+                    reader.onload = (event) => {
+                        preview.src = event.target.result;
                     };
-
-                    reader.readAsDataURL(file);
+                    reader.readAsDataURL(e.target.files[0]);
                 }
             });
 
-            // Handle drag and drop for image
-            imageUpload.addEventListener('dragover', (e) => {
+            // Drag & Drop
+            uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                imageUpload.style.borderColor = '#0d6efd';
+                uploadArea.style.borderColor = '#0d6efd';
             });
 
-            imageUpload.addEventListener('dragleave', () => {
-                imageUpload.style.borderColor = '#dee2e6';
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '#dee2e6';
             });
 
-            imageUpload.addEventListener('drop', (e) => {
+            uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
-                imageUpload.style.borderColor = '#dee2e6';
-
-                if (e.dataTransfer.files.length > 0) {
-                    imageInput.files = e.dataTransfer.files;
-                    const file = e.dataTransfer.files[0];
+                uploadArea.style.borderColor = '#dee2e6';
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    fileInput.files = e.dataTransfer.files;
                     const reader = new FileReader();
-
-                    reader.onload = (e) => {
-                        imagePreview.src = e.target.result;
-                        imagePreview.style.display = 'block';
-                    };
-
+                    reader.onload = (event) => preview.src = event.target.result;
                     reader.readAsDataURL(file);
                 }
             });

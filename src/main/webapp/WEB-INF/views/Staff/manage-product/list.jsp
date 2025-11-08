@@ -59,7 +59,7 @@
             .page-header {
                 background: white;
                 border-radius: 12px;
-                padding: 1.5rem;
+                padding: 1.4rem;
                 margin-bottom: 1.5rem;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
@@ -104,10 +104,22 @@
                 font-size: 24px;
             }
 
-            .stat-icon.blue { background-color: #dbeafe; color: #3b82f6; }
-            .stat-icon.green { background-color: #d1fae5; color: #10b981; }
-            .stat-icon.yellow { background-color: #fef3c7; color: #f59e0b; }
-            .stat-icon.purple { background-color: #e9d5ff; color: #a855f7; }
+            .stat-icon.blue {
+                background-color: #dbeafe;
+                color: #3b82f6;
+            }
+            .stat-icon.green {
+                background-color: #d1fae5;
+                color: #10b981;
+            }
+            .stat-icon.yellow {
+                background-color: #fef3c7;
+                color: #f59e0b;
+            }
+            .stat-icon.purple {
+                background-color: #e9d5ff;
+                color: #a855f7;
+            }
 
             .product-section {
                 background: white;
@@ -221,8 +233,15 @@
                 font-weight: 500;
             }
 
-            .tag.blue { background-color: #dbeafe; color: #1e40af; }
-            .variant-count { color: #3b82f6; font-size: 12px; font-weight: 500; }
+            .tag.blue {
+                background-color: #dbeafe;
+                color: #1e40af;
+            }
+            .variant-count {
+                color: #3b82f6;
+                font-size: 12px;
+                font-weight: 500;
+            }
 
             .status-badge {
                 display: inline-block;
@@ -264,10 +283,20 @@
                 transform: scale(1.05);
             }
 
-            .action-btn.edit { background-color: #fef3c7; color: #f59e0b; }
-            .action-btn.edit:hover { background-color: #fde68a; }
-            .action-btn.delete { background-color: #fee2e2; color: #ef4444; }
-            .action-btn.delete:hover { background-color: #fecaca; }
+            .action-btn.edit {
+                background-color: #fef3c7;
+                color: #f59e0b;
+            }
+            .action-btn.edit:hover {
+                background-color: #fde68a;
+            }
+            .action-btn.delete {
+                background-color: #fee2e2;
+                color: #ef4444;
+            }
+            .action-btn.delete:hover {
+                background-color: #fecaca;
+            }
 
             .info-text {
                 color: #64748b;
@@ -298,8 +327,14 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <div class="main-wrapper">
             <div class="page-header">
@@ -309,23 +344,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- ✅ FIX: Success/Error Messages -->
-            <c:if test="${not empty sessionScope.successMessage}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fas fa-check-circle"></i> <c:out value="${sessionScope.successMessage}"/>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <c:remove var="successMessage" scope="session"/>
-            </c:if>
-            
-            <c:if test="${not empty sessionScope.errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle"></i> <c:out value="${sessionScope.errorMessage}"/>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session"/>
-            </c:if>
 
             <div class="container">
                 <!-- ✅ FIX 1: Calculate out of stock count -->
@@ -392,16 +410,6 @@
                             <i class="fas fa-dollar-sign"></i>
                         </div>
                     </div>
-
-                    <div class="stat-card">
-                        <div class="stat-content">
-                            <h3>Out of stocks</h3>
-                            <div class="number">${outOfStockCount}</div>
-                        </div>
-                        <div class="stat-icon purple">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Product List -->
@@ -422,7 +430,7 @@
                                 <h5>No Products Found</h5>
                                 <p>Get started by creating your first product</p>
                                 <button class="btn-create mt-3" onclick="createProduct()">
-                                    <span>➕</span>
+                                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
                                     Create Product
                                 </button>
                             </div>
@@ -456,10 +464,10 @@
                                                             <img src="<c:out value='${product.defaultImageUrl}'/>" 
                                                                  alt="<c:out value='${product.name}'/>" 
                                                                  class="product-image"
-                                                                 onerror="this.src='${pageContext.request.contextPath}/images/placeholder.png'">
+                                                                 onerror="this.src='https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png'">
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <img src="${pageContext.request.contextPath}/images/placeholder.png" 
+                                                            <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png" 
                                                                  alt="No image" class="product-image">
                                                         </c:otherwise>
                                                     </c:choose>
@@ -563,17 +571,17 @@
                                                         <button class="action-btn" 
                                                                 onclick="viewProduct(${product.productId})" 
                                                                 title="View Details">
-                                                            👁️
+                                                            <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
                                                         </button>
                                                         <button class="action-btn edit" 
                                                                 onclick="editProduct(${product.productId})" 
                                                                 title="Edit Product">
-                                                            ✏️
+                                                            <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
                                                         </button>
                                                         <button class="action-btn delete" 
                                                                 onclick="deleteProduct(${product.productId}, '<c:out value="${fn:escapeXml(product.name)}"/>', ${hasVariants ? fn:length(variants) : 0})" 
                                                                 title="Delete Product">
-                                                            🗑️
+                                                            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                                                         </button>
                                                     </c:if>
                                                 </div>
@@ -590,6 +598,9 @@
         </div>
 
         <script>
+            // Initialize Lucide icons
+            lucide.createIcons();
+
             function createProduct() {
                 window.location.href = '${pageContext.request.contextPath}/staff/product?action=create';
             }
@@ -619,11 +630,11 @@
                 }
 
                 let message = 'Are you sure you want to delete "' + productName + '"?';
-                
+
                 if (variantCount > 0) {
                     message += '\n\nThis product has ' + variantCount + ' variant(s) that will also be deleted.';
                 }
-                
+
                 message += '\n\nThis action cannot be undone!';
 
                 if (!confirm(message)) {

@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(urlPatterns = {"/vouchermanage", "/vouchermanage/*"})
+@WebServlet(urlPatterns = {"/staff/manage-voucher", "/staff/manage-voucher/*"})
 public class VoucherManagementServlet extends HttpServlet {
 
     private VoucherDAO voucherDAO;

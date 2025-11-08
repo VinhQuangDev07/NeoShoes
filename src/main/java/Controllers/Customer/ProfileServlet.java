@@ -51,7 +51,7 @@ public class ProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false); 
+        HttpSession session = request.getSession(false);
         if (session == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
@@ -63,10 +63,11 @@ public class ProfileServlet extends HttpServlet {
         }
         if (customer.isDeleted() || customer.isBlock()) {
             session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         int customerId = customer.getId();
-         List<Address> addressList = addressDAO.getAllAddressByCustomerId(customerId);
+        List<Address> addressList = addressDAO.getAllAddressByCustomerId(customerId);
         request.setAttribute("customer", customer);
         request.setAttribute("addressList", addressList);
         request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
@@ -85,14 +86,22 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-
-//        int customerId = (int) session.getAttribute("customerId");
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        Customer customer = (Customer) session.getAttribute("customer");
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        if (customer.isDeleted() || customer.isBlock()) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
         String action = request.getParameter("action");
-        int customerId = Integer.parseInt(request.getParameter("id"));
+        int customerId = customer.getId();
 
         boolean success = false;
 
