@@ -124,34 +124,38 @@
 </head>
 <body>
     <div class="container">
-        <h2>Forget Password</h2>
-        <p class="subtitle">Enter your email to receive a password reset link</p>
-        
-        <% if (request.getAttribute("error") != null) { %>
-            <div class="error">
-                <%= request.getAttribute("error") %>
-            </div>
-        <% } %>
-        
-        <% if (request.getAttribute("message") != null) { %>
-            <div class="success">
-                <%= request.getAttribute("message") %>
-            </div>
-        <% } %>
-        
-        <form method="post" action="${pageContext.request.contextPath}/forget-password">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" 
-                       placeholder="your.email@example.com" required>
-            </div>
-            
-            <button type="submit">Send Reset Link</button>
-        </form>
-        
-        <div class="back-link">
-            <a href="${pageContext.request.contextPath}/login">← Back to Login</a>
-        </div>
+        <h2>🔑 Forget Password</h2>
+<p class="subtitle">Confirm your email to receive OTP code</p>
+
+<% if (request.getAttribute("error") != null) { %>
+    <div class="error">
+        <%= request.getAttribute("error") %>
+    </div>
+<% } %>
+
+<% if (request.getAttribute("message") != null) { %>
+    <div class="success">
+        <%= request.getAttribute("message") %>
+    </div>
+<% } %>
+
+<form method="post" action="${pageContext.request.contextPath}/forget-password">
+    <div class="form-group">
+        <label for="email">📧 Email Address</label>
+        <input type="email" id="email" name="email" 
+               value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
+               placeholder="your.email@example.com" required>
+        <small style="display: block; margin-top: 5px; color: #6b7280; font-size: 13px;">
+            OTP code will be sent to this email
+        </small>
+    </div>
+    
+    <button type="submit">Send OTP Code</button>
+</form>
+
+<div class="back-link">
+    <a href="${pageContext.request.contextPath}/login">← Back to Login</a>
+</div>
     </div>
 </body>
 </html>
