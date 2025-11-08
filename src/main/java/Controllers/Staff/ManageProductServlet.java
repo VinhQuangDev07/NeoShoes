@@ -15,14 +15,18 @@ import Models.Product;
 import Models.ProductVariant;
 import Models.Review;
 import Models.Staff;
+import Utils.CloudinaryConfig;
+import com.cloudinary.Cloudinary;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,7 @@ import java.util.Map;
  * @author Nguyen Huynh Thien An - CE190979
  */
 @WebServlet(name = "ProductServlet", urlPatterns = {"/staff/product"})
+@MultipartConfig
 public class ManageProductServlet extends HttpServlet {
 
     /**
@@ -257,6 +262,16 @@ public class ManageProductServlet extends HttpServlet {
                     throw new IllegalArgumentException("Product name is required!");
                 }
 
+                // Handle uploaded image file
+                Part imagePart = request.getPart("imageFile");
+                if (imagePart != null && imagePart.getSize() > 0) {
+                    // ✅ Upload to Cloudinary
+                    String uploadedUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+                    if (uploadedUrl != null && !uploadedUrl.isEmpty()) {
+                        imageUrl = uploadedUrl;
+                    }
+                }
+
                 // Parse IDs
                 int brandId = Integer.parseInt(request.getParameter("brandId"));
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
@@ -274,7 +289,7 @@ public class ManageProductServlet extends HttpServlet {
                 boolean success = productDAO.createProduct(product);
 
                 if (success && product.getProductId() > 0) {
-                    request.getSession().setAttribute("successMessage", "Product created successfully!");
+                    request.getSession().setAttribute("flash", "Product created successfully!");
                     response.sendRedirect(request.getContextPath()
                             + "/staff/product?action=detail&productId=" + product.getProductId());
                 } else {
@@ -282,7 +297,8 @@ public class ManageProductServlet extends HttpServlet {
                 }
 
             } catch (Exception e) {
-                request.setAttribute("errorMessage", "Error: " + e.getMessage());
+                e.printStackTrace();
+                request.setAttribute("flash_error", "Error while add product!");
                 request.getRequestDispatcher("/staff/create-product.jsp").forward(request, response);
             }
         } else if ("update".equals(action)) {
@@ -302,17 +318,35 @@ public class ManageProductServlet extends HttpServlet {
 
                 int brandId = Integer.parseInt(request.getParameter("brandId"));
                 int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+                String description = request.getParameter("description");
+                String material = request.getParameter("material");
+                String imageUrl = request.getParameter("defaultImageUrl"); // fallback nếu không upload file
+                String status = "1".equals(request.getParameter("isActive")) ? "active" : "inactive";
 
-                // Create product
+                // Lấy file ảnh upload (nếu có)
+                Part imagePart = request.getPart("imageFile");
+                if (imagePart != null && imagePart.getSize() > 0) {
+                    try {
+                        String uploadedUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+                        if (uploadedUrl != null && !uploadedUrl.isEmpty()) {
+                            imageUrl = uploadedUrl;
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        System.err.println("Upload image failed, keep old URL");
+                    }
+                }
+
+                // ✅ Cập nhật thông tin sản phẩm
                 Product product = new Product();
                 product.setProductId(productId);
                 product.setName(name.trim());
-                product.setDescription(request.getParameter("description"));
+                product.setDescription(description != null ? description.trim() : "");
                 product.setBrandId(brandId);
                 product.setCategoryId(categoryId);
-                product.setMaterial(request.getParameter("material"));
-                product.setDefaultImageUrl(request.getParameter("defaultImageUrl"));
-                product.setIsActive("1".equals(request.getParameter("isActive")) ? "active" : "inactive");
+                product.setMaterial(material != null ? material.trim() : "");
+                product.setDefaultImageUrl(imageUrl != null ? imageUrl.trim() : "");
+                product.setIsActive(status);
 
                 // Update
                 boolean success = productDAO.updateProduct(product);

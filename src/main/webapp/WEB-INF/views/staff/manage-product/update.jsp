@@ -150,6 +150,29 @@
                 font-family: inherit;
             }
 
+            .image-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
+            }
+
             /* Two Column Layout */
             .form-row {
                 display: grid;
@@ -333,23 +356,9 @@
                     </a>
                 </div>
 
-                <!-- Error Message -->
-                <c:if test="${not empty errorMessage}">
-                    <div class="error-message">
-                        ❌ ${errorMessage}
-                    </div>
-                </c:if>
-
-                <!-- Success Message -->
-                <c:if test="${not empty successMessage}">
-                    <div class="success-message">
-                        ✅ ${successMessage}
-                    </div>
-                </c:if>
-
                 <!-- Form Card -->
                 <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/staff/product" method="POST">
+                    <form action="${pageContext.request.contextPath}/staff/product" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="productId" value="${product.productId}">
 
@@ -438,18 +447,19 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="defaultImageUrl">
-                                    Default Image URL
-                                    <span class="required">*</span>
+                                <label class="form-label">
+                                    Product Image <span class="required">*</span>
                                 </label>
-                                <input type="url" 
-                                       id="defaultImageUrl" 
-                                       name="defaultImageUrl" 
-                                       class="form-control" 
-                                       placeholder="https://example.com/image.jpg"
-                                       value="${product.defaultImageUrl}"
-                                       required>
-                                <div class="helper-text">Enter a valid image URL (must start with http:// or https://)</div>
+                                <div class="image-upload" id="productImageUpload">
+                                    <img src="${empty product.defaultImageUrl 
+                                                ? 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png' 
+                                                : product.defaultImageUrl}" 
+                                         id="productImagePreview" 
+                                         alt="Product Image Preview" />
+                                    <div class="text-muted small">Click or drag & drop an image</div>
+                                    <input type="file" name="imageFile" id="productImageInput" accept="image/*" class="d-none">
+                                </div>
+                                <input type="hidden" name="defaultImageUrl" id="imageUrlHidden" value="${product.defaultImageUrl}">
                             </div>
                         </div>
 
@@ -527,5 +537,55 @@
                 return true;
             });
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uploadArea = document.getElementById('productImageUpload');
+                const fileInput = document.getElementById('productImageInput');
+                const preview = document.getElementById('productImagePreview');
+                const hiddenUrl = document.getElementById('imageUrlHidden');
+
+                // Click để mở chọn file
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                // Preview ảnh khi chọn
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = ''; // Xóa URL cũ nếu có ảnh mới
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Drag & Drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#0d6efd';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = '#dee2e6';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#dee2e6';
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        fileInput.files = e.dataTransfer.files;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = '';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+
     </body>
 </html>
