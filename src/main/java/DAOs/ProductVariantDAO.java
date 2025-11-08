@@ -218,7 +218,7 @@ public class ProductVariantDAO extends DB.DBContext {
         }
         return 0;
     }
-    
+
     public int getTotalQuantityAvailable() {
         try {
             String sql = "SELECT SUM(QuantityAvailable) AS TotalQuantity FROM ProductVariant";
@@ -301,7 +301,7 @@ public class ProductVariantDAO extends DB.DBContext {
             return false;
         }
     }
-    
+
     public BigDecimal getTotalInventoryValue() {
         try {
             String sql = "SELECT SUM(QuantityAvailable * Price) AS TotalPrice FROM ProductVariant";
@@ -320,4 +320,57 @@ public class ProductVariantDAO extends DB.DBContext {
         return null;
     }
 
+    public boolean variantExists(int productId, String color, String size) {
+        String sql = "SELECT COUNT(*) as total FROM ProductVariant WHERE productId = ? AND color = ? AND size = ?";
+
+        try {
+            ResultSet rs = execSelectQuery(sql, new Object[]{productId, color, size});
+            if (rs.next()) {
+                int count = rs.getInt("total");
+                rs.close();
+                return count > 0;
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+// Update variant
+
+    public boolean updateVariant(ProductVariant variant) {
+        String sql = "UPDATE ProductVariant SET Color = ?, Size = ?, Price = ?, "
+                + "Image = ?, UpdatedAt = SYSUTCDATETIME() "
+                + "WHERE ProductVariantId = ? AND IsDeleted = 0";
+
+        Object[] params = {
+            variant.getColor(),
+            variant.getSize(),
+            variant.getPrice(),           
+            variant.getImage(),
+            variant.getProductVariantId()
+        };
+
+        try {
+            return execQuery(sql, params) > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+// Soft delete variant
+    public boolean deleteVariant(int variantId) {
+        String sql = "UPDATE ProductVariant SET IsDeleted = 1, "
+                + "UpdatedAt = SYSUTCDATETIME() "
+                + "WHERE ProductVariantId = ?";
+        Object[] params = {variantId};
+        try {
+            return execQuery(sql, params) > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -516,7 +516,6 @@
                                                             <div class="item-name"><c:out value="${item.productName}"/></div>
                                                             <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
                                                         </div>
-                                                        <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
                                                         
                                                         <!-- Review Buttons for each item (on the right) -->
                                                         <div class="item-review-actions">
@@ -578,6 +577,8 @@
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </div>
+                                                        
+                                                        <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
                                                     </div>
                                                 </c:forEach>
                                             </c:when>

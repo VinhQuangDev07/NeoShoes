@@ -180,16 +180,17 @@
     </head>
     <body>
         <!-- Header -->
-        <jsp:include page="common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
         <!-- Sidebar -->
-        <jsp:include page="common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <!-- Main Content -->
         <div id="main-content">
             <div class="container-fluid p-4">
-                <!-- Success/Error Messages -->
-                <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
                 <!-- Page Header -->
                 <div class="page-header">
@@ -256,7 +257,7 @@
                                                     </td>
                                                     <td class="text-center">
                                                         <!-- View Detail Button -->
-                                                        <form action="manage-customer" method="POST" style="display: inline;">
+                                                        <form action="${pageContext.request.contextPath}/staff/manage-customer" method="POST" style="display: inline;">
                                                             <input type="hidden" name="action" value="view-detail">
                                                             <input type="hidden" name="customerId" value="${customer.id}">
                                                             <button type="submit" class="action-btn btn-view" title="View Details">
@@ -268,29 +269,32 @@
                                                         <c:if test="${sessionScope.role eq 'admin'}">
                                                             <c:choose>
                                                                 <c:when test="${customer.isBlock()}">
-                                                                    <form action="manage-customer" method="POST" style="display: inline;">
-                                                                        <input type="hidden" name="action" value="unblock">
-                                                                        <input type="hidden" name="customerId" value="${customer.id}">
-                                                                        <button type="submit" class="action-btn btn-unblock" 
-                                                                                title="Unblock Customer"
-                                                                                onclick="return confirm('Are you sure you want to unblock this customer?')">
-                                                                            <i data-lucide="unlock" style="width: 18px; height: 18px;"></i>
-                                                                        </button>
-                                                                    </form>
+                                                                    <button type="button"
+                                                                            class="action-btn btn-unblock"
+                                                                            title="Unblock Customer"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#confirmModal"
+                                                                            data-action="unblock"
+                                                                            data-id="${customer.id}"
+                                                                            data-name="${customer.name}">
+                                                                        <i data-lucide="unlock" style="width: 16px; height: 16px;"></i>
+                                                                    </button>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <form action="manage-customer" method="POST" style="display: inline;">
-                                                                        <input type="hidden" name="action" value="block">
-                                                                        <input type="hidden" name="customerId" value="${customer.id}">
-                                                                        <button type="submit" class="action-btn btn-block" 
-                                                                                title="Block Customer"
-                                                                                onclick="return confirm('Are you sure you want to block this customer?')">
-                                                                            <i data-lucide="ban" style="width: 18px; height: 18px;"></i>
-                                                                        </button>
-                                                                    </form>
+                                                                    <button type="button"
+                                                                            class="action-btn btn-block"
+                                                                            title="Block Customer"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#confirmModal"
+                                                                            data-action="block"
+                                                                            data-id="${customer.id}"
+                                                                            data-name="${customer.name}">
+                                                                        <i data-lucide="ban" style="width: 16px; height: 16px;"></i>
+                                                                    </button>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </c:if>
+
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -309,9 +313,69 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-                                                                                    // Initialize Lucide icons
-                                                                                    lucide.createIcons();
+            // Initialize Lucide icons
+            lucide.createIcons();
 
         </script>
+        <!-- Confirm Block/Unblock Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="confirmModalTitle">Confirm Action</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p id="confirmModalMessage">Are you sure?</p>
+                    </div>
+                    <div class="modal-footer border-0 d-flex justify-content-center">
+                        <form id="confirmForm" action="${pageContext.request.contextPath}/staff/manage-customer" method="post">
+                            <input type="hidden" name="action" id="confirmAction">
+                            <input type="hidden" name="customerId" id="confirmCustomerId">
+                            <button type="submit" class="btn btn-danger px-4" id="confirmSubmitBtn">Yes</button>
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const confirmModal = document.getElementById('confirmModal');
+                confirmModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const action = button.getAttribute('data-action');
+                    const id = button.getAttribute('data-id');
+                    const name = button.getAttribute('data-name');
+
+                    const title = document.getElementById('confirmModalTitle');
+                    const message = document.getElementById('confirmModalMessage');
+                    const actionInput = document.getElementById('confirmAction');
+                    const idInput = document.getElementById('confirmCustomerId');
+                    const submitBtn = document.getElementById('confirmSubmitBtn');
+
+                    actionInput.value = action;
+                    idInput.value = id;
+
+                    if (action === 'block') {
+                        title.textContent = 'Block Customer';
+                        message.textContent = 'Are you sure you want to block ' + name + '?';
+                        submitBtn.classList.remove('btn-success');
+                        submitBtn.classList.add('btn-danger');
+                        submitBtn.textContent = 'Block';
+                    } else {
+                        title.textContent = 'Unblock Customer';
+                        message.textContent = 'Are you sure you want to unblock ' + name + '?';
+                        submitBtn.classList.remove('btn-danger');
+                        submitBtn.classList.add('btn-success');
+                        submitBtn.textContent = 'Unblock';
+                    }
+                });
+
+                if (typeof lucide !== 'undefined')
+                    lucide.createIcons();
+            });
+        </script>
+
     </body>
 </html>

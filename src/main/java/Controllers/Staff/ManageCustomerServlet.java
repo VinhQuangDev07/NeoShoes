@@ -23,7 +23,7 @@ import java.util.List;
  *
  * @author Le Huu Nghia - CE181052
  */
-@WebServlet(name = "ManageCustomerServlet", urlPatterns = {"/manage-customer"})
+@WebServlet(name = "ManageCustomerServlet", urlPatterns = {"/staff/manage-customer"})
 public class ManageCustomerServlet extends HttpServlet {
 
     private CustomerDAO customerDAO;
@@ -46,32 +46,22 @@ public class ManageCustomerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (staff.isDeleted()) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
-        // Tạo staff mẫu (Admin)
-        Staff staff = new Staff();
-        staff.setStaffId(1);
-        staff.setRole(true); // true = Admin
-        staff.setEmail("admin@neoshoes.com");
-        staff.setPasswordHash("hashed_password_here");
-        staff.setName("Nguyễn Văn Admin");
-        staff.setPhoneNumber("0912345678");
-        staff.setAvatar("https://i.pinimg.com/originals/24/bd/d9/24bdd9ec59a9f8966722063fe7791183.jpg");
-        staff.setGender("Male");
-        staff.setCreatedAt(LocalDateTime.now().minusMonths(6));
-        staff.setUpdatedAt(LocalDateTime.now());
-        staff.setDeleted(false);
-
-        // Set vào session
-        session.setAttribute("staff", staff);
-        session.setAttribute("role", "admin"); // hoặc "staff"
-
-        // Check if user is logged in and has staff or admin role
-//        String role = (String) session.getAttribute("role");
-//        if (role == null || (!role.equals("staff") && !role.equals("admin"))) {
-//            response.sendRedirect("login");
-//            return;
-//        }
         int currentPage = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
@@ -81,19 +71,19 @@ public class ManageCustomerServlet extends HttpServlet {
                 currentPage = 1;
             }
         }
-        
+
         int recordsPerPage = 10;
         List<Customer> customers;
 
         // Get all customers
         customers = customerDAO.getAllCustomers();
-        
+
         int totalRecords = customers.size();
-        
+
         // Calculate start and end positions
         int startIndex = (currentPage - 1) * recordsPerPage;
         int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
-        
+
         // 5. Lấy dữ liệu cho trang hiện tại
         List<Customer> pageData;
         if (startIndex < totalRecords) {
@@ -106,7 +96,7 @@ public class ManageCustomerServlet extends HttpServlet {
         request.setAttribute("customers", pageData);
         request.setAttribute("totalRecords", totalRecords);
         request.setAttribute("recordsPerPage", recordsPerPage);
-        request.setAttribute("baseUrl", request.getRequestURI()); 
+        request.setAttribute("baseUrl", request.getRequestURI());
 
         // Forward to JSP
         request.getRequestDispatcher("/WEB-INF/views/staff/manage-customer.jsp").forward(request, response);
@@ -123,18 +113,27 @@ public class ManageCustomerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        if (staff.isDeleted()) {
+            session.invalidate();
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
-        // Check if user is logged in
-        String role = (String) session.getAttribute("role");
-//        if (role == null) {
-//            response.sendRedirect("login");
-//            return;
-//        }
+        String role = staff.getRoleName();
         String action = request.getParameter("action");
 
         if (action == null) {
-            response.sendRedirect(request.getContextPath() + "/manage-customer");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
             return;
         }
 
@@ -148,17 +147,17 @@ public class ManageCustomerServlet extends HttpServlet {
                     request.getRequestDispatcher("/WEB-INF/views/staff/customer-detail.jsp").forward(request, response);
                 } else {
                     session.setAttribute("flash_error", "Customer not found!");
-                    response.sendRedirect(request.getContextPath() + "/manage-customer");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
                 }
             } catch (NumberFormatException e) {
                 session.setAttribute("flash_error", "Invalid customer ID!");
-                response.sendRedirect(request.getContextPath() + "/manage-customer");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
             }
         } else if ("block".equals(action)) {
             // Only admin can block customers
-            if (!role.equals("admin")) {
+            if (!role.equals("Admin")) {
                 session.setAttribute("flash_error", "You don't have permission to block customers!");
-                response.sendRedirect(request.getContextPath() + "/manage-customer");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
                 return;
             }
 
@@ -175,12 +174,12 @@ public class ManageCustomerServlet extends HttpServlet {
                 session.setAttribute("flash_error", "Invalid customer ID!");
             }
 
-            response.sendRedirect(request.getContextPath() + "/manage-customer");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
         } else if ("unblock".equals(action)) {
             // Only admin can unblock customers
-            if (!role.equals("admin")) {
+            if (!role.equals("Admin")) {
                 session.setAttribute("flash_error", "You don't have permission to unblock customers!");
-                response.sendRedirect(request.getContextPath() + "/manage-customer");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
                 return;
             }
 
@@ -197,7 +196,7 @@ public class ManageCustomerServlet extends HttpServlet {
                 session.setAttribute("flash_error", "Invalid customer ID!");
             }
 
-            response.sendRedirect(request.getContextPath() + "/manage-customer");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-customer");
         }
     }
 

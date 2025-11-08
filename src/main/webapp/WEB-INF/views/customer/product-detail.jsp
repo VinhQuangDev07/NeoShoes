@@ -387,7 +387,7 @@
                             <c:forEach var="variant" items="${variants}" varStatus="status" end="7">
                                 <c:if test="${not empty variant.image}">
                                     <img src="${variant.image}" alt="${product.name} - ${variant.color}" 
-                                         class="thumbnail ${status.first ? 'active' : ''}"
+                                         class="thumbnail"
                                          onclick="changeMainImage('${variant.image}')">
                                 </c:if>
                             </c:forEach>
@@ -440,26 +440,26 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <script>
-                                             // Change main image when thumbnail is clicked
-                                             function changeMainImage(imageUrl) {
-                                                 document.getElementById('mainImage').src = imageUrl;
-                                                 // Update active thumbnail
-                                                 document.querySelectorAll('.thumbnail').forEach(thumb => {
-                                                     thumb.classList.remove('active');
-                                                 });
-                                                 event.target.classList.add('active');
-                                             }
-
-                                             // Initialize first variant as selected
-                                             document.addEventListener('DOMContentLoaded', function () {
-                                                 const firstColor = document.querySelector('#colorOptions .variant-chip');
-                                                 const firstSize = document.querySelector('#sizeOptions .variant-chip');
-
-                                                 if (firstColor)
-                                                     firstColor.classList.add('selected');
-                                                 if (firstSize)
-                                                     firstSize.classList.add('selected');
-                                             });
+//                                             // Change main image when thumbnail is clicked
+//                                             function changeMainImage(imageUrl) {
+//                                                 document.getElementById('mainImage').src = imageUrl;
+//                                                 // Update active thumbnail
+//                                                 document.querySelectorAll('.thumbnail').forEach(thumb => {
+//                                                     thumb.classList.remove('active');
+//                                                 });
+//                                                 event.target.classList.add('active');
+//                                             }
+//
+//                                             // Initialize first variant as selected
+//                                             document.addEventListener('DOMContentLoaded', function () {
+//                                                 const firstColor = document.querySelector('#colorOptions .variant-chip');
+//                                                 const firstSize = document.querySelector('#sizeOptions .variant-chip');
+//
+//                                                 if (firstColor)
+//                                                     firstColor.classList.add('selected');
+//                                                 if (firstSize)
+//                                                     firstSize.classList.add('selected');
+//                                             });
         </script>
         
         <!-- Reviews Section -->

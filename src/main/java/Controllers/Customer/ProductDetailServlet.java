@@ -17,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 
 /**
  *
@@ -35,21 +36,22 @@ public class ProductDetailServlet extends HttpServlet {
         productDAO = new ProductDAO();
         variantDAO = new ProductVariantDAO();
         reviewDAO = new ReviewDAO();
-    } 
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        String productIdParam = request.getParameter("id");     
+            throws ServletException, IOException {
+        String productIdParam = request.getParameter("id");
         if (productIdParam == null || productIdParam.trim().isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Product ID is required");
             return;
         }
         try {
             int productId = Integer.parseInt(productIdParam);
-            Product product = productDAO.getById(productId);          
+            Product product = productDAO.getById(productId);
             if (product == null) {
                 request.getSession().setAttribute("flash_error", "Product not found");
-                response.sendRedirect(request.getContextPath() + "/producs");
+                response.sendRedirect(request.getContextPath() + "/products");
                 return;
             }
 
@@ -57,6 +59,30 @@ public class ProductDetailServlet extends HttpServlet {
             List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
             List<String> colors = variantDAO.getColorsByProductId(productId);
             List<String> sizes = variantDAO.getSizesByProductId(productId);
+
+            int totalQuantityOfProduct = 0;
+            BigDecimal minPrice = null;
+            BigDecimal maxPrice = null;
+
+            for (ProductVariant variant : variants) {
+                totalQuantityOfProduct += variant.getQuantityAvailable();
+
+                BigDecimal price = variant.getPrice();
+
+                // cập nhật minPrice
+                if (minPrice == null || price.compareTo(minPrice) < 0) {
+                    minPrice = price;
+                }
+
+                // cập nhật maxPrice
+                if (maxPrice == null || price.compareTo(maxPrice) > 0) {
+                    maxPrice = price;
+                }
+            }
+
+            product.setTotalQuantity(totalQuantityOfProduct);
+            product.setMinPrice(minPrice);
+            product.setMaxPrice(maxPrice);
 
             // Get filter parameters for reviews
             String ratingParam = request.getParameter("rating");
@@ -85,7 +111,7 @@ public class ProductDetailServlet extends HttpServlet {
                 // Get all reviews for the product
                 reviews = reviewDAO.getReviewsByProduct(productId);
             }
-            
+
             // Load all reviews for statistics calculation (unfiltered)
             List<Review> allReviews = reviewDAO.getReviewsByProduct(productId);
 
@@ -143,7 +169,8 @@ public class ProductDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         doGet(request, response);
     }
-    /** 
+
+    /**
      * Returns a short description of the servlet.
      *
      * @return a String containing servlet description

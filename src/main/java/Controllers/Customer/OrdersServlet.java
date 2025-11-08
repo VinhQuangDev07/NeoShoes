@@ -132,13 +132,13 @@ public class OrdersServlet extends HttpServlet {
             Order order = orderDAO.findWithItems(orderId);
             
             if (order == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.sendRedirect(request.getContextPath() + "/orders");
                 return;
             }
             
             // Ownership check
             if (order.getCustomerId() != customer.getId()) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                response.sendRedirect(request.getContextPath() + "/orders");
                 return;
             }
             

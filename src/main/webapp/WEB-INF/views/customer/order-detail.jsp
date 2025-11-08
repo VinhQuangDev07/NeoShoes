@@ -729,7 +729,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Approved</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${approvedTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                         <span data-date="${approvedTime}"></span>
@@ -761,7 +761,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Shipping</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${shippedTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
                                                         <span data-date="${shippedTime}"></span>
@@ -790,7 +790,7 @@
                                     <div class="step-info">
                                         <div class="step-text">
                                             <div>Delivered</div>
-                                            <div class="step-date">
+                                            <div class="step-date" data-date="${deliveredTime}">
                                                 <c:choose>
                                                     <c:when test="${order.status == 'COMPLETED'}">
                                                         <span data-date="${deliveredTime}"></span>
@@ -982,8 +982,8 @@
                                         Order Cancelled
                                     </button>
                                 </c:when>
-                                <c:when test="${order.status == 'DELIVERED'}">
-                                    <!-- Only DELIVERED orders can create return request -->
+                                <c:when test="${order.status == 'COMPLETED'}">
+                                    <!-- Only COMPLETED orders can create return request -->
                                     <c:choose>
                                         <c:when test="${hasRequest}">
                                             <a href="${pageContext.request.contextPath}/return-request?action=detail&requestId=${requestId}" 
@@ -997,7 +997,7 @@
                                             <a href="${pageContext.request.contextPath}/return-request?orderId=${order.orderId}" 
                                                class="btn-action cancel-btn"
                                                aria-label="Create Return Request">
-                                                <i class="fas fa-undo"></i>
+                                                <i class=" "></i>
                                                 Create Return Request
                                             </a>
                                         </c:otherwise>
@@ -1008,7 +1008,7 @@
                                     <a href="${pageContext.request.contextPath}/return-request?action=detail&requestId=${requestId}" 
                                        class="btn-action cancel-btn"
                                        aria-label="View Return Request">
-                                        <i class="fas fa-eye"></i>
+                                        <i class=""></i>
                                         View Return Request
                                     </a>
                                 </c:when>

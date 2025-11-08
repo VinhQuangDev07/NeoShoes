@@ -31,20 +31,20 @@ public class ProductListServlet extends HttpServlet {
     // ✅ Constructor - khởi tạo DAO và load data
     public ProductListServlet() {
         super();
-        System.out.println("🔧 Initializing ProductListServlet...");
+        System.out.println("Initializing ProductListServlet...");
         
         try {
             this.productDAO = new ProductDAO();
             this.categoryDAO = new CategoryDAO();
             this.brandDAO = new BrandDAO();
             
-            System.out.println("📦 Loading categories and brands...");
+            System.out.println("Loading categories and brands...");
             this.categories = categoryDAO.getAllActiveCategories();
             this.brands = brandDAO.getAllBrands();
-            System.out.println("✅ Loaded " + categories.size() + " categories, " + brands.size() + " brands");
+            System.out.println("Loaded " + categories.size() + " categories, " + brands.size() + " brands");
             
         } catch (Exception e) {
-            System.err.println("❌ Error initializing ProductListServlet: " + e.getMessage());
+            System.err.println("Error initializing ProductListServlet: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -64,12 +64,10 @@ public class ProductListServlet extends HttpServlet {
                         searchProducts(request, response);
                         break;
                     case "filter":
-                        String type = request.getParameter("type"); // vd: category hoặc brand
+                        String type = request.getParameter("type"); 
                         if ("category".equals(type)) {
-                            String categoryId = request.getParameter("categoryId");
                             listProductsByCategory(request, response);
                         } else if ("brand".equals(type)) {
-                            String brandId = request.getParameter("brandId");
                             listProductsByBrand(request, response);
                         }
                         break;

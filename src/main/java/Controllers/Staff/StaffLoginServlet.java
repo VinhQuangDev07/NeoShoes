@@ -26,7 +26,7 @@ public class StaffLoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("staff") != null) {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
             return;
         }
         request.getRequestDispatcher("/WEB-INF/views/staff/login.jsp").forward(request, response);
@@ -43,7 +43,7 @@ public class StaffLoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập đầy đủ email và mật khẩu!");
+            request.setAttribute("error", "Please enter full email and password!");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/staff/login.jsp").forward(request, response);
             return;
@@ -51,7 +51,7 @@ public class StaffLoginServlet extends HttpServlet {
 
         Staff staff = staffDAO.login(email.trim(), password);
         if (staff == null) {
-            request.setAttribute("error", "Email hoặc mật khẩu không đúng!");
+            request.setAttribute("error", "Email or password incorrect!");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/staff/login.jsp").forward(request, response);
             return;
@@ -67,7 +67,7 @@ public class StaffLoginServlet extends HttpServlet {
         if (redirect != null && !redirect.isEmpty()) {
             response.sendRedirect(redirect);
         } else {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
         }
     }
 }

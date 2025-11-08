@@ -112,7 +112,6 @@ public class PurchaseServlet extends HttpServlet {
                 }
             } else {
                 // Get all cart items for the customer
-                // Using Customer ID = 2 for cart items (has addresses but NO cart items)
                 cartItems = cartDAO.getItemsByCustomerId(customer.getId());
             }
 
@@ -125,11 +124,7 @@ public class PurchaseServlet extends HttpServlet {
 
             // Get customer addresses
             List<Address> addresses = new ArrayList<>();
-            try {
-                addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
 
             // Check if customer has addresses - redirect to profile if none
             if (addresses.isEmpty()) {
@@ -170,9 +165,7 @@ public class PurchaseServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             HttpSession session = request.getSession();
-            String errorMsg = "An error occurred while loading payment information: "
-                    + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
-            session.setAttribute("flash_error", errorMsg);
+            session.setAttribute("flash_error", "An error occurred while loading payment information");
             response.sendRedirect(request.getContextPath() + "/cart");
         }
     }
@@ -273,7 +266,7 @@ public class PurchaseServlet extends HttpServlet {
                 session.removeAttribute("appliedVoucherId");
                 session.removeAttribute("voucherDiscount");
 
-                session.setAttribute("flash", "Order placed successfully! Order ID: " + orderId);
+                session.setAttribute("flash", "Order placed successfully!");
                 response.sendRedirect(request.getContextPath() + "/orders");
             } else {
                 session.setAttribute("flash_error", "Failed to place order. Please try again.");

@@ -21,7 +21,7 @@
                 </a>
 
                 <!-- Orders Link -->
-                <a href="${pageContext.request.contextPath}/orders?id=2" 
+                <a href="${pageContext.request.contextPath}/orders" 
                    id="order" 
                    data-page="order" 
                    class="nav-link-item">
