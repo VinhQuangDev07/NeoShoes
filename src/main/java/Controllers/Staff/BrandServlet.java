@@ -2,16 +2,21 @@ package Controllers.Staff;
 
 import DAOs.BrandDAO;
 import Models.Brand;
+import Models.Staff;
+import Utils.CloudinaryConfig;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/managebrands", "/managebrands/*"})
+@WebServlet(urlPatterns = {"/staff/manage-brands", "/staff/manage-brands/*"})
+@MultipartConfig
 public class BrandServlet extends HttpServlet {
+
     private BrandDAO brandDAO;
 
     @Override
@@ -20,42 +25,39 @@ public class BrandServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String role = getRoleFromRequest(request);
-        request.setAttribute("userRole", role);
-        
+
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+
         String action = getAction(request);
-        
+
         try {
             switch (action) {
                 case "list":
                     listBrands(request, response);
                     break;
                 case "add":
-                    if (canModify(role)) { // CHỈ admin mới được thêm
+                    if (staff.isAdmin()) {
                         showAddForm(request, response);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 case "edit":
-                    if (canModify(role)) { // CHỈ admin mới được sửa
+                    if (staff.isAdmin()) {
                         showEditForm(request, response);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
-                    }
-                    break;
-                case "delete":
-                    if (canModify(role)) { // CHỈ admin mới được xóa
-                        deleteBrand(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 default:
-                    listBrands(request, response); // Mặc định vẫn cho xem danh sách
+                    listBrands(request, response);
                     break;
             }
         } catch (SQLException ex) {
@@ -64,32 +66,43 @@ public class BrandServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String role = getRoleFromRequest(request);
-        request.setAttribute("userRole", role);
-        
+
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+
         String action = getAction(request);
-        
+
         try {
             switch (action) {
                 case "add":
-                    if (canModify(role)) { // CHỈ admin mới được thêm
-                        addBrand(request, response);
+                    if (staff.isAdmin()) {
+                        addBrand(request, response, session);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 case "update":
-                    if (canModify(role)) { // CHỈ admin mới được sửa
-                        updateBrand(request, response);
+                    if (staff.isAdmin()) {
+                        updateBrand(request, response, session);
                     } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+                    }
+                    break;
+                case "delete":
+                    if (staff.isAdmin()) {
+                        deleteBrand(request, response, session);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
                     }
                     break;
                 default:
-                    listBrands(request, response); // Mặc định vẫn cho xem danh sách
+                    listBrands(request, response);
                     break;
             }
         } catch (SQLException ex) {
@@ -98,153 +111,196 @@ public class BrandServlet extends HttpServlet {
     }
 
     // === CÁC PHƯƠNG THỨC XỬ LÝ CHÍNH ===
-    
-    private void listBrands(HttpServletRequest request, HttpServletResponse response) 
+    private void listBrands(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         List<Brand> brands = brandDAO.getAllBrands();
-        request.setAttribute("brands", brands);
-        
-        String role = (String) request.getAttribute("userRole");
-        boolean canModify = canModify(role); // CHỈ admin mới được sửa đổi
-        request.setAttribute("canModify", canModify);
-        
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/Brand-list.jsp");
+
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+
+        int recordsPerPage = 10;
+
+        int totalRecords = brands.size();
+
+        // Calculate start and end positions
+        int startIndex = (currentPage - 1) * recordsPerPage;
+        int endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+
+        // 5. Lấy dữ liệu cho trang hiện tại
+        List<Brand> pageData;
+        if (startIndex < totalRecords) {
+            pageData = brands.subList(startIndex, endIndex);
+        } else {
+            pageData = new ArrayList<>();
+        }
+
+        // Set attributes
+        request.setAttribute("brands", pageData);
+        request.setAttribute("totalRecords", totalRecords);
+        request.setAttribute("recordsPerPage", recordsPerPage);
+        request.setAttribute("baseUrl", request.getRequestURI());
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-list.jsp");
         dispatcher.forward(request, response);
     }
 
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Kiểm tra lại quyền trước khi hiển thị form
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-        
+
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
         request.setAttribute("formAction", "add");
         dispatcher.forward(request, response);
     }
 
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        // Kiểm tra lại quyền trước khi hiển thị form
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-        
-        int id = Integer.parseInt(request.getParameter("id"));
-        Brand brand = brandDAO.getBrandById(id);
-        
-        if (brand != null) {
-            request.setAttribute("brand", brand);
-            request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
-            dispatcher.forward(request, response);
-        } else {
-            response.sendError(404, "Brand not found");
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Brand brand = brandDAO.getBrandById(id);
+
+            if (brand != null) {
+                request.setAttribute("brand", brand);
+                request.setAttribute("formAction", "update");
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
+                dispatcher.forward(request, response);
+            } else {
+                request.getSession().setAttribute("flash_error", "Brand not found");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void addBrand(HttpServletRequest request, HttpServletResponse response) 
+    private void addBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException, ServletException {
-        // Kiểm tra lại quyền trước khi thêm
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-        
-        String name = request.getParameter("name");
-        String logo = request.getParameter("logo");
-        
-        if (name == null || name.trim().isEmpty()) {
-            request.setAttribute("error", "Brand name is required");
-            showAddForm(request, response);
-            return;
-        }
-        
-        Brand brand = new Brand();
-        brand.setName(name.trim());
-        brand.setLogo(logo);
-        
-        boolean success = brandDAO.addBrand(brand);
-        
-        if (success) {
-            String currentRole = (String) request.getAttribute("userRole");
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=added");
-        } else {
-            request.setAttribute("error", "Failed to add brand");
-            showAddForm(request, response);
+        try {
+            String name = request.getParameter("name");
+
+            // Validate tên rỗng
+            if (name == null || name.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Brand name is required.");
+                showAddForm(request, response);
+                return;
+            }
+
+            // Upload logo (nếu có)
+            String logoUrl = null;
+            Part logoPart = request.getPart("logoFile");
+            if (logoPart != null && logoPart.getSize() > 0) {
+                try {
+                    logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    session.setAttribute("flash_error", "Logo upload failed!");
+                    showAddForm(request, response);
+                    return;
+                }
+            }
+
+            Brand brand = new Brand();
+            brand.setName(name.trim());
+            brand.setLogo(logoUrl);
+
+            boolean success = brandDAO.addBrand(brand);
+
+            if (success) {
+                session.setAttribute("flash", "Brand added successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            } else {
+                session.setAttribute("flash_error", "Failed to add brand!");
+                showAddForm(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void updateBrand(HttpServletRequest request, HttpServletResponse response) 
+    private void updateBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException, ServletException {
-        // Kiểm tra lại quyền trước khi cập nhật
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-        
-        int id = Integer.parseInt(request.getParameter("id"));
-        String name = request.getParameter("name");
-        String logo = request.getParameter("logo");
-        
-        if (name == null || name.trim().isEmpty()) {
-            request.setAttribute("error", "Brand name is required");
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            String name = request.getParameter("name");
+
+            // Lấy brand hiện tại
+            Brand existingBrand = brandDAO.getBrandById(id);
+            if (existingBrand == null) {
+                session.setAttribute("flash_error", "Brand not found!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+                return;
+            }
+
+            // Validate tên rỗng
+            if (name == null || name.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Brand name is required.");
+                request.setAttribute("brand", existingBrand);
+                request.setAttribute("formAction", "update");
+                request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp").forward(request, response);
+                return;
+            }
+
+            // Upload logo mới (nếu có)
+            String logoUrl = existingBrand.getLogo();
+            Part logoPart = request.getPart("logoFile");
+            if (logoPart != null && logoPart.getSize() > 0) {
+                try {
+                    logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    session.setAttribute("flash_error", "Logo upload failed!");
+                    showEditForm(request, response);
+                    return;
+                }
+            }
+
             Brand brand = new Brand();
             brand.setBrandId(id);
-            brand.setName(name);
-            brand.setLogo(logo);
-            request.setAttribute("brand", brand);
-            request.setAttribute("formAction", "update");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp");
-            dispatcher.forward(request, response);
-            return;
-        }
-        
-        Brand brand = new Brand();
-        brand.setBrandId(id);
-        brand.setName(name.trim());
-        brand.setLogo(logo);
-        
-        boolean success = brandDAO.updateBrand(brand);
-        
-        if (success) {
-            String currentRole = (String) request.getAttribute("userRole");
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=updated");
-        } else {
-            request.setAttribute("error", "Failed to update brand");
-            showEditForm(request, response);
+            brand.setName(name.trim());
+            brand.setLogo(logoUrl);
+
+            boolean success = brandDAO.updateBrand(brand);
+
+            if (success) {
+                session.setAttribute("flash", "Brand updated successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
+            } else {
+                session.setAttribute("flash_error", "Failed to update brand!");
+                showEditForm(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    private void deleteBrand(HttpServletRequest request, HttpServletResponse response) 
+    private void deleteBrand(HttpServletRequest request, HttpServletResponse response, HttpSession session)
             throws SQLException, IOException {
-        // Kiểm tra lại quyền trước khi xóa
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-        
-        int id = Integer.parseInt(request.getParameter("id"));
-        boolean success = brandDAO.deleteBrand(id);
-        
-        String currentRole = (String) request.getAttribute("userRole");
-        if (success) {
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&success=deleted");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/managebrands/list?role=" + currentRole + "&error=delete_failed");
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean success = brandDAO.deleteBrand(id);
+
+            if (success) {
+                session.setAttribute("flash", "Deleted successfully");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands/list");
+            } else {
+                session.setAttribute("flash_error", "Failed to delete brand");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-brands/list");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/staff/manage-brands");
         }
     }
 
-    // === CÁC PHƯƠNG THỨC HỖ TRỢ ===
-    
     private String getAction(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && !"/".equals(pathInfo)) {
@@ -255,29 +311,4 @@ public class BrandServlet extends HttpServlet {
         return (action == null || action.trim().isEmpty()) ? "list" : action.trim();
     }
 
-    // QUAN TRỌNG: Phân quyền đúng
-    private boolean canModify(String role) {
-        return "admin".equals(role); // CHỈ admin mới được thêm/sửa/xóa
-    }
-    
-    private boolean canView(String role) {
-        return "admin".equals(role) || "staff".equals(role); // Cả admin và staff đều được xem
-    }
-
-    private String getRoleFromRequest(HttpServletRequest request) {
-        String role = request.getParameter("role");
-        
-        if (role == null || role.trim().isEmpty()) {
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                role = (String) session.getAttribute("role");
-            }
-        }
-        
-        if (role == null || role.trim().isEmpty()) {
-            role = "staff"; // Mặc định là staff
-        }
-        
-        return role;
-    }
 }

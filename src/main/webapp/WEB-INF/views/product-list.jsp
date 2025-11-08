@@ -256,6 +256,7 @@
             }
 
             .no-products {
+                width: 53.5rem;
                 text-align: center;
                 color: #666;
                 font-size: 1.1rem;
@@ -383,20 +384,6 @@
                 --btn-bg:#ffe4e6;
             }
 
-            /* (Tuỳ chọn) Variant B: Gradient nổi bật
-            .btn-danger-grad{
-              --btn-bg:linear-gradient(135deg, #ff6b6b 0%, #f43f5e 100%);
-              --btn-fg:#fff; --btn-bd:transparent;
-              color:#fff; border:0; box-shadow:0 10px 22px rgba(244,63,94,.25);
-            }
-            .btn-danger-grad:hover{ box-shadow:0 14px 26px rgba(244,63,94,.32); }
-            */
-
-            /* (Tuỳ chọn) Variant C: Outline tối giản
-            .btn-danger-outline{ --btn-bg:#fff; --btn-fg:#dc2626; --btn-bd:#fca5a5; }
-            .btn-danger-outline:hover{ --btn-bg:#fff5f5; border-color:#f87171; }
-            */
-
             /* Push footer button to the bottom of the sidebar card */
             .sidebar-footer {
                 margin-top: auto;
@@ -407,86 +394,78 @@
     <body>
         <!-- Header -->
         <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
-        <!--        <header class="header">
-                    <div class="header-container">
-                        <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                        <form action="${pageContext.request.contextPath}/products" method="get" class="search-form">
-                            <input type="hidden" name="action" value="search">
-                            <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                            <button type="submit" class="search-button">Search</button>
-                        </form>
-                    </div>
-                </header>-->
+        <!-- Notifications -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
 
         <!-- Main Content -->
         <div class="main-container">
-            
-<!-- Sidebar -->
-<aside class="sidebar">
-    <h3 class="sidebar-title">Categories</h3>
-    <ul class="categories-list">
-        <li class="category-item">
-            <c:choose>
-                <c:when test="${not empty param.brandId}">
-                    <!-- When a brand is selected, 'All' goes back to the brand page -->
-                    <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${param.brandId}"
-                       class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                        <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
-                        <span>All Categories</span>
-                    </a>
-                </c:when>
-                <c:otherwise>
-                    <!-- When no brand is selected, 'All' goes to all products -->
-                    <a href="${pageContext.request.contextPath}/products"
-                       class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                        <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
-                        <span>All Products</span>
-                    </a>
-                </c:otherwise>
-            </c:choose>
-        </li>
 
-        <c:forEach var="category" items="${categories}">
-            <li class="category-item">
-                <c:choose>
-                    <c:when test="${not empty param.brandId}">
-                        <!-- Always pass brandId when clicking category on a brand page -->
-                        <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
-                           class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
-                            <img class="category-thumb"
-                                 src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
-                                 alt="${category.name}"
-                                 onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
-                            <span>${category.name}</span>
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <h3 class="sidebar-title">Categories</h3>
+                <ul class="categories-list">
+                    <li class="category-item">
+                        <c:choose>
+                            <c:when test="${not empty param.brandId}">
+                                <!-- When a brand is selected, 'All' goes back to the brand page -->
+                                <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${param.brandId}"
+                                   class="category-link ${empty selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
+                                    <span>All Categories</span>
+                                </a>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- When no brand is selected, 'All' goes to all products -->
+                                <a href="${pageContext.request.contextPath}/products"
+                                   class="category-link ${empty selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
+                                    <span>All Products</span>
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+                    </li>
+
+                    <c:forEach var="category" items="${categories}">
+                        <li class="category-item">
+                            <c:choose>
+                                <c:when test="${not empty param.brandId}">
+                                    <!-- Always pass brandId when clicking category on a brand page -->
+                                    <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
+                                       class="category-link ${selectedCategory == category.categoryId ? 'active' : ''}">
+                                        <img class="category-thumb"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
+                                             alt="${category.name}"
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
+                                        <span>${category.name}</span>
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- Normal category link when no brand is selected -->
+                                    <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}"
+                                       class="category-link ${selectedCategory == category.categoryId ? 'active' : ''}">
+                                        <img class="category-thumb"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
+                                             alt="${category.name}"
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
+                                        <span>${category.name}</span>
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </li>
+                    </c:forEach>
+                </ul>
+
+                <!-- Clear brand filter -->
+                <c:if test="${not empty param.brandId}">
+                    <div class="sidebar-footer">
+                        <a href="${pageContext.request.contextPath}/products"
+                           class="btn btn-success-soft btn-lg btn-block no-ic">
+                            Clear Brand Filter
                         </a>
-                    </c:when>
-                    <c:otherwise>
-                        <!-- Normal category link when no brand is selected -->
-                        <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}"
-                           class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
-                            <img class="category-thumb"
-                                 src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
-                                 alt="${category.name}"
-                                 onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
-                            <span>${category.name}</span>
-                        </a>
-                    </c:otherwise>
-                </c:choose>
-            </li>
-        </c:forEach>
-    </ul>
+                    </div>
+                </c:if>
 
-    <!-- Clear brand filter -->
-    <c:if test="${not empty param.brandId}">
-        <div class="sidebar-footer">
-            <a href="${pageContext.request.contextPath}/products"
-               class="btn btn-success-soft btn-lg btn-block no-ic">
-                Clear Brand Filter
-            </a>
-        </div>
-    </c:if>
-
-</aside>
+            </aside>
 
             <!-- Products Section -->
             <main class="products-section">
@@ -522,7 +501,7 @@
                                         </c:if>
                                     </c:forEach>
                                 </c:when>
-                                <c:otherwise>All Products</c:otherwise>
+                                <c:otherwise>Products</c:otherwise>
                             </c:choose>
                         </h2>
                         <p class="products-count">
@@ -552,18 +531,10 @@
                                         <h3 class="product-name">${product.name}</h3>
                                         <p class="product-brand">${product.brandName} • ${product.categoryName}</p>
 
-                                        <c:if test="${product.availableColors != null}">
-                                            <div class="color-previews">
-                                                <c:forTokens items="${product.availableColors}" delims="," var="color" end="3">
-                                                    <span class="color-dot" style="background-color: ${color}" title="${color}"></span>
-                                                </c:forTokens>
-                                                <c:if test="${fn:length(fn:split(product.availableColors, ',')) > 3}">
-                                                    <span class="color-more">+${fn:length(fn:split(product.availableColors, ',')) - 3}</span>
-                                                </c:if>
-                                            </div>
-                                        </c:if>
-
                                         <c:choose>
+                                            <c:when test="${empty product.minPrice or empty product.maxPrice}">
+                                                <div id="priceText" class="price">$0.0</div>
+                                            </c:when>
                                             <c:when test="${product.minPrice != product.maxPrice}">
                                                 <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
                                             </c:when>

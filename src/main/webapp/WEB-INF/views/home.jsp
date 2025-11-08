@@ -497,7 +497,7 @@
                 <div class="categories-list">
                     <c:forEach var="brand" items="${brands}">
                         <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${brand.brandId}"
-   class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
+                           class="category-chip ${param.selectedBrand == brand.brandId ? 'active' : ''}">
                             <img class="category-thumb"
                                  src="${empty brand.logo ? 'https://via.placeholder.com/56?text=Brand' : brand.logo}"
                                  alt="${brand.name}"
@@ -544,18 +544,10 @@
                                     <h3 class="product-name">${product.name}</h3>
                                     <p class="product-brand">${product.brandName}</p>
 
-                                    <c:if test="${product.availableColors != null}">
-                                        <div class="color-previews">
-                                            <c:forTokens items="${product.availableColors}" delims="," var="color" end="3">
-                                                <span class="color-dot" style="background-color: ${color}" title="${color}"></span>
-                                            </c:forTokens>
-                                            <c:if test="${fn:length(fn:split(product.availableColors, ',')) > 3}">
-                                                <span class="color-more">+${fn:length(fn:split(product.availableColors, ',')) - 3}</span>
-                                            </c:if>
-                                        </div>
-                                    </c:if>
-
                                     <c:choose>
+                                        <c:when test="${empty product.minPrice or empty product.maxPrice}">
+                                            <div id="priceText" class="price">$0.0</div>
+                                        </c:when>
                                         <c:when test="${product.minPrice != product.maxPrice}">
                                             <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
                                         </c:when>

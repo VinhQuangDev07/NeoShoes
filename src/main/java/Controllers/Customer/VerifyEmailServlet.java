@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-
 @WebServlet(name = "VerifyEmailServlet", urlPatterns = {"/verify-email"})
 public class VerifyEmailServlet extends HttpServlet {
 
@@ -66,7 +65,7 @@ public class VerifyEmailServlet extends HttpServlet {
             if (customerId > 0) {
                 // Generate new code
                 String newCode = Utils.EmailService.generateVerificationCode();
-                LocalDateTime expiry = LocalDateTime.now().plusMinutes(2);
+                LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
                 
                 // Delete old code and create new one
                 boolean codeCreated = customerDAO.resendVerificationCode(pendingEmail);

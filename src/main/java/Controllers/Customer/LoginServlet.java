@@ -1,5 +1,6 @@
 package Controllers.Customer;
 
+import DAOs.CartDAO;
 import java.io.IOException;
 
 import DAOs.CustomerDAO;
@@ -81,6 +82,10 @@ public class LoginServlet extends HttpServlet {
                 // 3b. Create session
                 HttpSession session = request.getSession();
                 session.setAttribute("customer", customer);
+                session.setAttribute("role", "customer");
+                CartDAO cartDAO = new CartDAO();
+                int itemCount = cartDAO.countItems(customer.getId());
+                session.setAttribute("cartQuantity", itemCount);
                 session.setMaxInactiveInterval(30 * 60); // 30 minutes
                 
                 // 3c. Handle "Remember me"

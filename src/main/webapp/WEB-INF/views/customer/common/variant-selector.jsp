@@ -9,6 +9,9 @@
 <!-- Price -->
 <div class="price-section">
     <c:choose>
+        <c:when test="${empty product.minPrice or empty product.maxPrice}">
+            <div id="priceText" class="price">$0.0</div>
+        </c:when>
         <c:when test="${product.minPrice != product.maxPrice}">
             <div id="priceText" class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
         </c:when>
@@ -270,6 +273,11 @@
 
             if (priceText) {
                 priceText.textContent = '$' + variant.price.toFixed(2);
+            }
+
+            const mainImage = document.getElementById('mainImage');
+            if (mainImage && variant.image) {
+                mainImage.src = variant.image;
             }
 
             if (available > 0) {

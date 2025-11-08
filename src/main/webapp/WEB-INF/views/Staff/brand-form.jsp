@@ -2,124 +2,225 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>
-        <c:choose>
-            <c:when test="${formAction == 'update'}">Edit Brand</c:when>
-            <c:otherwise>Add New Brand</c:otherwise>
-        </c:choose>
-    </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { box-sizing: border-box; }
+    <head>
+        <meta charset="UTF-8">
+        <title>${formAction == 'update' ? 'Edit Brand' : 'Add New Brand'} - NeoShoes</title>
 
-        /* Căn giữa form theo cả trục dọc & ngang */
-        body {
-            margin: 0;
-            padding: 24px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: Arial, Helvetica, sans-serif;
-            min-height: 100vh;
-            display: flex;                /* NEW */
-            align-items: center;          /* NEW */
-            justify-content: center;      /* NEW */
-        }
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        /* Form chiếm full chiều ngang nhưng giới hạn độ rộng để nhìn gọn */
-        .container {
-            width: 100%;                  /* NEW */
-            max-width: 960px;             /* NEW: muốn rộng hơn thì tăng số này */
-            margin: 0 auto;
-        }
+        <!-- Lucide Icons -->
+        <script src="https://unpkg.com/lucide@latest"></script>
 
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,.1);
-        }
+        <style>
+            body {
+                background-color: #f8f9fa;
+                overflow-x: hidden;
+            }
 
-        /* Header màu đen */
-        .card-head {
-            padding: 20px 24px;
-            color: #fff;
-            background: #000 !important;   /* NEW: đổi header sang đen */
-        }
-        .card-head h1 { margin: 0; font-size: 22px; font-weight: 600; }
+            #main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+                padding-top: 74px;
+            }
 
-        .card-body { padding: 24px; }
-        .form-group { margin-bottom: 18px; }
-        .form-label { display: block; margin-bottom: 8px; font-weight: 600; color: #344054; }
-        .form-control {
-            width: 100%; padding: 12px 14px; border: 1px solid #d0d5dd; border-radius: 8px;
-            font-size: 15px; outline: none; transition: .2s;
-        }
-        .form-control:focus { border-color: #111; box-shadow: 0 0 0 3px rgba(0,0,0,.12); }
-        .hint { color: #667085; font-size: 13px; margin-top: 6px; }
-        .preview { margin-top: 10px; }
-        .preview img { max-width: 96px; max-height: 96px; border: 1px solid #eee; border-radius: 8px; }
-        .actions { display: flex; gap: 12px; margin-top: 16px; }
-        .btn {
-            display: inline-block; padding: 10px 16px; border-radius: 8px;
-            text-decoration: none; border: none; cursor: pointer; font-weight: 600;
-            transition: .15s;
-        }
-        .btn-primary { background: #12b76a; color: #fff; }
-        .btn-primary:hover { filter: brightness(0.95); transform: translateY(-1px); }
-        .btn-secondary { background: #f2f4f7; color: #344054; }
-        .btn-secondary:hover { background: #e6e9ef; transform: translateY(-1px); }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="card">
-        <div class="card-head">
-            <h1>
-                <c:choose>
-                    <c:when test="${formAction == 'update'}">Edit Brand</c:when>
-                    <c:otherwise>Add New Brand</c:otherwise>
-                </c:choose>
-            </h1>
-        </div>
-        <div class="card-body">
-            <form
-                action="<c:url value='/managebrands/${formAction}'><c:param name='role' value='${userRole}'/></c:url>"
-                method="post">
+            @media (min-width: 992px) {
+                #main-content {
+                    margin-left: 300px;
+                }
+            }
 
-                <c:if test="${formAction == 'update'}">
-                    <input type="hidden" name="id" value="<c:out value='${brand.brandId}'/>">
-                </c:if>
+            .page-header {
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
 
-                <div class="form-group">
-                    <label class="form-label" for="name">Brand Name</label>
-                    <input id="name" name="name" type="text" class="form-control"
-                           value="<c:out value='${brand.name}'/>" required
-                           placeholder="Enter brand name">
+            .form-card {
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                padding: 32px;
+            }
+
+            .form-label {
+                font-weight: 600;
+                color: #374151;
+            }
+
+            .form-control {
+                border-radius: 8px;
+                padding: 10px 12px;
+            }
+
+            .form-control:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            }
+
+            .image-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
+            }
+
+            .btn-primary {
+                background-color: #0d6efd;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 20px;
+                font-weight: 500;
+            }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+            }
+
+            .btn-secondary {
+                background-color: #f3f4f6;
+                color: #374151;
+                border-radius: 8px;
+                padding: 10px 20px;
+                border: 1px solid #dee2e6;
+            }
+
+            .btn-secondary:hover {
+                background-color: #e5e7eb;
+                color: #111;
+            }
+        </style>
+    </head>
+    <body>
+
+        <!-- Header & Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
+
+        <!-- Main -->
+        <div id="main-content">
+            <div class="container-fluid p-4">
+
+                <!-- Page Header -->
+                <div class="page-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1 fw-bold">${formAction == 'update' ? 'Edit Brand' : 'Add New Brand'}</h2>
+                        <p class="text-muted mb-0 mt-1">Fill in the brand details below</p>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="logo">Logo URL</label>
-                    <input id="logo" name="logo" type="text" class="form-control"
-                           value="<c:out value='${brand.logo}'/>"
-                           placeholder="https://example.com/logo.png">
-                    <div class="hint">Paste an image URL. (Current code does not handle file uploads.)</div>
+                <!-- Form -->
+                <div class="form-card">
+                    <form action="<c:url value='/staff/manage-brands/${formAction}'/>" method="post" enctype="multipart/form-data">
 
-                    <c:if test="${not empty brand.logo}">
-                        <div class="preview">
-                            <img src="<c:out value='${brand.logo}'/>" alt="Logo preview">
+                        <c:if test="${formAction == 'update'}">
+                            <input type="hidden" name="id" value="${brand.brandId}">
+                        </c:if>
+
+                        <!-- Brand Name -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Brand Name *</label>
+                            <input id="name" name="name" type="text" class="form-control"
+                                   value="${brand.name}" required maxlength="255"
+                                   placeholder="Enter brand name...">
                         </div>
-                    </c:if>
-                </div>
 
-                <div class="actions">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                    <a class="btn btn-secondary"
-                       href="<c:url value='/managebrands'><c:param name='role' value='${userRole}'/></c:url>">Cancel</a>
+                        <!-- Logo Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Brand Logo</label>
+                            <div class="image-upload" id="imageUpload">
+                                <img src="${empty brand.logo ? 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png' : brand.logo}" 
+                                     id="imagePreview" alt="Brand Logo Preview" />
+                                <div class="text-muted small">Click or drag & drop an image</div>
+                                <input type="file" name="logoFile" id="imageInput" accept="image/*" class="d-none">
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="${formAction == 'update' ? 'save' : 'plus'}" style="width:18px; height:18px;"></i>
+                                ${formAction == 'update' ? 'Save Changes' : 'Add Brand'}
+                            </button>
+                            <a href="${pageContext.request.contextPath}/staff/manage-brands" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
-</body>
+
+        <!-- JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Active sidebar
+                var el = document.getElementById('brand');
+                if (el)
+                    el.classList.add('active');
+
+                // Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+
+                // Image upload preview
+                const uploadArea = document.getElementById('imageUpload');
+                const fileInput = document.getElementById('imageInput');
+                const preview = document.getElementById('imagePreview');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => preview.src = event.target.result;
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+
+                // Drag & Drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#0d6efd';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = '#dee2e6';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#dee2e6';
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        fileInput.files = e.dataTransfer.files;
+                        const reader = new FileReader();
+                        reader.onload = (event) => preview.src = event.target.result;
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+    </body>
 </html>

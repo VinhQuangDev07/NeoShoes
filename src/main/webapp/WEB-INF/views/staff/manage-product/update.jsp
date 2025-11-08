@@ -11,6 +11,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <title>Update Product</title>
         <style>
             * {
@@ -35,7 +38,7 @@
             }
 
             .container {
-                max-width: 900px;
+                max-width: 73rem;
                 margin: 0 auto;
             }
 
@@ -145,6 +148,29 @@
                 resize: vertical;
                 min-height: 120px;
                 font-family: inherit;
+            }
+
+            .image-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
             }
 
             /* Two Column Layout */
@@ -309,6 +335,14 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <div class="main-wrapper">
             <div class="container">
                 <!-- Page Header -->
@@ -322,23 +356,9 @@
                     </a>
                 </div>
 
-                <!-- Error Message -->
-                <c:if test="${not empty errorMessage}">
-                    <div class="error-message">
-                        ❌ ${errorMessage}
-                    </div>
-                </c:if>
-
-                <!-- Success Message -->
-                <c:if test="${not empty successMessage}">
-                    <div class="success-message">
-                        ✅ ${successMessage}
-                    </div>
-                </c:if>
-
                 <!-- Form Card -->
                 <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/staff/product" method="POST">
+                    <form action="${pageContext.request.contextPath}/staff/product" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="productId" value="${product.productId}">
 
@@ -427,25 +447,26 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="defaultImageUrl">
-                                    Default Image URL
-                                    <span class="required">*</span>
+                                <label class="form-label">
+                                    Product Image <span class="required">*</span>
                                 </label>
-                                <input type="url" 
-                                       id="defaultImageUrl" 
-                                       name="defaultImageUrl" 
-                                       class="form-control" 
-                                       placeholder="https://example.com/image.jpg"
-                                       value="${product.defaultImageUrl}"
-                                       required>
-                                <div class="helper-text">Enter a valid image URL (must start with http:// or https://)</div>
+                                <div class="image-upload" id="productImageUpload">
+                                    <img src="${empty product.defaultImageUrl 
+                                                ? 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png' 
+                                                : product.defaultImageUrl}" 
+                                         id="productImagePreview" 
+                                         alt="Product Image Preview" />
+                                    <div class="text-muted small">Click or drag & drop an image</div>
+                                    <input type="file" name="imageFile" id="productImageInput" accept="image/*" class="d-none">
+                                </div>
+                                <input type="hidden" name="defaultImageUrl" id="imageUrlHidden" value="${product.defaultImageUrl}">
                             </div>
                         </div>
 
                         <!-- Product Status Section -->
                         <div class="form-section">
                             <h2 class="section-title">Product Status</h2>
-                            
+
                             <div class="status-toggle">
                                 <label class="toggle-switch">
                                     <input type="checkbox" 
@@ -480,7 +501,7 @@
 
         <script>
             // Update status text when toggle changes
-            document.getElementById('isActiveToggle').addEventListener('change', function() {
+            document.getElementById('isActiveToggle').addEventListener('change', function () {
                 const statusText = document.getElementById('statusText');
                 if (this.checked) {
                     statusText.textContent = 'This product will be active and visible to customers';
@@ -516,5 +537,55 @@
                 return true;
             });
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uploadArea = document.getElementById('productImageUpload');
+                const fileInput = document.getElementById('productImageInput');
+                const preview = document.getElementById('productImagePreview');
+                const hiddenUrl = document.getElementById('imageUrlHidden');
+
+                // Click để mở chọn file
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                // Preview ảnh khi chọn
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = ''; // Xóa URL cũ nếu có ảnh mới
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Drag & Drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#0d6efd';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = '#dee2e6';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#dee2e6';
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        fileInput.files = e.dataTransfer.files;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = '';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+
     </body>
 </html>

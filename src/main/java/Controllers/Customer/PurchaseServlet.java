@@ -8,13 +8,11 @@ import java.util.List;
 
 import DAOs.AddressDAO;
 import DAOs.CartDAO;
-import DAOs.CustomerDAO;
 import DAOs.OrderDAO;
 import DAOs.VoucherDAO;
 import Models.Address;
 import Models.CartItem;
 import Models.Customer;
-import Models.Order;
 import Models.Voucher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -58,8 +56,8 @@ public class PurchaseServlet extends HttpServlet {
             // Handle checkout process - show purchase confirmation page
             handleCheckout(request, response, customer);
         } else {
-            // Default: show purchase history
-            handlePurchaseHistory(request, response, customer);
+            // Redirect to orders page instead of purchase history
+            response.sendRedirect(request.getContextPath() + "/orders");
         }
     }
 
@@ -74,15 +72,15 @@ public class PurchaseServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
+        
         String action = request.getParameter("action");
 
         if ("placeOrder".equals(action)) {
             // Handle placing order
             handlePlaceOrder(request, response, customer);
         } else {
-            // Default: show purchase history
-            handlePurchaseHistory(request, response, customer);
+            // Redirect to orders page instead of purchase history
+            response.sendRedirect(request.getContextPath() + "/orders");
         }
     }
 
@@ -114,7 +112,6 @@ public class PurchaseServlet extends HttpServlet {
                 }
             } else {
                 // Get all cart items for the customer
-                // Using Customer ID = 2 for cart items (has addresses but NO cart items)
                 cartItems = cartDAO.getItemsByCustomerId(customer.getId());
             }
 
@@ -127,11 +124,7 @@ public class PurchaseServlet extends HttpServlet {
 
             // Get customer addresses
             List<Address> addresses = new ArrayList<>();
-            try {
-                addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            addresses = addressDAO.getAllAddressByCustomerId(customer.getId());
 
             // Check if customer has addresses - redirect to profile if none
             if (addresses.isEmpty()) {
@@ -172,9 +165,7 @@ public class PurchaseServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             HttpSession session = request.getSession();
-            String errorMsg = "Có lỗi xảy ra khi tải thông tin thanh toán: "
-                    + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
-            session.setAttribute("flash_error", errorMsg);
+            session.setAttribute("flash_error", "An error occurred while loading payment information");
             response.sendRedirect(request.getContextPath() + "/cart");
         }
     }
@@ -211,19 +202,6 @@ public class PurchaseServlet extends HttpServlet {
             int addressId = Integer.parseInt(addressIdStr);
             Integer voucherId = null;
 
-            // // Validate and get voucher if provided
-            // if (voucherCode != null && !voucherCode.trim().isEmpty()) {
-            //     Voucher voucher = voucherDAO.getVoucherByCode(voucherCode.trim(), customer.getId());
-            //     if (voucher != null && voucher.canUseVoucher()) {
-            //         voucherId = voucher.getVoucherId();
-            //         System.out.println("Voucher validated: " + voucher.getVoucherCode() + " (ID: " + voucherId + ")");
-            //     } else {
-            //         System.out.println("Voucher invalid: "+ voucherCode);
-            //         session.setAttribute("flash_error", "Invalid or expired voucher code");
-            //         response.sendRedirect(request.getContextPath() + "/purchase?action=checkout");
-            //         return;
-            //     }
-            // }
             // Validate and get voucher if provided
             if (voucherCode != null && !voucherCode.trim().isEmpty()) {
                 // ✅ STEP 1: So sánh với session trước
@@ -256,7 +234,7 @@ public class PurchaseServlet extends HttpServlet {
                     System.err.println("VoucherId mismatch!");
                     System.err.println("  Voucher DB ID: " + voucher.getVoucherId());
                     System.err.println("  Session ID: " + voucherIdFromSession);
-                    session.setAttribute("flash_error", "Lỗi xác thực voucher");
+                    session.setAttribute("flash_error", "Voucher authentication error");
                     response.sendRedirect(request.getContextPath() + "/purchase?action=checkout");
                     return;
                 }
@@ -288,7 +266,7 @@ public class PurchaseServlet extends HttpServlet {
                 session.removeAttribute("appliedVoucherId");
                 session.removeAttribute("voucherDiscount");
 
-                session.setAttribute("flash", "Order placed successfully! Order ID: " + orderId);
+                session.setAttribute("flash", "Order placed successfully!");
                 response.sendRedirect(request.getContextPath() + "/orders");
             } else {
                 session.setAttribute("flash_error", "Failed to place order. Please try again.");
@@ -302,43 +280,4 @@ public class PurchaseServlet extends HttpServlet {
         }
     }
 
-    private void handlePurchaseHistory(HttpServletRequest request, HttpServletResponse response, Customer customer)
-            throws ServletException, IOException {
-        try {
-            // Get all orders for the customer
-            List<Order> allOrders = orderDAO.listByCustomer(customer.getId());
-
-            // Calculate purchase analytics
-            double totalSpent = allOrders.stream()
-                    .mapToDouble(order -> order.getTotalAmount().doubleValue())
-                    .sum();
-
-            int totalOrders = allOrders.size();
-
-            int totalItems = allOrders.stream()
-                    .mapToInt(order -> order.getItems().size())
-                    .sum();
-
-            // Get recent orders (last 5)
-            List<Order> recentOrders = allOrders.stream()
-                    .limit(5)
-                    .collect(java.util.stream.Collectors.toList());
-
-            // Set attributes for JSP
-            request.setAttribute("allOrders", allOrders);
-            request.setAttribute("recentOrders", recentOrders);
-            request.setAttribute("totalSpent", totalSpent);
-            request.setAttribute("totalOrders", totalOrders);
-            request.setAttribute("totalItems", totalItems);
-            request.setAttribute("customer", customer);
-
-            // Forward to purchase page
-            request.getRequestDispatcher("/WEB-INF/views/customer/purchase.jsp").forward(request, response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Có lỗi xảy ra khi tải dữ liệu mua hàng");
-            request.getRequestDispatcher("/WEB-INF/views/customer/purchase.jsp").forward(request, response);
-        }
-    }
 }

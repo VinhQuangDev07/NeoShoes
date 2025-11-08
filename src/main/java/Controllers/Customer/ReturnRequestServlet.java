@@ -23,8 +23,10 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,7 +37,7 @@ import java.util.logging.Logger;
  */
 @WebServlet(name = "ReturnRequestServlet", urlPatterns = {"/return-request"})
 public class ReturnRequestServlet extends HttpServlet {
-    
+
     private ReturnRequestDAO rDAO;
     private ReturnRequestDetailDAO dDAO;
 
@@ -45,8 +47,6 @@ public class ReturnRequestServlet extends HttpServlet {
         rDAO = new ReturnRequestDAO();
         dDAO = new ReturnRequestDetailDAO();
     }
-    
-    
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -337,6 +337,8 @@ public class ReturnRequestServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+        
+        int sessionCustomerId = customer.getId();
         String action = request.getParameter("action");
 
         // ===== ACTION: CREATE =====
@@ -345,7 +347,7 @@ public class ReturnRequestServlet extends HttpServlet {
         } else if ("update".equals(action)) {
             handleUpdatePost(request, response);
         } else if ("delete".equals(action)) {
-            handleDeletePost(request, response);
+            handleDeletePost(request, response,sessionCustomerId);
         }
 
     }
@@ -353,19 +355,34 @@ public class ReturnRequestServlet extends HttpServlet {
     private void handleCreatePost(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
         try {
-            // 1-5. VALIDATION (giữ nguyên code cũ)
-            int orderId = Integer.parseInt(request.getParameter("orderId"));
+            int orderId;
+            try {
+                orderId = Integer.parseInt(request.getParameter("orderId"));
+                if (orderId <= 0) {
+                    throw new Exception();
+                }
+            } catch (Exception e) {
+                request.setAttribute("errorMessage", "Error orderId");
+                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                return;
+            }
+            
+            if (rDAO.existsByOrderId(orderId)) {
+                request.setAttribute("errorMessage", "A return request already exists for this order");
+                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                return;
+            }
             String reason = request.getParameter("reason");
             String bankName = request.getParameter("bankName");
             String accountNumber = request.getParameter("accountNumber");
             String accountHolder = request.getParameter("accountHolder");
             String note = request.getParameter("note");
 
-            // ... (các validation code cũ) ...
-            ReturnRequestDAO rrDAO = new ReturnRequestDAO();
-
-            if (rrDAO.existsByOrderId(orderId)) {
-                request.setAttribute("errorMessage", "A return request already exists for this order");
+            if (reason == null || reason.isEmpty()
+                    || bankName == null || bankName.isEmpty()
+                    || accountNumber == null || !accountNumber.matches("\\d{6,20}")
+                    || accountHolder == null || accountHolder.isEmpty()) {
+                request.setAttribute("errorMessage", "Invalid Input");
                 request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
                 return;
             }
@@ -377,9 +394,20 @@ public class ReturnRequestServlet extends HttpServlet {
                 return;
             }
 
-            // Validate quantity
             for (String pid : selectedProducts) {
-                // ... (validation code cũ) ...
+                String qtyParam = request.getParameter("qty_" + pid);
+                if (qtyParam == null || qtyParam.isEmpty()) {
+                    request.setAttribute("errorMessage", "Missing quantity for product " + pid);
+                    request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                    return;
+                }
+
+                int returnQty = Integer.parseInt(qtyParam);
+                if (returnQty < 1) {
+                    request.setAttribute("errorMessage", "Return quantity must be at least 1");
+                    request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                    return;
+                }
             }
 
             // 6. CHUẨN BỊ DỮ LIỆU
@@ -405,13 +433,13 @@ public class ReturnRequestServlet extends HttpServlet {
                 detail.setProductVariantId(productVariantId);
                 detail.setQuantity(returnQty);
                 detail.setAmount(amount);
-                detail.setNote(null);
+                detail.setNote(note);
 
                 details.add(detail);
             }
 
             // 8. TẠO REQUEST VÀ DETAILS TRONG 1 TRANSACTION
-            int requestId = rrDAO.createReturnRequestWithDetails(rr, details);
+            int requestId = rDAO.createReturnRequestWithDetails(rr, details);
 
             if (requestId <= 0) {
                 request.setAttribute("errorMessage", "Failed to create return request");
@@ -456,7 +484,7 @@ public class ReturnRequestServlet extends HttpServlet {
             String accountHolder = request.getParameter("accountHolder");
             String note = request.getParameter("note");
 
-            // ✅ FIXED: Get orderDetailIds from JSP (not productVariantId)
+            // ✅ Get orderDetailIds from JSP
             String[] selectedOrderDetailIds = request.getParameterValues("orderDetailIds");
 
             // 2. VALIDATE INPUT
@@ -474,11 +502,10 @@ public class ReturnRequestServlet extends HttpServlet {
                 return;
             }
 
-            ReturnRequestDAO rrDAO = new ReturnRequestDAO();
-            ReturnRequestDetailDAO detailDAO = new ReturnRequestDetailDAO();
+        
 
             // 3. CHECK RETURN REQUEST EXISTS & IS PENDING
-            ReturnRequest existingRequest = rrDAO.getReturnRequestById(requestId);
+            ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
 
             if (existingRequest == null) {
                 request.setAttribute("errorMessage", "Return request not found");
@@ -502,7 +529,7 @@ public class ReturnRequestServlet extends HttpServlet {
                 request.setAttribute("order", order);
                 request.setAttribute("returnRequest", existingRequest);
 
-                List<ReturnRequestDetail> listDetail = detailDAO.getDetailsByReturnRequestId(requestId);
+                List<ReturnRequestDetail> listDetail = dDAO.getDetailsByReturnRequestId(requestId);
                 request.setAttribute("returnRequestDetails", listDetail);
 
                 // Map selected items for re-display
@@ -540,41 +567,96 @@ public class ReturnRequestServlet extends HttpServlet {
                 return;
             }
 
-            // 6. UPDATE RETURN REQUEST
+            // 6. VALIDATE QUANTITIES FOR SELECTED ITEMS
+            Map<Integer, Integer> returnQuantities = new HashMap<>();
+
+            for (String orderDetailIdStr : selectedOrderDetailIds) {
+                int orderDetailId = Integer.parseInt(orderDetailIdStr);
+
+                // Get quantity from JSP form: qty_{orderDetailId}
+                String qtyParam = request.getParameter("qty_" + orderDetailId);
+
+                if (qtyParam == null || qtyParam.trim().isEmpty()) {
+                    request.setAttribute("errorMessage", "Quantity not provided for selected item");
+                    response.sendRedirect(request.getContextPath()
+                            + "/return-request?action=edit&requestId=" + requestId);
+                    return;
+                }
+
+                try {
+                    int returnQty = Integer.parseInt(qtyParam);
+
+                    // Find the order item to get max quantity
+                    OrderDetail orderItem = order.getItems().stream()
+                            .filter(item -> item.getOrderDetailId() == orderDetailId)
+                            .findFirst()
+                            .orElse(null);
+
+                    if (orderItem == null) {
+                        request.setAttribute("errorMessage", "Order item not found");
+                        response.sendRedirect(request.getContextPath()
+                                + "/return-request?action=edit&requestId=" + requestId);
+                        return;
+                    }
+
+                    // Validate quantity range
+                    if (returnQty < 1 || returnQty > orderItem.getDetailQuantity()) {
+                        request.setAttribute("errorMessage",
+                                String.format("Invalid return quantity for %s. Must be between 1 and %d",
+                                        orderItem.getProductName(), orderItem.getDetailQuantity()));
+                        response.sendRedirect(request.getContextPath()
+                                + "/return-request?action=edit&requestId=" + requestId);
+                        return;
+                    }
+
+                    returnQuantities.put(orderDetailId, returnQty);
+
+                } catch (NumberFormatException e) {
+                    request.setAttribute("errorMessage", "Invalid quantity format");
+                    response.sendRedirect(request.getContextPath()
+                            + "/return-request?action=edit&requestId=" + requestId);
+                    return;
+                }
+            }
+
+            // 7. UPDATE RETURN REQUEST
             String bankInfo = bankName + "_" + accountNumber + "_" + accountHolder;
-            int updateResult = rrDAO.updateReturnRequest(requestId, customerId, reason, bankInfo, note);
+            int updateResult = rDAO.updateReturnRequest(requestId, customerId, reason, bankInfo, note);
 
             if (updateResult > 0) {
-                // 7. DELETE OLD DETAILS
-                detailDAO.deleteDetailsByReturnRequestId(requestId);
+                // 8. DELETE OLD DETAILS
+                dDAO.deleteDetailsByReturnRequestId(requestId);
 
-                // 8. INSERT NEW DETAILS
+                // 9. INSERT NEW DETAILS WITH CUSTOM QUANTITIES
                 for (String orderDetailIdStr : selectedOrderDetailIds) {
                     int orderDetailId = Integer.parseInt(orderDetailIdStr);
 
-                    // ✅ FIXED: Find corresponding order item to get all info
+                    // Find corresponding order item to get product info
                     OrderDetail orderItem = order.getItems().stream()
                             .filter(item -> item.getOrderDetailId() == orderDetailId)
                             .findFirst()
                             .orElse(null);
 
                     if (orderItem != null) {
-                        // Calculate amount
+                        // ✅ Use custom return quantity from form
+                        int returnQty = returnQuantities.get(orderDetailId);
+
+                        // Calculate amount based on return quantity
                         BigDecimal amount = orderItem.getDetailPrice()
-                                .multiply(BigDecimal.valueOf(orderItem.getDetailQuantity()));
+                                .multiply(BigDecimal.valueOf(returnQty));
 
                         ReturnRequestDetail detail = new ReturnRequestDetail();
                         detail.setReturnRequestId(requestId);
                         detail.setProductVariantId(orderItem.getProductVariantId());
-                        detail.setQuantity(orderItem.getDetailQuantity());
+                        detail.setQuantity(returnQty); // ✅ Use return quantity, not order quantity
                         detail.setAmount(amount);
                         detail.setNote(null);
 
-                        detailDAO.addReturnRequestDetail(detail);
+                        dDAO.addReturnRequestDetail(detail);
                     }
                 }
 
-                // 9. REDIRECT SUCCESS
+                // 10. REDIRECT SUCCESS
                 response.sendRedirect(request.getContextPath()
                         + "/return-request?action=detail&requestId=" + requestId);
             } else {
@@ -596,7 +678,7 @@ public class ReturnRequestServlet extends HttpServlet {
         }
     }
 
-    private void handleDeletePost(HttpServletRequest request, HttpServletResponse response)
+    private void handleDeletePost(HttpServletRequest request, HttpServletResponse response,int customerId)
             throws ServletException, IOException {
 
         String requestIdParam = request.getParameter("requestId");
@@ -608,12 +690,9 @@ public class ReturnRequestServlet extends HttpServlet {
 
         try {
             int requestId = Integer.parseInt(requestIdParam);
-            int customerId = Integer.parseInt(request.getParameter("customerId")); // Cần thêm customerId
-
-            ReturnRequestDAO rrDAO = new ReturnRequestDAO();
-
+                 
             // Check if return request exists and is pending
-            ReturnRequest existingRequest = rrDAO.getReturnRequestById(requestId);
+            ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
 
             if (existingRequest == null) {
                 request.setAttribute("errorMessage", "Return request not found");
@@ -622,7 +701,7 @@ public class ReturnRequestServlet extends HttpServlet {
             }
 
             // Delete return request (this will only work if status is PENDING - as per DAO method)
-            int deleteResult = rrDAO.deleteReturnRequest(requestId, customerId);
+            int deleteResult = rDAO.deleteReturnRequest(requestId, customerId);
 
             if (deleteResult > 0) {
                 // Also delete related details

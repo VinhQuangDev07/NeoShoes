@@ -64,12 +64,10 @@ public class ProductListServlet extends HttpServlet {
                         searchProducts(request, response);
                         break;
                     case "filter":
-                        String type = request.getParameter("type"); // vd: category hoặc brand
+                        String type = request.getParameter("type"); 
                         if ("category".equals(type)) {
-                            String categoryId = request.getParameter("categoryId");
                             listProductsByCategory(request, response);
                         } else if ("brand".equals(type)) {
-                            String brandId = request.getParameter("brandId");
                             listProductsByBrand(request, response);
                         }
                         break;

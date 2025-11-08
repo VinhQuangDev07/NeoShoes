@@ -6,6 +6,7 @@ import java.util.List;
 
 import DAOs.StaffDAO;
 import Models.Staff;
+import Utils.Utils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "ManageStaffServlet", urlPatterns = {"/manage-staff"})
+@WebServlet(name = "ManageStaffServlet", urlPatterns = {"/staff/manage-staff"})
 public class ManageStaffServlet extends HttpServlet {
 
     private StaffDAO staffDAO;
@@ -27,6 +28,12 @@ public class ManageStaffServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -60,14 +67,14 @@ public class ManageStaffServlet extends HttpServlet {
             if (staff == null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("flash_error", "Staff not found!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 return;
             }
 
-            request.setAttribute("staff", staff);
+            request.setAttribute("staffItem", staff);
             request.getRequestDispatcher("/WEB-INF/views/staff/staff-form.jsp").forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
         }
     }
 
@@ -129,7 +136,7 @@ public class ManageStaffServlet extends HttpServlet {
             if (staff == null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("flash_error", "Staff not found!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 return;
             }
 
@@ -139,7 +146,7 @@ public class ManageStaffServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/staff/view-staff-details.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
         }
     }
 
@@ -147,11 +154,23 @@ public class ManageStaffServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String action = request.getParameter("action");
         HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
+        String role = staff.getRoleName();
+        if (!role.equals("Admin")) {
+                session.setAttribute("flash_error", "You don't have permission to create, update or delete staffs!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
+                return;
+            }
+        
+        String action = request.getParameter("action");
 
         if (action == null) {
-            response.sendRedirect(request.getContextPath() + "/manage-staff");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
             return;
         }
 
@@ -166,7 +185,7 @@ public class ManageStaffServlet extends HttpServlet {
                 deleteStaff(request, response, session);
                 break;
             default:
-                response.sendRedirect(request.getContextPath() + "/manage-staff");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 break;
         }
     }
@@ -192,21 +211,21 @@ public class ManageStaffServlet extends HttpServlet {
                     || password == null || password.trim().isEmpty()
                     || name == null || name.trim().isEmpty()) {
                 session.setAttribute("flash_error", "Email, password and name are required!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff?action=add");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff?action=add");
                 return;
             }
 
             // Check if email exists
             if (staffDAO.isEmailExists(email)) {
                 session.setAttribute("flash_error", "Email already exists!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff?action=add");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff?action=add");
                 return;
             }
 
             // Create staff object
             Staff staff = new Staff();
             staff.setEmail(email.trim());
-            staff.setPasswordHash(password); // In production, hash this!
+            staff.setPasswordHash(Utils.hashPassword(password)); // In production, hash this!
             staff.setName(name.trim());
             staff.setPhoneNumber(phone);
             staff.setRole("admin".equals(roleStr));
@@ -225,8 +244,8 @@ public class ManageStaffServlet extends HttpServlet {
 
             // Create staff
             if (staffDAO.createStaff(staff)) {
-                session.setAttribute("flash_success", "Staff created successfully!");
-                System.out.println("✅ Created staff: " + name);
+                session.setAttribute("flash", "Staff created successfully!");
+                System.out.println("Created staff: " + name);
             } else {
                 session.setAttribute("flash_error", "Failed to create staff!");
             }
@@ -236,7 +255,7 @@ public class ManageStaffServlet extends HttpServlet {
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/manage-staff");
+        response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
     }
 
     // ===== UPDATE STAFF =====
@@ -257,28 +276,28 @@ public class ManageStaffServlet extends HttpServlet {
             Staff staff = staffDAO.getStaffById(staffId);
             if (staff == null) {
                 session.setAttribute("flash_error", "Staff not found!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 return;
             }
 
             // Validate & update email
             if (email == null || email.trim().isEmpty()) {
                 session.setAttribute("flash_error", "Email is required!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff?action=edit&id=" + staffId);
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff?action=edit&id=" + staffId);
                 return;
             }
             email = email.trim();
             String emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
             if (!email.matches(emailRegex)) {
                 session.setAttribute("flash_error", "Invalid email format!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff?action=edit&id=" + staffId);
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff?action=edit&id=" + staffId);
                 return;
             }
 
             // Check uniqueness only if email changed
             if (!email.equalsIgnoreCase(staff.getEmail()) && staffDAO.isEmailExists(email)) {
                 session.setAttribute("flash_error", "Email already exists!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff?action=edit&id=" + staffId);
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff?action=edit&id=" + staffId);
                 return;
             }
 
@@ -302,8 +321,8 @@ public class ManageStaffServlet extends HttpServlet {
 
             // Update staff
             if (staffDAO.updateStaff(staff)) {
-                session.setAttribute("flash_success", "Staff updated successfully!");
-                System.out.println("✅ Updated staff: " + name);
+                session.setAttribute("flash", "Staff updated successfully!");
+                System.out.println("Updated staff: " + name);
             } else {
                 session.setAttribute("flash_error", "Failed to update staff!");
             }
@@ -313,7 +332,7 @@ public class ManageStaffServlet extends HttpServlet {
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/manage-staff");
+        response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
     }
 
     // ===== DELETE STAFF =====
@@ -326,14 +345,14 @@ public class ManageStaffServlet extends HttpServlet {
             Staff staff = staffDAO.getStaffById(staffId);
             if (staff == null) {
                 session.setAttribute("flash_error", "Staff not found!");
-                response.sendRedirect(request.getContextPath() + "/manage-staff");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 return;
             }
 
             // Delete staff
             if (staffDAO.deleteStaff(staffId)) {
-                session.setAttribute("flash_success", "Staff deleted successfully!");
-                System.out.println("✅ Deleted staff: " + staff.getName());
+                session.setAttribute("flash", "Staff deleted successfully!");
+                System.out.println("Deleted staff: " + staff.getName());
             } else {
                 session.setAttribute("flash_error", "Failed to delete staff!");
             }
@@ -343,7 +362,7 @@ public class ManageStaffServlet extends HttpServlet {
             session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/manage-staff");
+        response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
     }
 
     // ===== SHOW ADD FORM =====

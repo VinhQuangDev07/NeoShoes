@@ -10,6 +10,7 @@
 
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
             body {
@@ -19,6 +20,13 @@
             .main-content {
                 margin-left: 300px;
                 padding: 2rem;
+            }
+            .page-header {
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             .page-title {
                 font-size: 28px;
@@ -225,51 +233,56 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
         <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
-        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <div class="main-content">
             <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="page-title">
-                        <i class="fas fa-user-${empty staff ? 'plus' : 'edit'}"></i> 
-                        ${empty staff ? 'Add New' : 'Edit'} Staff
+                        <i class="fas fa-user-${empty staffItem ? 'plus' : 'edit'}"></i> 
+                        ${empty staffItem ? 'Add New' : 'Edit'} Staff
                     </h1>
-                    <p class="text-muted">${empty staff ? 'Create a new staff member account' : 'Update staff member information'}</p>
+                    <p class="text-muted">${empty staffItem ? 'Create a new staff member account' : 'Update staff member information'}</p>
                 </div>
-                
+
             </div>
 
             <!-- Form -->
             <div class="form-card">
-                <form method="post" action="${pageContext.request.contextPath}/manage-staff">
-                    <input type="hidden" name="action" value="${empty staff ? 'create' : 'update'}">
-                    <c:if test="${not empty staff}">
-                        <input type="hidden" name="staffId" value="${staff.staffId}">
+                <form method="post" action="${pageContext.request.contextPath}/staff/manage-staff">
+                    <input type="hidden" name="action" value="${empty staffItem ? 'create' : 'update'}">
+                    <c:if test="${not empty staffItem}">
+                        <input type="hidden" name="staffId" value="${staffItem.staffId}">
                     </c:if>
 
                     <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Full Name <span class="required">*</span></label>
-                                <div class="input-icon has-left-icon" id="nameWrapper">
-                                    <i class="far fa-user icon-left"></i>
-                                    <input type="text" id="nameInput" name="name" class="form-control" 
-                                           value="${not empty staff ? staff.name : ''}" placeholder="Full name">
-                                </div>
-                                <small class="text-danger d-none" id="nameError">
-                                    Full name is required.
-                                </small>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name <span class="required">*</span></label>
+                            <div class="input-icon has-left-icon" id="nameWrapper">
+                                <i class="far fa-user icon-left"></i>
+                                <input type="text" id="nameInput" name="name" class="form-control" 
+                                       value="${not empty staffItem ? staffItem.name : ''}" placeholder="Full name">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Role</label>
-                                <div class="input-icon has-left-icon">
-                                    <i class="far fa-id-badge icon-left"></i>
-                                    <input type="text" class="form-control" value="Staff" readonly disabled>
-                                </div>
-                                <input type="hidden" name="role" value="staff">
-                            </div> 
+                            <small class="text-danger d-none" id="nameError">
+                                Full name is required.
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Role</label>
+                            <div class="input-icon has-left-icon">
+                                <i class="far fa-id-badge icon-left"></i>
+                                <input type="text" class="form-control" value="Staff" readonly disabled>
+                            </div>
+                            <input type="hidden" name="role" value="staff">
+                        </div> 
 
 
                         <!-- Email (editable for both Add and Edit) -->
@@ -277,27 +290,27 @@
                             <label class="form-label">Email <span class="required">*</span></label>
                             <div class="input-icon has-left-icon" id="emailWrapper">
                                 <i class="far fa-envelope icon-left"></i>
-                                <input type="text" id="emailInput" name="email" class="form-control" placeholder="email@example.com" value="${not empty staff ? staff.email : ''}">
+                                <input type="text" id="emailInput" name="email" class="form-control" placeholder="email@example.com" value="${not empty staffItem ? staffItem.email : ''}">
                             </div>
                             <small class="text-danger d-none" id="emailError">
                                 Invalid email format. Email must contain '@' and a domain (e.g., name@example.com).
                             </small>
                         </div>
 
-                        <c:if test="${not empty staff}">
+                        <c:if test="${not empty staffItem}">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Staff ID</label>
-                                <input type="text" class="form-control" value="#${staff.staffId}" readonly disabled>
+                                <input type="text" class="form-control" value="#${staffItem.staffId}" readonly disabled>
                             </div>
                         </c:if>
 
                         <!-- Password only when adding -->
-                        <c:if test="${empty staff}">
+                        <c:if test="${empty staffItem}">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Password <span class="required">*</span></label>
                                 <div class="input-icon has-left-icon" id="passwordWrapper">
                                     <i class="fas fa-lock icon-left"></i>
-                                    <input type="password" id="passwordInput" name="password" class="form-control" placeholder="password@123" style="padding-right: 50px;">
+                                    <input type="password" id="passwordInput" name="password" class="form-control" placeholder="Password@123" style="padding-right: 50px;">
                                     <i class="fas fa-eye-slash icon d-none" id="togglePasswordIcon" style="cursor: pointer; right: 15px; pointer-events: auto;"></i>
                                 </div>
                                 <small class="text-danger d-none" id="passwordError">
@@ -305,67 +318,67 @@
                                 </small>
                             </div>
                         </c:if>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Gender <span class="required">*</span></label>
-                                <div class="input-icon has-left-icon" id="genderWrapper" style="position: relative;">
-                                    <i class="fas fa-venus-mars icon-left"></i>
-                                    <select name="gender" id="genderSelect" class="form-select" size="1">
-                                        <option value="">— Select — </option>
-                                        <option value="Male" ${not empty staff && staff.gender eq 'Male' ? 'selected' : ''}>Male</option>
-                                        <option value="Female" ${not empty staff && staff.gender eq 'Female' ? 'selected' : ''}>Female</option>
-                                        <option value="Other" ${not empty staff && staff.gender eq 'Other' ? 'selected' : ''}>Other</option>
-                                    </select>
-                                    <!-- Overlay to block clicks except on dropdown icon -->
-                                    <div id="genderOverlay" style="position: absolute; left: 0; top: 0; right: 40px; bottom: 0; z-index: 15;"></div>
-                                </div>
-                                <small class="text-danger d-none" id="genderError">
-                                    Gender is required.
-                                </small>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Gender <span class="required">*</span></label>
+                            <div class="input-icon has-left-icon" id="genderWrapper" style="position: relative;">
+                                <i class="fas fa-venus-mars icon-left"></i>
+                                <select name="gender" id="genderSelect" class="form-select" size="1">
+                                    <option value="">— Select — </option>
+                                    <option value="Male" ${not empty staffItem && staffItem.gender eq 'Male' ? 'selected' : ''}>Male</option>
+                                    <option value="Female" ${not empty staffItem && staffItem.gender eq 'Female' ? 'selected' : ''}>Female</option>
+                                    <option value="Other" ${not empty staffItem && staffItem.gender eq 'Other' ? 'selected' : ''}>Other</option>
+                                </select>
+                                <!-- Overlay to block clicks except on dropdown icon -->
+                                <div id="genderOverlay" style="position: absolute; left: 0; top: 0; right: 40px; bottom: 0; z-index: 15;"></div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Address <span class="required">*</span></label>
-                                <div class="input-icon has-left-icon" id="addressWrapper">
-                                    <i class="fas fa-location-dot icon-left"></i>
-                                    <input type="text" id="addressInput" name="address" class="form-control" value="${not empty staff ? staff.address : ''}" placeholder="Street, City, ...">
-                                </div>
-                                <small class="text-danger d-none" id="addressError">
-                                    Address is required.
-                                </small>
-                            </div> 
+                            <small class="text-danger d-none" id="genderError">
+                                Gender is required.
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Address <span class="required">*</span></label>
+                            <div class="input-icon has-left-icon" id="addressWrapper">
+                                <i class="fas fa-location-dot icon-left"></i>
+                                <input type="text" id="addressInput" name="address" class="form-control" value="${not empty staffItem ? staffItem.address : ''}" placeholder="Street, City, ...">
+                            </div>
+                            <small class="text-danger d-none" id="addressError">
+                                Address is required.
+                            </small>
+                        </div> 
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Date of Birth <span class="required">*</span></label>
-                                <div class="input-icon has-left-icon" id="dobWrapper">
-                                    <i class="far fa-calendar icon-left"></i>
-                                    <input type="date" id="dobInput" name="dateOfBirth" class="form-control" 
-                                           value="${not empty staff ? staff.dateOfBirth : ''}">
-                                </div>
-                                <small class="text-danger d-none" id="dobError">
-                                    Date of birth is required.
-                                </small>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Birth <span class="required">*</span></label>
+                            <div class="input-icon has-left-icon" id="dobWrapper">
+                                <i class="far fa-calendar icon-left"></i>
+                                <input type="date" id="dobInput" name="dateOfBirth" class="form-control" 
+                                       value="${not empty staffItem ? staffItem.dateOfBirth : ''}">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Phone Number <span class="required">*</span></label>
-                                <div class="input-icon has-left-icon" id="phoneWrapper">
-                                    <i class="far fa-phone icon-left"></i>
-                                    <input type="tel" id="phoneInput" name="phone" class="form-control" 
-                                           value="${not empty staff ? staff.phoneNumber : ''}" 
-                                           placeholder="0xxxxxxxxx or +84xxxxxxxxx">
-                                </div>
-                                <small class="text-danger d-none" id="phoneError">
-                                    Invalid phone number. Please enter 0xxxxxxxxx (10 digits) or +84xxxxxxxxx (9 digits).
-                                </small>
+                            <small class="text-danger d-none" id="dobError">
+                                Date of birth is required.
+                            </small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number <span class="required">*</span></label>
+                            <div class="input-icon has-left-icon" id="phoneWrapper">
+                                <i class="far fa-phone icon-left"></i>
+                                <input type="tel" id="phoneInput" name="phone" class="form-control" 
+                                       value="${not empty staffItem ? staffItem.phoneNumber : ''}" 
+                                       placeholder="0xxxxxxxxx or +84xxxxxxxxx">
                             </div>
+                            <small class="text-danger d-none" id="phoneError">
+                                Invalid phone number. Please enter 0xxxxxxxxx (10 digits) or +84xxxxxxxxx (9 digits).
+                            </small>
+                        </div>
 
 
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-3">
-                        <a href="${pageContext.request.contextPath}/manage-staff" class="btn btn-outline-secondary">
+                        <a href="${pageContext.request.contextPath}/staff/manage-staff" class="btn btn-outline-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </a>
                         <button type="submit" class="btn btn-save">
-                            <i class="fas fa-save"></i> ${empty staff ? 'Create' : 'Update'} Staff
+                            <i class="fas fa-save"></i> ${empty staffItem ? 'Create' : 'Update'} Staff
                         </button>
                     </div>
                 </form>
@@ -375,18 +388,18 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             // Enable editing when clicking the icon
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const editIcons = document.querySelectorAll('.input-icon .icon');
-                
+
                 editIcons.forEach(icon => {
-                    icon.addEventListener('click', function() {
+                    icon.addEventListener('click', function () {
                         const inputWrapper = this.closest('.input-icon');
                         const input = inputWrapper.querySelector('input, select');
-                        
+
                         if (input) {
                             // Toggle editable state
                             input.classList.toggle('editable');
-                            
+
                             // Focus on input if adding editable class
                             if (input.classList.contains('editable')) {
                                 input.focus();
@@ -398,7 +411,7 @@
                     });
                 });
             });
-            
+
             function confirmDelete(staffId, staffName) {
                 if (confirm('Are you sure you want to delete staff: ' + staffName + '?\n\nThis action cannot be undone!')) {
                     const form = document.createElement('form');
@@ -423,7 +436,7 @@
             }
 
             // Full Name validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const nameInput = document.getElementById('nameInput');
                 const nameWrapper = document.getElementById('nameWrapper');
                 const nameError = document.getElementById('nameError');
@@ -431,7 +444,7 @@
 
                 if (nameInput && nameWrapper && nameError && staffForm) {
                     // Xóa lỗi khi user bắt đầu nhập
-                    nameInput.addEventListener('input', function() {
+                    nameInput.addEventListener('input', function () {
                         if (nameInput.value.trim()) {
                             nameWrapper.classList.remove('error');
                             nameWrapper.classList.add('success');
@@ -441,7 +454,7 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         const value = nameInput.value.trim();
                         if (!value) {
                             e.preventDefault();
@@ -450,7 +463,7 @@
                             nameError.textContent = 'Full name is required.';
                             nameError.classList.remove('d-none');
                             nameInput.focus();
-                            nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            nameInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             nameWrapper.classList.remove('error');
@@ -462,7 +475,7 @@
             });
 
             // Phone number validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const phoneInput = document.getElementById('phoneInput');
                 const phoneWrapper = document.getElementById('phoneWrapper');
                 const phoneError = document.getElementById('phoneError');
@@ -480,7 +493,7 @@
                     console.log('Phone validation attached to form');
 
                     // Chặn nhập ký tự không hợp lệ
-                    phoneInput.addEventListener('keypress', function(e) {
+                    phoneInput.addEventListener('keypress', function (e) {
                         const char = String.fromCharCode(e.which);
                         // Chỉ cho phép số 0-9 và dấu +
                         if (!/[0-9+]/.test(char)) {
@@ -495,13 +508,13 @@
                     });
 
                     // Chặn paste ký tự không hợp lệ
-                    phoneInput.addEventListener('paste', function(e) {
+                    phoneInput.addEventListener('paste', function (e) {
                         setTimeout(() => {
                             this.value = this.value.replace(/[^0-9+]/g, '');
                         }, 10);
                     });
 
-                    phoneInput.addEventListener('input', function() {
+                    phoneInput.addEventListener('input', function () {
                         if (phoneInput.value.trim() && phoneRegex.test(phoneInput.value.trim())) {
                             phoneWrapper.classList.remove('error');
                             phoneWrapper.classList.add('success');
@@ -511,7 +524,7 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         const value = phoneInput.value.trim();
                         // Kiểm tra rỗng
                         if (!value) {
@@ -521,7 +534,7 @@
                             phoneError.textContent = 'Phone number is required.';
                             phoneError.classList.remove('d-none');
                             phoneInput.focus();
-                            phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            phoneInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         }
                         // Validate format
@@ -532,7 +545,7 @@
                             phoneError.textContent = 'Invalid phone number. Please enter 0xxxxxxxxx (10 digits) or +84xxxxxxxxx (9 digits).';
                             phoneError.classList.remove('d-none');
                             phoneInput.focus();
-                            phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            phoneInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             phoneWrapper.classList.remove('error');
@@ -546,7 +559,7 @@
             });
 
             // Email validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const emailInput = document.getElementById('emailInput');
                 const emailWrapper = document.getElementById('emailWrapper');
                 const emailError = document.getElementById('emailError');
@@ -561,7 +574,7 @@
                     // - Phần sau dấu chấm phải có 2-6 ký tự (như .com, .vn, .co.uk)
                     const emailRegex = /^[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,6}$/;
 
-                    emailInput.addEventListener('input', function() {
+                    emailInput.addEventListener('input', function () {
                         if (emailInput.value.trim() && emailRegex.test(emailInput.value.trim())) {
                             emailWrapper.classList.remove('error');
                             emailWrapper.classList.add('success');
@@ -571,7 +584,7 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         const value = emailInput.value.trim();
                         if (!value) {
                             e.preventDefault();
@@ -580,7 +593,7 @@
                             emailError.textContent = 'Email is required.';
                             emailError.classList.remove('d-none');
                             emailInput.focus();
-                            emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            emailInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         }
                         if (!emailRegex.test(value)) {
@@ -590,7 +603,7 @@
                             emailError.textContent = 'Invalid email format. Email must contain @ and a domain (e.g., name@example.com).';
                             emailError.classList.remove('d-none');
                             emailInput.focus();
-                            emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            emailInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             emailWrapper.classList.remove('error');
@@ -602,7 +615,7 @@
             });
 
             // Password validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const passwordInput = document.getElementById('passwordInput');
                 const passwordWrapper = document.getElementById('passwordWrapper');
                 const passwordError = document.getElementById('passwordError');
@@ -618,15 +631,15 @@
                     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
                     // Xóa lỗi khi user bắt đầu nhập lại
-                    passwordInput.addEventListener('input', function() {
+                    passwordInput.addEventListener('input', function () {
                         passwordWrapper.classList.remove('error');
                         passwordError.classList.add('d-none');
                     });
 
                     // Validate khi submit form
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         const value = passwordInput.value;
-                        
+
                         // Kiểm tra rỗng
                         if (!value) {
                             e.preventDefault();
@@ -634,7 +647,7 @@
                             passwordError.textContent = 'Password is required.';
                             passwordError.classList.remove('d-none');
                             passwordInput.focus();
-                            passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            passwordInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         }
 
@@ -645,7 +658,7 @@
                             passwordError.textContent = 'Password must be at least 8 characters long.';
                             passwordError.classList.remove('d-none');
                             passwordInput.focus();
-                            passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            passwordInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         }
 
@@ -654,15 +667,19 @@
                             e.preventDefault();
                             passwordWrapper.classList.add('error');
                             let missingRequirements = [];
-                            if (!/[a-z]/.test(value)) missingRequirements.push('lowercase');
-                            if (!/[A-Z]/.test(value)) missingRequirements.push('uppercase');
-                            if (!/\d/.test(value)) missingRequirements.push('number');
-                            if (!/[@$!%*?&]/.test(value)) missingRequirements.push('special character');
-                            
+                            if (!/[a-z]/.test(value))
+                                missingRequirements.push('lowercase');
+                            if (!/[A-Z]/.test(value))
+                                missingRequirements.push('uppercase');
+                            if (!/\d/.test(value))
+                                missingRequirements.push('number');
+                            if (!/[@$!%*?&]/.test(value))
+                                missingRequirements.push('special character');
+
                             passwordError.textContent = 'Password must be at least 8 characters, contain uppercase, lowercase, number and special character.';
                             passwordError.classList.remove('d-none');
                             passwordInput.focus();
-                            passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            passwordInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         }
                     });
@@ -670,13 +687,13 @@
             });
 
             // Toggle password visibility
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const togglePasswordIcon = document.getElementById('togglePasswordIcon');
                 const passwordInput = document.getElementById('passwordInput');
 
                 if (togglePasswordIcon && passwordInput) {
                     // Hiện/ẩn con mắt khi user nhập
-                    passwordInput.addEventListener('input', function() {
+                    passwordInput.addEventListener('input', function () {
                         if (passwordInput.value.length > 0) {
                             togglePasswordIcon.classList.remove('d-none');
                         } else {
@@ -684,11 +701,11 @@
                         }
                     });
 
-                    togglePasswordIcon.addEventListener('click', function() {
+                    togglePasswordIcon.addEventListener('click', function () {
                         // Toggle type attribute
                         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                         passwordInput.setAttribute('type', type);
-                        
+
                         // Toggle icon - Mắt có gạch khi ẩn, mắt mở khi hiện
                         if (type === 'password') {
                             togglePasswordIcon.classList.remove('fa-eye');
@@ -702,23 +719,23 @@
             });
 
             // Gender dropdown - chỉ mở khi click vào icon
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const genderSelect = document.getElementById('genderSelect');
                 const genderOverlay = document.getElementById('genderOverlay');
 
                 if (genderSelect && genderOverlay) {
                     // Khi click vào overlay (phần ô select) → focus select để có viền xanh
-                    genderOverlay.addEventListener('click', function(e) {
+                    genderOverlay.addEventListener('click', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
                         genderSelect.focus(); // Focus để có viền xanh, nhưng không mở dropdown
                     });
 
                     // Prevent dropdown from opening when clicking on the overlay area
-                    genderSelect.addEventListener('mousedown', function(e) {
+                    genderSelect.addEventListener('mousedown', function (e) {
                         const rect = genderSelect.getBoundingClientRect();
                         const clickX = e.clientX;
-                        
+
                         // Nếu click vào vùng bên trái (không phải vùng dropdown arrow)
                         if (clickX < rect.right - 40) {
                             e.preventDefault();
@@ -730,21 +747,21 @@
                     });
 
                     // Khi user chọn xong
-                    genderSelect.addEventListener('change', function() {
+                    genderSelect.addEventListener('change', function () {
                         genderSelect.blur(); // Bỏ focus sau khi chọn
                     });
                 }
             });
 
             // Gender validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const genderSelect = document.getElementById('genderSelect');
                 const genderWrapper = document.getElementById('genderWrapper');
                 const genderError = document.getElementById('genderError');
                 const staffForm = document.querySelector('form');
 
                 if (genderSelect && genderWrapper && genderError && staffForm) {
-                    genderSelect.addEventListener('change', function() {
+                    genderSelect.addEventListener('change', function () {
                         if (genderSelect.value) {
                             genderWrapper.classList.remove('error');
                             genderWrapper.classList.add('success');
@@ -754,14 +771,14 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         if (!genderSelect.value) {
                             e.preventDefault();
                             genderWrapper.classList.remove('success');
                             genderWrapper.classList.add('error');
                             genderError.classList.remove('d-none');
                             genderSelect.focus();
-                            genderSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            genderSelect.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             genderWrapper.classList.remove('error');
@@ -773,14 +790,14 @@
             });
 
             // Date of Birth validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const dobInput = document.getElementById('dobInput');
                 const dobWrapper = document.getElementById('dobWrapper');
                 const dobError = document.getElementById('dobError');
                 const staffForm = document.querySelector('form');
 
                 if (dobInput && dobWrapper && dobError && staffForm) {
-                    dobInput.addEventListener('change', function() {
+                    dobInput.addEventListener('change', function () {
                         if (dobInput.value) {
                             dobWrapper.classList.remove('error');
                             dobWrapper.classList.add('success');
@@ -790,14 +807,14 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         if (!dobInput.value) {
                             e.preventDefault();
                             dobWrapper.classList.remove('success');
                             dobWrapper.classList.add('error');
                             dobError.classList.remove('d-none');
                             dobInput.focus();
-                            dobInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            dobInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             dobWrapper.classList.remove('error');
@@ -809,14 +826,14 @@
             });
 
             // Address validation
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 const addressInput = document.getElementById('addressInput');
                 const addressWrapper = document.getElementById('addressWrapper');
                 const addressError = document.getElementById('addressError');
                 const staffForm = document.querySelector('form');
 
                 if (addressInput && addressWrapper && addressError && staffForm) {
-                    addressInput.addEventListener('input', function() {
+                    addressInput.addEventListener('input', function () {
                         if (addressInput.value.trim()) {
                             addressWrapper.classList.remove('error');
                             addressWrapper.classList.add('success');
@@ -829,7 +846,7 @@
                     });
 
                     // Khi load trang hoặc khi input rỗng, luôn hiển thị viền đỏ
-                    document.addEventListener('DOMContentLoaded', function() {
+                    document.addEventListener('DOMContentLoaded', function () {
                         if (addressInput && addressWrapper && addressError) {
                             if (!addressInput.value.trim()) {
                                 addressWrapper.classList.remove('success');
@@ -840,7 +857,7 @@
                     });
 
                     // Đảm bảo khi nhập lại, nếu rỗng thì chỉ có class 'error', không có 'success'
-                    addressInput.addEventListener('blur', function() {
+                    addressInput.addEventListener('blur', function () {
                         if (!addressInput.value.trim()) {
                             addressWrapper.classList.remove('success');
                             addressWrapper.classList.add('error');
@@ -848,7 +865,7 @@
                         }
                     });
 
-                    staffForm.addEventListener('submit', function(e) {
+                    staffForm.addEventListener('submit', function (e) {
                         const value = addressInput.value.trim();
                         if (!value) {
                             e.preventDefault();
@@ -856,12 +873,12 @@
                             addressWrapper.classList.add('error');
                             addressError.classList.remove('d-none');
                             // Khi focus vào input address, vẫn giữ class 'error' (viền đỏ)
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 addressWrapper.classList.remove('success');
                                 addressWrapper.classList.add('error');
                             }, 10);
                             addressInput.focus();
-                            addressInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            addressInput.scrollIntoView({behavior: 'smooth', block: 'center'});
                             return false;
                         } else {
                             addressWrapper.classList.remove('error');
