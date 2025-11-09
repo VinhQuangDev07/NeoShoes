@@ -15,114 +15,93 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/reset-password")
 public class ResetPasswordServlet extends HttpServlet {
     
-    private final CustomerDAO customerDAO = new CustomerDAO();
-    private static final int MIN_PASSWORD_LENGTH = 6;
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String token = request.getParameter("token");
-        
-        if (!isValidToken(token)) {
-            request.setAttribute("error", "Invalid or missing reset token");
-            forwardToResetPassword(request, response);
-            return;
-        }
-        
-        if (!customerDAO.isValidResetToken(token)) {
-            request.setAttribute("error", "This password reset link has expired or is invalid");
-            request.setAttribute("tokenExpired", true);
-        }
-        
-        request.setAttribute("token", token);
-        forwardToResetPassword(request, response);
-    }
+    private CustomerDAO customerDAO = new CustomerDAO();
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String token = request.getParameter("token");
-        String password = request.getParameter("password");
+        String email = request.getParameter("email");
+        String otp = request.getParameter("otp");
+        String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
         
-        // Validate input
-        if (!validatePasswordInput(request, token, password, confirmPassword)) {
-            forwardToResetPassword(request, response);
+        // Validate password match
+        if (!newPassword.equals(confirmPassword)) {
+            request.setAttribute("error", "Mật khẩu xác nhận không khớp");
+            request.setAttribute("email", email);
+            forwardToVerifyPage(request, response);
             return;
         }
         
-        // Validate token and get customer
-        Customer customer = customerDAO.findByResetToken(token);
-        
-        if (!isValidCustomerAndToken(request, customer, token)) {
-            forwardToResetPassword(request, response);
+        // Validate password length
+        if (newPassword.length() < 6) {
+            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự");
+            request.setAttribute("email", email);
+            forwardToVerifyPage(request, response);
             return;
         }
         
-        // Update password
-        String hashedPassword = Utils.hashPassword(password);
-        boolean updated = customerDAO.updatePasswordById(customer.getId(), hashedPassword);
-        
-        if (updated) {
-            // Mark token as used
-            customerDAO.markTokenAsUsed(token);
+        try {
+            Customer customer = customerDAO.getCustomerByEmail(email);
             
-            request.setAttribute("success", "Password reset successfully! You can now login with your new password.");
-            forwardToLogin(request, response);
-        } else {
-            request.setAttribute("error", "Failed to update password. Please try again.");
-            request.setAttribute("token", token);
-            forwardToResetPassword(request, response);
+            if (customer == null) {
+                request.setAttribute("error", "Email không tồn tại");
+                forwardToVerifyPage(request, response);
+                return;
+            }
+            
+            System.out.println("=== DEBUG INFO ===");
+            System.out.println("Customer ID: " + customer.getId());
+            System.out.println("Email: " + email);
+            System.out.println("OTP từ form: " + otp);
+            
+            // Verify OTP - truyền EMAIL thay vì ID
+            boolean isValidOTP = customerDAO.verifyResetOTP(email, otp);
+            
+            System.out.println("OTP hợp lệ: " + isValidOTP);
+            
+            if (!isValidOTP) {
+                request.setAttribute("error", "OTP không đúng hoặc đã hết hạn");
+                request.setAttribute("email", email);
+                forwardToVerifyPage(request, response);
+                return;
+            }
+            
+            // Hash password trước khi lưu
+            String hashedPassword = Utils.hashPassword(newPassword);
+            System.out.println("Hashed password: " + hashedPassword);
+            
+            // Update password - truyền EMAIL thay vì ID
+            boolean updateSuccess = customerDAO.updatePassword(email, hashedPassword);
+            System.out.println("Update password success: " + updateSuccess);
+            
+            if (!updateSuccess) {
+                request.setAttribute("error", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
+                request.setAttribute("email", email);
+                forwardToVerifyPage(request, response);
+                return;
+            }
+            
+            // Delete used OTP - truyền EMAIL
+            customerDAO.clearResetOTP(email);
+            
+            // Success - redirect to login
+            request.getSession().setAttribute("successMessage", "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
+            response.sendRedirect(request.getContextPath() + "/login");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Exception: " + e.getMessage());
+            request.setAttribute("error", "Đã xảy ra lỗi: " + e.getMessage());
+            forwardToVerifyPage(request, response);
         }
+    
     }
     
-    private boolean isValidToken(String token) {
-        return token != null && !token.trim().isEmpty();
-    }
-    
-    private boolean validatePasswordInput(HttpServletRequest request, String token, 
-                                          String password, String confirmPassword) {
-        request.setAttribute("token", token);
-        
-        if (password == null || password.trim().isEmpty()) {
-            request.setAttribute("error", "Password is required");
-            return false;
-        }
-        
-        if (password.length() < MIN_PASSWORD_LENGTH) {
-            request.setAttribute("error", "Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
-            return false;
-        }
-        
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("error", "Passwords do not match");
-            return false;
-        }
-        
-        return true;
-    }
-    
-    private boolean isValidCustomerAndToken(HttpServletRequest request, Customer customer, String token) {
-        if (customer == null || !customerDAO.isValidResetToken(token)) {
-            request.setAttribute("error", "This password reset link has expired or is invalid");
-            request.setAttribute("token", token);
-            request.setAttribute("tokenExpired", true);
-            return false;
-        }
-        return true;
-    }
-    
-    private void forwardToResetPassword(HttpServletRequest request, HttpServletResponse response)
+    private void forwardToVerifyPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/reset-password.jsp");
-        dispatcher.forward(request, response);
-    }
-    
-    private void forwardToLogin(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/login.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/verify-reset-otp.jsp");
         dispatcher.forward(request, response);
     }
 }
