@@ -1,11 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> OTP - NeoShoes</title>
+    <title>Staff - Verify OTP</title>
     <style>
         * {
             margin: 0;
@@ -123,35 +122,35 @@
 </head>
 <body>
     <div class="container">
-        <h2>OTP authentication</h2>
-        <p class="subtitle">Enter your OTP code and new password</p>
+        <h2>🔐 Staff - Verify OTP</h2>
+        <p class="subtitle">Enter OTP code and new password</p>
         
-        <c:if test="${not empty message}">
-            <div class="message">${message}</div>
-        </c:if>
+        <% if (request.getAttribute("message") != null) { %>
+            <div class="message">✅ <%= request.getAttribute("message") %></div>
+        <% } %>
         
-        <c:if test="${not empty error}">
-            <div class="error">${error}</div>
-        </c:if>
+        <% if (request.getAttribute("error") != null) { %>
+            <div class="error">❌ <%= request.getAttribute("error") %></div>
+        <% } %>
         
         <form action="${pageContext.request.contextPath}/reset-password" method="post">
-            <input type="hidden" name="userType" value="customer">
-            <input type="hidden" name="email" value="${email}">
+            <input type="hidden" name="userType" value="staff">
+            <input type="hidden" name="email" value="<%= request.getAttribute("email") %>">
             
             <div>
-                <label>OTP code (6 digits):</label>
+                <label>OTP Code (6 digits):</label>
                 <input type="text" name="otp" required maxlength="6" pattern="\d{6}" 
-                       placeholder="Enter OTP" autofocus>
+                       placeholder="Enter OTP code" autofocus>
             </div>
             
             <div>
-                <label>New password:</label>
+                <label>New Password:</label>
                 <input type="password" name="newPassword" required minlength="6" 
                        placeholder="Minimum 6 characters">
             </div>
             
             <div>
-                <label>Confirm password:</label>
+                <label>Confirm Password:</label>
                 <input type="password" name="confirmPassword" required minlength="6" 
                        placeholder="Re-enter password">
             </div>
@@ -160,8 +159,8 @@
         </form>
         
         <div class="info">
-            <p>OTP code will expire after 10 minutes</p>
-            <p>You can enter the wrong password up to 5 times.</p>
+            <p>⏱️ OTP code will expire in 10 minutes</p>
+            <p>🔒 You can enter wrong code maximum 5 times</p>
         </div>
     </div>
 </body>
