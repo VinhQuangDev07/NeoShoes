@@ -9,6 +9,7 @@ import DAOs.ProductVariantDAO;
 import Models.Product;
 import Models.ProductVariant;
 import Models.Staff;
+import Utils.CloudinaryConfig;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 import java.math.BigDecimal;
 
 /**
@@ -135,123 +137,159 @@ public class ManageProductVariantServlet extends HttpServlet {
             variantDAO.deleteVariant(variantId);
             response.sendRedirect(request.getContextPath()
                     + "/staff/product?action=detail&productId=" + productId);
-        } else if ("update".equalsIgnoreCase(action)) {
-
+        } else {
+            response.sendRedirect(request.getContextPath() + "/staff/product");
         }
 
     }
-// Create new variant
 
+    // Create new variant
     private void createVariant(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String productIdStr = request.getParameter("productId");
-        String color = request.getParameter("color");
-        String size = request.getParameter("size");
-        String priceStr = request.getParameter("price");
-
-        String imageUrl = request.getParameter("image");
-
-        // Validate input
-        if (productIdStr == null || color == null || size == null
-                || priceStr == null || imageUrl == null) {
-
-            request.setAttribute("errorMessage", "All fields are required!");
-
-            return;
-        }
+        HttpSession session = request.getSession();
 
         try {
-            int productId = Integer.parseInt(productIdStr);
-            BigDecimal price = new BigDecimal(priceStr);
-            int quantity = 0;
+            request.setCharacterEncoding("UTF-8");
 
-            // Validate values
-            if (price.compareTo(BigDecimal.ZERO) < 0) {
-                request.setAttribute("errorMessage", "Price must be 0 or greater!");
+            int productId = Integer.parseInt(request.getParameter("productId"));
+            String color = request.getParameter("color");
+            String size = request.getParameter("size");
+            String priceStr = request.getParameter("price");
+            String imageUrl = request.getParameter("image");
+            Part imagePart = request.getPart("imageFile");
 
+            // Validate basic fields
+            if (color == null || color.trim().isEmpty()
+                    || size == null || size.trim().isEmpty()
+                    || priceStr == null || priceStr.trim().isEmpty()) {
+
+                session.setAttribute("flash_error", "Please fill in all required fields!");
+                response.sendRedirect(request.getContextPath() + "/staff/product?action=detail&productId=" + productId);
                 return;
             }
 
-            // Get product to verify it exists
+            BigDecimal price = new BigDecimal(priceStr);
+            if (price.compareTo(BigDecimal.ZERO) < 0) {
+                session.setAttribute("flash_error", "Price must be 0 or greater!");
+                response.sendRedirect(request.getContextPath() + "/staff/product?action=detail&productId=" + productId);
+                return;
+            }
+
+            // Check product
             Product product = productDAO.getById(productId);
             if (product == null) {
-                request.setAttribute("errorMessage", "Product not found!");
+                session.setAttribute("flash_error", "Product not found!");
                 response.sendRedirect(request.getContextPath() + "/staff/product");
                 return;
             }
 
-            // Check if variant with same color and size already exists
+            // Check duplicate variant
             if (variantDAO.variantExists(productId, color.trim(), size.trim())) {
-                request.setAttribute("errorMessage", "A variant with this color and size already exists!");
-                request.setAttribute("product", product);
-                request.getRequestDispatcher("/WEB-INF/views/staff/manage-product/create-product-variant.jsp")
-                        .forward(request, response);
+                session.setAttribute("flash_error", "A variant with this color and size already exists!");
+                response.sendRedirect(request.getContextPath() + "/staff/product?action=detail&productId=" + productId);
                 return;
             }
 
-            // Create variant object
+            // Handle image upload (Cloudinary)
+            if (imagePart != null && imagePart.getSize() > 0) {
+                String uploadedUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+                if (uploadedUrl != null && !uploadedUrl.isEmpty()) {
+                    imageUrl = uploadedUrl;
+                }
+            }
+
+            if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                imageUrl = product.getDefaultImageUrl(); // fallback nếu không upload
+            }
+
+            // Create variant
             ProductVariant variant = new ProductVariant();
             variant.setProductId(productId);
             variant.setColor(color.trim());
             variant.setSize(size.trim());
             variant.setPrice(price);
-            variant.setQuantityAvailable(quantity);
-            variant.setImage(imageUrl.trim());
+            variant.setQuantityAvailable(0);
+            variant.setImage(imageUrl);
 
-            // Save to database
-            int success = variantDAO.createVariant(variant);
+            boolean success = variantDAO.createVariant(variant) > 0;
 
-            if (success > 0) {
-                // Set success message in session
-                HttpSession session = request.getSession();
-                session.setAttribute("successMessage", "Variant created successfully!");
-
-                // Redirect to product detail page
-                response.sendRedirect(request.getContextPath()
-                        + "/staff/product?action=detail&productId=" + productId);
+            if (success) {
+                session.setAttribute("flash", "Variant created successfully!");
             } else {
-                request.setAttribute("errorMessage", "Failed to create variant. Please try again.");
-                request.setAttribute("product", product);
-                request.getRequestDispatcher("/views/staff/create-variant.jsp").forward(request, response);
+                session.setAttribute("flash_error", "Failed to create variant!");
             }
 
-        } catch (NumberFormatException e) {
-            request.setAttribute("errorMsessage", "Invalid number format!");
+            response.sendRedirect(request.getContextPath()
+                    + "/staff/product?action=detail&productId=" + productId);
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("errorMessage", "An error occurred: " + e.getMessage());
-
+            request.getSession().setAttribute("flash_error", "Error while creating variant!");
+            response.sendRedirect(request.getContextPath()
+                    + "/staff/product?action=detail&productId=" + request.getParameter("productId"));
         }
-
     }
 
     private void updateVariant(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int variantId = Integer.parseInt(request.getParameter("variantId"));
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        HttpSession session = request.getSession();
 
-        ProductVariant variant = new ProductVariant();
-        variant.setProductVariantId(variantId);
-        variant.setColor(request.getParameter("color"));
-        variant.setSize(request.getParameter("size"));
-        variant.setPrice(new BigDecimal(request.getParameter("price")));  
-        variant.setImage(request.getParameter("image"));
+        try {
+            request.setCharacterEncoding("UTF-8");
 
-        boolean success = variantDAO.updateVariant(variant);
+            int variantId = Integer.parseInt(request.getParameter("variantId"));
+            int productId = Integer.parseInt(request.getParameter("productId"));
+            String color = request.getParameter("color");
+            String size = request.getParameter("size");
+            BigDecimal price = new BigDecimal(request.getParameter("price"));
+            String imageUrl = request.getParameter("image");
+            Part imagePart = request.getPart("imageFile");
 
-        if (success) {
+            if (color == null || color.trim().isEmpty()
+                    || size == null || size.trim().isEmpty()
+                    || price.compareTo(BigDecimal.ZERO) < 0) {
+                session.setAttribute("flash_error", "Please fill in all required fields!");
+                response.sendRedirect(request.getContextPath()
+                        + "/staff/product?action=detail&productId=" + productId);
+                return;
+            }
+
+            // Upload new image if available
+            if (imagePart != null && imagePart.getSize() > 0) {
+                String uploadedUrl = CloudinaryConfig.uploadSingleImage(imagePart);
+                if (uploadedUrl != null && !uploadedUrl.isEmpty()) {
+                    imageUrl = uploadedUrl;
+                }
+            }
+
+            // Update variant
+            ProductVariant variant = new ProductVariant();
+            variant.setProductVariantId(variantId);
+            variant.setProductId(productId);
+            variant.setColor(color.trim());
+            variant.setSize(size.trim());
+            variant.setPrice(price);
+            variant.setImage(imageUrl);
+
+            boolean success = variantDAO.updateVariant(variant);
+
+            if (success) {
+                session.setAttribute("flash", "Variant updated successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to update variant!");
+            }
+
             response.sendRedirect(request.getContextPath()
-                    + "/staff/product?action=detail&productId=" + productId
-                    + "&success=Variant updated successfully!");
-        } else {
+                    + "/staff/product?action=detail&productId=" + productId);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error while updating variant!");
             response.sendRedirect(request.getContextPath()
-                    + "/staff/product?action=detail&productId=" + productId
-                    + "&error=Failed to update variant!");
+                    + "/staff/product?action=detail&productId=" + request.getParameter("productId"));
         }
-
     }
 
     /**

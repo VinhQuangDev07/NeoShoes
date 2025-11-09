@@ -36,12 +36,13 @@
             }
 
             .page-header {
-                background-color: white;
-                padding: 20px;
-                margin-bottom: 20px;
-                border-radius: 4px;
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
+            
             .back-btn {
                 color: #007bff;
                 text-decoration: none;
@@ -58,7 +59,7 @@
                 background-color: white;
                 padding: 20px;
                 margin-bottom: 20px;
-                border-radius: 4px;
+                border-radius: 8px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             .card-title {
@@ -90,7 +91,7 @@
             }
             .status-badge {
                 padding: 6px 12px;
-                border-radius: 4px;
+                border-radius: 8px;
                 font-size: 14px;
                 font-weight: 500;
                 display: inline-block;
@@ -98,7 +99,7 @@
             .table-container {
                 background-color: white;
                 padding: 20px;
-                border-radius: 4px;
+                border-radius: 8px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
             .table thead th {
@@ -122,7 +123,7 @@
                 width: 50px;
                 height: 50px;
                 object-fit: cover;
-                border-radius: 4px;
+                border-radius: 8px;
                 border: 1px solid #dee2e6;
             }
             .action-buttons {
@@ -135,7 +136,7 @@
                 color: white;
                 padding: 10px 20px;
                 border: none;
-                border-radius: 4px;
+                border-radius: 8px;
                 font-weight: 500;
             }
             .btn-reject {
@@ -143,7 +144,7 @@
                 color: white;
                 padding: 10px 20px;
                 border: none;
-                border-radius: 4px;
+                border-radius: 8px;
                 font-weight: 500;
             }
             .btn-refund {
@@ -151,14 +152,14 @@
                 color: white;
                 padding: 10px 20px;
                 border: none;
-                border-radius: 4px;
+                border-radius: 8px;
                 font-weight: 500;
             }
             .total-section {
                 background-color: #f8f9fa;
                 padding: 15px;
                 margin-top: 15px;
-                border-radius: 4px;
+                border-radius: 8px;
                 text-align: right;
             }
             .total-label {
@@ -232,13 +233,6 @@
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
         <div class="main-wrapper">
-            <div class="page-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">Return Request Detail</h2>
-                    </div>
-                </div>
-            </div>
             <!-- ✅ FIX 1: Check returnRequest null -->
             <c:if test="${empty returnRequest}">
                 <div class="container-fluid">
@@ -256,28 +250,17 @@
             <c:if test="${not empty returnRequest}">
                 <div class="container-fluid">
                     <div class="page-header">
-                        <a href="${pageContext.request.contextPath}/staff/manage-return-request" class="back-btn">
-                            <i class="fas fa-arrow-left"></i> Back to All Returns
-                        </a>
-                        <h4 class="mb-0">Return Request Detail - #${returnRequest.returnRequestId}</h4>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0 fw-bold">Return Request Detail - #${returnRequest.returnRequestId}</h4>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/staff/manage-return-request" 
+                               class="btn btn-outline-secondary">
+                                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                                Back to List
+                            </a>
+                        </div>
                     </div>
-
-                    <!-- Success/Error Messages -->
-                    <c:if test="${not empty sessionScope.successMessage}">
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle"></i> <c:out value="${sessionScope.successMessage}"/>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        <c:remove var="successMessage" scope="session"/>
-                    </c:if>
-
-                    <c:if test="${not empty sessionScope.errorMessage}">
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle"></i> <c:out value="${sessionScope.errorMessage}"/>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                        <c:remove var="errorMessage" scope="session"/>
-                    </c:if>
 
                     <div class="row">
                         <div class="col-md-8">
@@ -293,9 +276,7 @@
                                 <div class="info-row">
                                     <div class="info-label">Order ID:</div>
                                     <div class="info-value">
-
                                         #${returnRequest.orderId}
-
                                     </div>
                                 </div>
                                 <div class="info-row">
@@ -354,7 +335,6 @@
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th>Product</th>
                                                 <th>Variant ID</th>
                                                 <th class="text-center">Quantity</th>
                                                 <th class="text-end">Amount</th>
@@ -367,16 +347,6 @@
                                             <c:if test="${not empty returnDetails}">
                                                 <c:forEach var="detail" items="${returnDetails}">
                                                     <tr>
-                                                        <td>
-                                                            <div class="product-info">
-                                                                <img src="${pageContext.request.contextPath}/images/product-placeholder.png" 
-                                                                     alt="Product" class="product-image">
-                                                                <div>
-                                                                    <div>Product Variant</div>
-                                                                    <small class="text-muted">ID: ${detail.productVariantId}</small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
                                                         <td>${detail.productVariantId}</td>
                                                         <td class="text-center">${detail.quantity}</td>
                                                         <td class="text-end">

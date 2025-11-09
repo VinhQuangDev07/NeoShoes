@@ -42,20 +42,11 @@ public class ManageOrderServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession();
-
-        // Set hardcoded staff info (like ManageProductServlet)
-        Staff staff = new Staff();
-        staff.setStaffId(1);
-        staff.setRole(true); // true = Admin
-        staff.setEmail("admin@shoestore.com");
-        staff.setName("Admin");
-        staff.setPhoneNumber("+1-202-555-0101");
-        staff.setAvatar("https://cdn.shoestore.com/staff/admin.jpg");
-        staff.setGender("Male");
-
-        // Set into session
-        session.setAttribute("staff", staff);
-        session.setAttribute("role", "admin");
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
         // Check if viewing order detail
         String orderIdParam = request.getParameter("orderId");
@@ -163,12 +154,9 @@ public class ManageOrderServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         Staff staff = (Staff) session.getAttribute("staff");
-        
         if (staff == null) {
-            // Set default staff for testing
-            staff = new Staff();
-            staff.setStaffId(1);
-            staff.setRole(true);
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
         }
         
         String action = request.getParameter("action");

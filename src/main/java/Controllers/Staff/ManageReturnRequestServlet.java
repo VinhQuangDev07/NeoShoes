@@ -57,7 +57,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
 
             // ✅ FIX 1: Validate idParam trước khi parseInt
             if (idParam == null || idParam.trim().isEmpty()) {
-                request.setAttribute("errorMessage", "Request ID is required");
+                session.setAttribute("flash_error", "Request ID is required");
                 request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/list.jsp")
                         .forward(request, response);
                 return;
@@ -68,13 +68,13 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 requestId = Integer.parseInt(idParam.trim());
                 // ✅ FIX 2: Validate requestId > 0
                 if (requestId <= 0) {
-                    request.setAttribute("errorMessage", "Invalid Request ID");
+                    session.setAttribute("flash_error", "Invalid Request ID");
                     request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/list.jsp")
                             .forward(request, response);
                     return;
                 }
             } catch (NumberFormatException e) {
-                request.setAttribute("errorMessage", "Invalid Request ID format");
+                session.setAttribute("flash_error", "Invalid Request ID format");
                 request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/list.jsp")
                         .forward(request, response);
                 return;
@@ -85,7 +85,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
 
             // ✅ FIX 3: Check nếu returnRequest không tồn tại
             if (returnRequest == null) {
-                request.setAttribute("errorMessage", "Return request #" + requestId + " not found");
+                session.setAttribute("flash_error", "Return request #" + requestId + " not found");
                 request.getRequestDispatcher("/WEB-INF/views/staff/manage-return-request/list.jsp")
                         .forward(request, response);
                 return;
@@ -193,7 +193,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             // ✅ FIX 1: Validate requestId parameter
             String requestIdParam = request.getParameter("requestId");
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                session.setAttribute("errorMessage", "Request ID is required");
+                session.setAttribute("flash_error", "Request ID is required");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -203,12 +203,12 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 requestId = Integer.parseInt(requestIdParam.trim());
                 // ✅ FIX 2: Validate requestId > 0
                 if (requestId <= 0) {
-                    session.setAttribute("errorMessage", "Invalid Request ID");
+                    session.setAttribute("flash_error", "Invalid Request ID");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Invalid Request ID format");
+                session.setAttribute("flash_error", "Invalid Request ID format");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -216,7 +216,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             // ✅ FIX 3: Validate status parameter
             String newStatus = request.getParameter("status");
             if (newStatus == null || newStatus.trim().isEmpty()) {
-                session.setAttribute("errorMessage", "Status is required");
+                session.setAttribute("flash_error", "Status is required");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -224,7 +224,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             newStatus = newStatus.trim();
             // ✅ FIX 4: Validate status value
             if (!newStatus.equals("PENDING") && !newStatus.equals("APPROVED") && !newStatus.equals("REJECTED")) {
-                session.setAttribute("errorMessage", "Invalid status. Must be PENDING, APPROVED, or REJECTED");
+                session.setAttribute("flash_error", "Invalid status. Must be PENDING, APPROVED, or REJECTED");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -235,7 +235,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 // ✅ FIX 5: Check return request tồn tại trước khi update
                 ReturnRequest returnRequest = rrDAO.getReturnRequestById(requestId);
                 if (returnRequest == null) {
-                    session.setAttribute("errorMessage", "Return request #" + requestId + " not found");
+                    session.setAttribute("flash_error", "Return request #" + requestId + " not found");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
@@ -245,7 +245,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 // Không cho phép thay đổi từ APPROVED/REJECTED (đã finalized)
                 if (("APPROVED".equals(currentStatus) || "REJECTED".equals(currentStatus))
                         && !newStatus.equals(currentStatus)) {
-                    session.setAttribute("errorMessage",
+                    session.setAttribute("flash_error",
                             "Cannot change status from " + currentStatus + ". Request is already finalized");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
@@ -268,15 +268,15 @@ public class ManageReturnRequestServlet extends HttpServlet {
                         }
                     }
 
-                    session.setAttribute("successMessage",
+                    session.setAttribute("flash",
                             "Return request #" + requestId + " status updated to " + newStatus + " successfully");
                 } else {
-                    session.setAttribute("errorMessage", "Failed to update status. Please try again");
+                    session.setAttribute("flash_error", "Failed to update status. Please try again");
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
-                session.setAttribute("errorMessage", "Error updating status: " + e.getMessage());
+                session.setAttribute("flash_error", "Error updating status: " + e.getMessage());
             }
 
             response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
@@ -285,7 +285,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             // ✅ FIX 10: Validate requestId
             String requestIdParam = request.getParameter("requestId");
             if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-                session.setAttribute("errorMessage", "Request ID is required");
+                session.setAttribute("flash_error", "Request ID is required");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -294,12 +294,12 @@ public class ManageReturnRequestServlet extends HttpServlet {
             try {
                 requestId = Integer.parseInt(requestIdParam.trim());
                 if (requestId <= 0) {
-                    session.setAttribute("errorMessage", "Invalid Request ID");
+                    session.setAttribute("flash_error", "Invalid Request ID");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Invalid Request ID format");
+                session.setAttribute("flash_error", "Invalid Request ID format");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -307,7 +307,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             // ✅ FIX 11: Validate orderId
             String orderIdParam = request.getParameter("orderId");
             if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-                session.setAttribute("errorMessage", "Order ID is required");
+                session.setAttribute("flash_error", "Order ID is required");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -316,12 +316,12 @@ public class ManageReturnRequestServlet extends HttpServlet {
             try {
                 orderId = Integer.parseInt(orderIdParam.trim());
                 if (orderId <= 0) {
-                    session.setAttribute("errorMessage", "Invalid Order ID");
+                    session.setAttribute("flash_error", "Invalid Order ID");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
             } catch (NumberFormatException e) {
-                session.setAttribute("errorMessage", "Invalid Order ID format");
+                session.setAttribute("flash_error", "Invalid Order ID format");
                 response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                 return;
             }
@@ -332,14 +332,14 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 // ✅ FIX 12: Check return request tồn tại
                 ReturnRequest returnRequest = rrDAO.getReturnRequestById(requestId);
                 if (returnRequest == null) {
-                    session.setAttribute("errorMessage", "Return request #" + requestId + " not found");
+                    session.setAttribute("flash_error", "Return request #" + requestId + " not found");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
 
                 // ✅ FIX 13: Validate orderId khớp với returnRequest
                 if (returnRequest.getOrderId() != orderId) {
-                    session.setAttribute("errorMessage", "Order ID mismatch. Invalid delete request");
+                    session.setAttribute("flash_error", "Order ID mismatch. Invalid delete request");
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
                 }
@@ -347,7 +347,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 // ✅ FIX 14: Business logic - chỉ delete APPROVED/REJECTED
                 String status = returnRequest.getReturnStatus();
                 if (!"APPROVED".equals(status) && !"REJECTED".equals(status)) {
-                    session.setAttribute("errorMessage",
+                    session.setAttribute("flash_error",
                             "Only finalized requests (APPROVED/REJECTED) can be deleted. Current status: " + status);
                     response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
                     return;
@@ -355,22 +355,22 @@ public class ManageReturnRequestServlet extends HttpServlet {
 
                 // Delete request
                 rrDAO.deleteReturnRequest(requestId, orderId);
-                session.setAttribute("successMessage",
+                session.setAttribute("flash",
                         "Return request #" + requestId + " deleted successfully");
 
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                session.setAttribute("errorMessage", "Invalid request ID or order ID");
+                session.setAttribute("flash_error", "Invalid request ID or order ID");
             } catch (Exception e) {
                 e.printStackTrace();
-                session.setAttribute("errorMessage", "Error deleting return request: " + e.getMessage());
+                session.setAttribute("flash_error", "Error deleting return request: " + e.getMessage());
             }
 
             response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
 
         } else {
             // ✅ FIX 15: Handle invalid action
-            session.setAttribute("errorMessage", "Invalid action");
+            session.setAttribute("flash_error", "Invalid action");
             response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
         }
     }

@@ -26,6 +26,18 @@
                 overflow-x: hidden;
             }
 
+            #main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+                padding-top: 74px;
+            }
+
+            @media (min-width: 992px) {
+                #main-content {
+                    margin-left: 300px;
+                }
+            }
+
             /* Detail Header */
             .detail-header {
                 background: #fff;
@@ -229,16 +241,31 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <!-- Main Content -->
         <div id="main-content">
             <div class="container-fluid p-4">
                 <!-- Page Header -->
                 <div class="detail-header">
-                    <div class="container">
-                        <h5>
-                            <i data-lucide="package" style="width: 21px; height: 21px;"></i>
-                            Import Record Details - #${importRecord.importProductId}
-                        </h5>
+                    <div class="d-flex justify-content-between align-items-center p-2">
+                        <div>
+                            <h5 class="me-3">
+                                <i data-lucide="package" style="width: 21px; height: 21px;"></i>
+                                Import Record Details - #${importRecord.importProductId}
+                            </h5>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/staff/import-records" 
+                           class="btn btn-outline-secondary me-3">
+                            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                            Back to List
+                        </a>
                     </div>
                 </div>
 

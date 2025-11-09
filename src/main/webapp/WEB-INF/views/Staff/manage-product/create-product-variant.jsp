@@ -180,6 +180,29 @@
                 cursor: pointer;
             }
 
+            .image-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
+            }
+
             /* Two Column Layout */
             .form-row {
                 display: grid;
@@ -375,24 +398,9 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Error Message -->
-                <c:if test="${not empty errorMessage}">
-                    <div class="error-message">
-                        ❌ ${errorMessage}
-                    </div>
-                </c:if>
-
-                <!-- Success Message -->
-                <c:if test="${not empty successMessage}">
-                    <div class="success-message">
-                        ✅ ${successMessage}
-                    </div>
-                </c:if>
-
                 <!-- Form Card -->
                 <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/staff/variant" method="POST" id="variantForm">
+                    <form action="${pageContext.request.contextPath}/staff/variant" method="POST" enctype="multipart/form-data" id="variantForm">
                         <input type="hidden" name="action" value="create">
                         <input type="hidden" name="productId" value="${product.productId}">
 
@@ -430,43 +438,28 @@
                                            required>
                                     <div class="helper-text">Enter size code</div>
                                 </div>
-
                                 <div class="form-group">
-                                    <label for="quantityAvailable">
-                                        Quantity
+                                    <label for="price">
+                                        Price
                                         <span class="required">*</span>
                                     </label>
-                                    <input type="number" 
-                                           id="quantityAvailable" 
-                                           name="quantityAvailable" 
-                                           class="form-control" 
-                                           placeholder="0"
-                                           min="0"
-                                           value="${param.quantityAvailable}"
-                                           required>
-                                    <div class="helper-text">Available stock</div>
+                                    <div class="input-group">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" 
+                                               id="price" 
+                                               name="price" 
+                                               class="form-control" 
+                                               placeholder="0.00"
+                                               step="0.01"
+                                               min="0"
+                                               value="${param.price}"
+                                               required>
+                                    </div>
+                                    <div class="helper-text">Enter price in USD</div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="price">
-                                    Price
-                                    <span class="required">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="currency-symbol">$</span>
-                                    <input type="number" 
-                                           id="price" 
-                                           name="price" 
-                                           class="form-control" 
-                                           placeholder="0.00"
-                                           step="0.01"
-                                           min="0"
-                                           value="${param.price}"
-                                           required>
-                                </div>
-                                <div class="helper-text">Enter price in USD</div>
-                            </div>
+
                         </div>
 
                         <!-- Variant Image Section -->
@@ -474,34 +467,17 @@
                             <h2 class="section-title">Variant Image</h2>
 
                             <div class="form-group">
-                                <label for="image">
-                                    Image URL
-                                    <span class="required">*</span>
-                                </label>
-                                <input type="url" 
-                                       id="image" 
-                                       name="image" 
-                                       class="form-control" 
-                                       placeholder="https://example.com/variant-image.jpg"
-                                       value="${param.image}"
-                                       required
-                                       onchange="previewImage()">
-                                <div class="helper-text">Enter a valid image URL for this variant</div>
-
-                                <!-- Image Preview -->
-                                <div class="image-preview" id="imagePreview">
-                                    <c:choose>
-                                        <c:when test="${not empty param.image}">
-                                            <img src="${param.image}" alt="Variant Image" id="previewImg">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <div class="empty">
-                                                📷<br>
-                                                Image preview will appear here
-                                            </div>
-                                        </c:otherwise>
-                                    </c:choose>
+                                <label class="form-label">Upload Image <span class="required">*</span></label>
+                                <div class="image-upload" id="variantImageUpload">
+                                    <img src="${empty param.image 
+                                                ? 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png' 
+                                                : param.image}" 
+                                         id="variantImagePreview" 
+                                         alt="Variant Image Preview" />
+                                    <div class="text-muted small">Click or drag & drop an image</div>
+                                    <input type="file" name="imageFile" id="variantImageInput" accept="image/*" class="d-none">
                                 </div>
+                                <input type="hidden" name="image" id="imageUrlHidden" value="${param.image}">
                             </div>
                         </div>
 
@@ -584,5 +560,52 @@
                 document.getElementById('color').focus();
             });
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uploadArea = document.getElementById('variantImageUpload');
+                const fileInput = document.getElementById('variantImageInput');
+                const preview = document.getElementById('variantImagePreview');
+                const hiddenUrl = document.getElementById('imageUrlHidden');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const file = e.target.files[0];
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = '';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#0d6efd';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = '#dee2e6';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#dee2e6';
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        fileInput.files = e.dataTransfer.files;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenUrl.value = '';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+
     </body>
 </html>

@@ -660,8 +660,31 @@
                 padding: 20px 24px;
                 border-top: 1px solid #e2e8f0;
                 display: flex;
+                justify-content: center;
                 gap: 12px;
-                justify-content: flex-end;
+            }
+
+            .image-upload {
+                border: 2px dashed #dee2e6;
+                border-radius: 8px;
+                padding: 20px;
+                text-align: center;
+                background-color: #fafafa;
+                cursor: pointer;
+                transition: border-color 0.3s;
+            }
+
+            .image-upload:hover {
+                border-color: #0d6efd;
+            }
+
+            .image-upload img {
+                width: 160px;
+                height: 160px;
+                border-radius: 8px;
+                object-fit: cover;
+                margin-bottom: 12px;
+                border: 1px solid #dee2e6;
             }
 
             /* Animations */
@@ -705,25 +728,7 @@
                         </a>
                         <h1 class="page-title">${product.name}</h1>
                     </div>
-
                 </div>
-
-                <!-- Success/Error Messages -->
-                <c:if test="${not empty param.success}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        ${param.success}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </c:if>
-
-                <c:if test="${not empty param.error}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        ${param.error}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                </c:if>
 
                 <!-- Main Content -->
                 <div class="content-grid">
@@ -1034,10 +1039,11 @@
                 </button>
             </div>
 
-            <form id="editVariantForm" method="POST" action="${pageContext.request.contextPath}/staff/variant">
+            <form id="editVariantForm" method="POST" action="${pageContext.request.contextPath}/staff/variant" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="variantId" id="edit_variantId">
                 <input type="hidden" name="productId" value="${product.productId}">
+                <input type="hidden" name="image" id="edit_imageHidden">
 
                 <div class="modal-body">
                     <div class="modal-form-row">
@@ -1086,21 +1092,12 @@
                     </div>
 
                     <div class="modal-form-group">
-                        <label for="edit_image">
-                            Image URL
-                            <span class="required">*</span>
-                        </label>
-                        <input type="url" 
-                               id="edit_image" 
-                               name="image" 
-                               class="modal-form-control" 
-                               placeholder="https://example.com/image.jpg"
-                               required
-                               onchange="previewEditImage()">
-                        <div class="modal-helper-text">Enter a valid image URL</div>
-
-                        <div class="modal-image-preview" id="editImagePreview">
-                            <div class="empty">📷 Image preview will appear here</div>
+                        <label class="form-label">Variant Image <span class="required">*</span></label>
+                        <div class="image-upload" id="editVariantImageUpload">
+                            <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png"
+                                 id="editVariantImagePreview" alt="Variant Image Preview" />
+                            <div class="text-muted small">Click or drag & drop an image</div>
+                            <input type="file" name="imageFile" id="editVariantImageInput" accept="image/*" class="d-none">
                         </div>
                     </div>
                 </div>
@@ -1116,6 +1113,42 @@
                 </div>
             </form>
         </div>
+
+        <!-- Confirm Delete Variant Modal -->
+        <div class="modal fade" id="confirmDeleteVariantModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Delete Variant
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p id="deleteVariantMessage" class="mb-3">
+                            Are you sure you want to delete this variant?
+                        </p>
+                        <div class="small text-muted">
+                            This action <strong>cannot be undone</strong>.
+                        </div>
+                    </div>
+                    <form id="deleteVariantForm" method="POST" action="${pageContext.request.contextPath}/staff/variant">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="variantId" id="deleteVariantId">
+                        <input type="hidden" name="productId" value="${product.productId}">
+                        <div class="modal-footer border-0 d-flex justify-content-center">
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
 
 
         <script>
@@ -1142,10 +1175,6 @@
                 document.getElementById('edit_size').value = size;
                 document.getElementById('edit_price').value = price;
 
-                document.getElementById('edit_image').value = image;
-                // Show preview
-                const preview = document.getElementById('editImagePreview');
-                preview.innerHTML = '<img src="' + image + '" alt="Variant Image" onerror="imageEditLoadError()">';
                 // Show modal
                 document.getElementById('editModalOverlay').classList.add('active');
                 document.getElementById('editModal').classList.add('active');
@@ -1159,57 +1188,26 @@
                 document.body.style.overflow = 'auto';
                 // Reset form
                 document.getElementById('editVariantForm').reset();
-                document.getElementById('editImagePreview').innerHTML = '<div class="empty">📷 Image preview will appear here</div>';
             }
 
-            // Preview edit image
-            function previewEditImage() {
-                const url = document.getElementById('edit_image').value;
-                const preview = document.getElementById('editImagePreview');
-                if (url) {
-                    preview.innerHTML = '<img src="' + url + '" alt="Variant Image" onerror="imageEditLoadError()">';
-                } else {
-                    preview.innerHTML = '<div class="empty">📷 Image preview will appear here</div>';
-                }
-            }
-
-            // Handle image load error
-            function imageEditLoadError() {
-                const preview = document.getElementById('editImagePreview');
-                preview.innerHTML = '<div class="empty" style="color: #ef4444;">❌ Failed to load image<br>Please check the URL</div>';
-            }
 
             // Delete variant
+            // Hiển thị modal xác nhận xóa
             function deleteVariant(button) {
                 const variantId = button.getAttribute('data-variant-id');
                 const size = button.getAttribute('data-variant-size') || 'N/A';
                 const color = button.getAttribute('data-variant-color') || 'N/A';
-                const variantInfo = size + ' - ' + color;
-                if (!confirm('Are you sure you want to delete variant "' + variantInfo + '"?\n\nThis action cannot be undone!')) {
-                    return;
-                }
 
-                // Create form and submit
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '${pageContext.request.contextPath}/staff/variant';
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                form.appendChild(actionInput);
-                const variantIdInput = document.createElement('input');
-                variantIdInput.type = 'hidden';
-                variantIdInput.name = 'variantId';
-                variantIdInput.value = variantId;
-                form.appendChild(variantIdInput);
-                const productIdInput = document.createElement('input');
-                productIdInput.type = 'hidden';
-                productIdInput.name = 'productId';
-                productIdInput.value = ${product.productId};
-                form.appendChild(productIdInput);
-                document.body.appendChild(form);
-                form.submit();
+                // Gán giá trị vào modal
+                const message = document.getElementById('deleteVariantMessage');
+                message.innerHTML = 'Are you sure you want to delete variant '
+                        + '<strong>' + size + ' - ' + color + '</strong>?<br>';
+
+                document.getElementById('deleteVariantId').value = variantId;
+
+                // Hiển thị modal
+                const modal = new bootstrap.Modal(document.getElementById('confirmDeleteVariantModal'));
+                modal.show();
             }
 
             // Change main image
@@ -1255,7 +1253,54 @@
                         setTimeout(() => alert.remove(), 500);
                     }
                 });
-            }, 5000);</script>
+            }, 5000);
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uploadArea = document.getElementById('editVariantImageUpload');
+                const fileInput = document.getElementById('editVariantImageInput');
+                const preview = document.getElementById('editVariantImagePreview');
+                const hiddenInput = document.getElementById('edit_imageHidden');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenInput.value = '';
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#0d6efd';
+                });
+
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.style.borderColor = '#dee2e6';
+                });
+
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.style.borderColor = '#dee2e6';
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                        fileInput.files = e.dataTransfer.files;
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            preview.src = event.target.result;
+                            hiddenInput.value = '';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        </script>
+
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
