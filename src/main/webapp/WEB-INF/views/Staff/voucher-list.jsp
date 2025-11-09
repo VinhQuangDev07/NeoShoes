@@ -397,7 +397,7 @@
                                                 <a class="btn btn-view"
                                                    href="${pageContext.request.contextPath}/staff/manage-voucher/detail?id=${voucher.voucherId}"
                                                    title="View">
-                                                     <i data-lucide="eye"></i>
+                                                    <i data-lucide="eye"></i>
                                                 </a>
 
                                                 <!-- Edit, Toggle, Delete - Chỉ admin -->
@@ -408,14 +408,15 @@
                                                         <i class="fas fa-edit"></i>
                                                     </a>
 
-
-
-                                                    <a class="btn btn-delete"
-                                                       href="${pageContext.request.contextPath}/staff/manage-voucher/delete?id=${voucher.voucherId}"
-                                                       onclick="return confirm('Are you sure you want to delete voucher ${voucher.voucherCode}?');"
-                                                       title="Delete">
+                                                    <button type="button" class="btn btn-delete"
+                                                            data-id="${voucher.voucherId}"
+                                                            data-code="${voucher.voucherCode}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#confirmDeleteModal"
+                                                            title="Delete">
                                                         <i data-lucide="trash-2"></i>
-                                                    </a>
+                                                    </button>
+
                                                 </c:if>
                                             </div>
                                         </td>
@@ -430,7 +431,58 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                                                           lucide.createIcons();
+            lucide.createIcons();
         </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const deleteModal = document.getElementById("confirmDeleteModal");
+                const deleteMessage = document.getElementById("deleteMessage");
+                const deleteForm = document.getElementById("deleteForm");
+
+                deleteModal.addEventListener("show.bs.modal", (event) => {
+                    const button = event.relatedTarget; // nút được bấm
+                    const id = button.getAttribute("data-id");
+                    const code = button.getAttribute("data-code");
+
+                    // Cập nhật nội dung modal
+                    deleteMessage.textContent = 'Are you sure you want to delete voucher "' + code + '"?';
+                    deleteForm.action = `${window.contextPath || '${pageContext.request.contextPath}'}/staff/manage-voucher/delete?id=${id}`;
+                            });
+
+                            // Render icon lại khi modal hiển thị
+                            deleteModal.addEventListener("shown.bs.modal", () => lucide.createIcons());
+                        });
+        </script>
+
+        <!-- Confirm Delete Modal -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm rounded-3">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i data-lucide="trash-2" class="me-1"></i> Delete Voucher
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <p id="deleteMessage" class="mb-2">Are you sure you want to delete this voucher?</p>
+                        <p class="text-muted small mb-0">This action cannot be undone.</p>
+                    </div>
+
+                    <div class="modal-footer border-0 d-flex justify-content-center gap-2">
+                        <form id="deleteForm" method="post" action="">
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i data-lucide="trash-2" class="me-1"></i> Delete
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 </html>

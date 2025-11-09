@@ -60,9 +60,39 @@
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
 
-            .btn-action {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.875rem;
+            /* Action Buttons */
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                margin: 0 2px;
+            }
+            
+            .btn-edit {
+                background-color: #fff3e0;
+                color: #f57c00;
+            }
+
+            .btn-edit:hover {
+                background-color: #f57c00;
+                color: white;
+                transform: scale(1.1);
+            }
+            
+            .btn-view {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+
+            .btn-view:hover {
+                background-color: #1976d2;
+                color: white;
+                transform: scale(1.1);
             }
 
             .table-responsive {
@@ -209,12 +239,12 @@
                                     <td>
                                         <div class="action-buttons justify-content-end">
                                             <a href="${pageContext.request.contextPath}/staff/import-record-details?id=${record.importProductId}" 
-                                               class="btn btn-sm btn-outline-primary btn-action"
+                                               class="btn btn-sm action-btn btn-view"
                                                title="View Details">
                                                 <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
                                             </a>
                                             <a href="${pageContext.request.contextPath}/staff/update-import-record?id=${record.importProductId}" 
-                                               class="btn btn-sm btn-outline-secondary btn-action"
+                                               class="btn btn-sm action-btn btn-edit"
                                                title="Edit">
                                                 <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
                                             </a>

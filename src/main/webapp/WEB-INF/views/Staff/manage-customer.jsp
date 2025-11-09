@@ -86,7 +86,7 @@
             }
 
             .btn-view:hover {
-                background-color: #1976d2;
+                background-color: #f57c00;
                 color: white;
                 transform: scale(1.1);
             }

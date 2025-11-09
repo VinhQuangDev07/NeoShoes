@@ -157,7 +157,7 @@
                 <div class="error-message">❌ ${error}</div>
             </c:if>
 
-            <form method="post" action="${pageContext.request.contextPath}/vouchermanage/${formAction}?role=${userRole}">
+            <form method="post" action="${pageContext.request.contextPath}/staff/manage-voucher/${formAction}">
                 <c:if test="${formAction eq 'update'}">
                     <input type="hidden" name="id" value="${voucher.voucherId}"/>
                 </c:if>
@@ -290,7 +290,7 @@
                     <button type="submit" class="btn btn-primary">
                         ${formAction eq 'add' ? '✓ Add Voucher' : '✓ Update Voucher'}
                     </button>
-                    <a href="${pageContext.request.contextPath}/vouchermanage/list?role=${userRole}" 
+                    <a href="${pageContext.request.contextPath}/staff/manage-voucher" 
                        class="btn btn-secondary">Cancel</a>
                 </div>
             </form>

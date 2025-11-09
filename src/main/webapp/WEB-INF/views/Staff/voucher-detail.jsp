@@ -157,7 +157,7 @@
 <body>
     <div class="page-head">
         <h1>Voucher Details</h1>
-        <a href="${pageContext.request.contextPath}/vouchermanage/list?role=${userRole}" class="btn-back">← Back to List</a>
+        <a href="${pageContext.request.contextPath}/staff/manage-voucher" class="btn-back">← Back to List</a>
     </div>
 
     <div class="wrap">
