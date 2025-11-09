@@ -140,6 +140,7 @@
 <% } %>
 
 <form method="post" action="${pageContext.request.contextPath}/forget-password">
+    <input type="hidden" name="userType" value="customer">
     <div class="form-group">
         <label for="email">📧 Email Address</label>
         <input type="email" id="email" name="email" 

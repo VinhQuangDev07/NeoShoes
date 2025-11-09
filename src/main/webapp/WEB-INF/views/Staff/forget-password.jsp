@@ -1,11 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> OTP - NeoShoes</title>
+    <title>Staff - Forget Password</title>
     <style>
         * {
             margin: 0;
@@ -45,15 +44,6 @@
             font-size: 14px;
         }
         
-        .message {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
         .error {
             background: #fee2e2;
             color: #991b1b;
@@ -63,7 +53,16 @@
             text-align: center;
         }
         
-        form div {
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .form-group {
             margin-bottom: 20px;
         }
         
@@ -74,7 +73,7 @@
             margin-bottom: 8px;
         }
         
-        input {
+        input[type="email"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e5e7eb;
@@ -83,7 +82,7 @@
             transition: all 0.3s;
         }
         
-        input:focus {
+        input[type="email"]:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -107,61 +106,57 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
-        .info {
+        .back-link {
+            text-align: center;
             margin-top: 20px;
-            padding: 15px;
-            background: #f3f4f6;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #6b7280;
         }
         
-        .info p {
-            margin: 5px 0;
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>OTP authentication</h2>
-        <p class="subtitle">Enter your OTP code and new password</p>
-        
-        <c:if test="${not empty message}">
-            <div class="message">${message}</div>
-        </c:if>
-        
-        <c:if test="${not empty error}">
-            <div class="error">${error}</div>
-        </c:if>
-        
-        <form action="${pageContext.request.contextPath}/reset-password" method="post">
-            <input type="hidden" name="userType" value="customer">
-            <input type="hidden" name="email" value="${email}">
+        <h2>🔑 Staff - Forget Password</h2>
+        <p class="subtitle">Confirm your email to receive OTP code</p>
+
+        <% if (request.getAttribute("error") != null) { %>
+            <div class="error">
+                ❌ <%= request.getAttribute("error") %>
+            </div>
+        <% } %>
+
+        <% if (request.getAttribute("message") != null) { %>
+            <div class="success">
+                ✅ <%= request.getAttribute("message") %>
+            </div>
+        <% } %>
+
+        <form method="post" action="${pageContext.request.contextPath}/forget-password">
+            <input type="hidden" name="userType" value="staff">
             
-            <div>
-                <label>OTP code (6 digits):</label>
-                <input type="text" name="otp" required maxlength="6" pattern="\d{6}" 
-                       placeholder="Enter OTP" autofocus>
+            <div class="form-group">
+                <label for="email">📧 Staff Email Address</label>
+                <input type="email" id="email" name="email" 
+                       value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
+                       placeholder="staff.email@neoshoes.com" required>
+                <small style="display: block; margin-top: 5px; color: #6b7280; font-size: 13px;">
+                    OTP code will be sent to your staff email
+                </small>
             </div>
             
-            <div>
-                <label>New password:</label>
-                <input type="password" name="newPassword" required minlength="6" 
-                       placeholder="Minimum 6 characters">
-            </div>
-            
-            <div>
-                <label>Confirm password:</label>
-                <input type="password" name="confirmPassword" required minlength="6" 
-                       placeholder="Re-enter password">
-            </div>
-            
-            <button type="submit">Reset Password</button>
+            <button type="submit">Send OTP Code</button>
         </form>
-        
-        <div class="info">
-            <p>OTP code will expire after 10 minutes</p>
-            <p>You can enter the wrong password up to 5 times.</p>
+
+        <div class="back-link">
+            <a href="${pageContext.request.contextPath}/staff/login">← Back to Staff Login</a>
         </div>
     </div>
 </body>
