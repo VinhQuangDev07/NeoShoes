@@ -20,64 +20,104 @@
         <script src="https://unpkg.com/lucide@latest"></script>
         <style>
             body {
-                background-color: #f5f5f5;
-                font-family: Arial, sans-serif;
-            }
-            .container-fluid {
-                padding: 20px;
+                background-color: #f8f9fa;
+                overflow-x: hidden;
+                font-family: 'Inter', sans-serif;
             }
 
-            .main-wrapper {
-                margin-left: 300px;
-                margin-top: 74px;
-                padding: 20px;
-                min-height: calc(100vh - 74px);
+            #main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+                padding-top: 74px;
             }
+
+            @media (min-width: 992px) {
+                #main-content {
+                    margin-left: 300px;
+                }
+            }
+
             .page-header {
-                background-color: white;
-                padding: 20px;
-                margin-bottom: 20px;
-                border-radius: 4px;
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
-            .page-title {
-                background-color: white;
-                padding: 15px 20px;
-                margin-bottom: 20px;
-                border-bottom: 1px solid #ddd;
+
+            .return-table {
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             }
-            .table-container {
-                background-color: white;
-                padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-            }
-            .table thead th {
+
+            .table thead {
                 background-color: #f8f9fa;
-                border-bottom: 2px solid #dee2e6;
-                font-weight: 600;
-                color: #495057;
-                padding: 12px;
-                vertical-align: middle;
             }
-            .table tbody td {
-                padding: 12px;
-                vertical-align: middle;
-            }
-            .order-link {
-                color: #007bff;
-                text-decoration: none;
+
+            .badge-status {
+                border-radius: 20px;
+                font-size: 0.75rem;
                 font-weight: 500;
+                padding: 6px 12px;
             }
-            .order-link:hover {
-                text-decoration: underline;
+
+            .status-pending {
+                background-color: #fff8e1;
+                color: #f59e0b;
             }
-            .modal-header {
-                background-color: #f8f9fa;
+
+            .status-approved {
+                background-color: #d1f4e0;
+                color: #0f7d3f;
             }
-            .form-label {
-                font-weight: 600;
+
+            .status-rejected {
+                background-color: #ffe0e0;
+                color: #d32f2f;
             }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                margin: 0 2px;
+            }
+
+            .btn-view {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+            .btn-edit {
+                background-color: #fff3e0;
+                color: #f57c00;
+            }
+            .btn-delete {
+                background-color: #ffebee;
+                color: #d32f2f;
+            }
+
+            .action-btn:hover {
+                transform: scale(1.1);
+                color: white;
+            }
+
+            .btn-view:hover {
+                background-color: #1976d2;
+            }
+            .btn-edit:hover {
+                background-color: #f57c00;
+            }
+            .btn-delete:hover {
+                background-color: #d32f2f;
+            }
+
             .text-truncate-custom {
                 max-width: 200px;
                 overflow: hidden;
@@ -96,371 +136,335 @@
         <!-- Notification -->
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-        <div class="main-wrapper">
-            <div class="page-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h2 class="mb-1">Return Request Detail</h2>
+        <div id="main-content">
+            <div class="container-fluid p-4">
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h2 class="mb-0 fw-bold">Return Requests</h2>
+                            <p class="text-muted mb-0 mt-1">Manage and review all return requests</p>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Table -->
+                <div class="card border-0 shadow-sm return-table">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="px-4 py-3">#</th>
+                                        <th>Order ID</th>
+                                        <th>Customer ID</th>
+                                        <th>Created On</th>
+                                        <th>Status</th>
+                                        <th>Reason</th>
+                                        <th>Bank Info</th>
+                                        <th>Note</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:choose>
+                                        <c:when test="${empty requests}">
+                                            <tr>
+                                                <td colspan="9" class="text-center py-4 text-muted">
+                                                    No return requests found
+                                                </td>
+                                            </tr>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:forEach var="r" items="${requests}" varStatus="status">
+                                                <tr>
+                                                    <td class="px-4">${status.index + 1}</td>
+                                                    <td><a href="#" class="order-link fw-semibold text-decoration-none text-primary">#${r.orderId}</a></td>
+                                                    <td>${r.customerId}</td>
+                                                    <td>${r.requestDate != null ? r.requestDate.toLocalDate() : 'N/A'}</td>
+                                                    <td>
+                                                        <span class="badge-status
+                                                              ${r.returnStatus eq 'APPROVED' ? 'status-approved' :
+                                                                r.returnStatus eq 'REJECTED' ? 'status-rejected' : 'status-pending'}">
+                                                                  ${r.returnStatus}
+                                                              </span>
+                                                        </td>
+                                                        <td class="text-truncate-custom">${r.reason}</td>
+                                                        <td class="text-truncate-custom">${r.bankAccountInfo}</td>
+                                                        <td class="text-truncate-custom">${r.note}</td>
+                                                        <td class="text-center">
+                                                            <button class="action-btn btn-view" data-action="view" data-request-id="${r.returnRequestId}">
+                                                                <i data-lucide="eye"></i>
+                                                            </button>
+                                                            <button class="action-btn btn-edit" data-action="edit" data-request-id="${r.returnRequestId}" data-status="${r.returnStatus}">
+                                                                <i data-lucide="edit"></i>
+                                                            </button>
+                                                            <button class="action-btn btn-delete"
+                                                                    data-action="delete"
+                                                                    data-request-id="${r.returnRequestId}"
+                                                                    data-order-id="${r.orderId}"
+                                                                    title="Delete Request">
+                                                                <i data-lucide="trash-2"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
                 </div>
             </div>
-            <div class="container-fluid">
-                <div class="page-title">
-                    <h4 class="mb-0">All Active Returns</h4>
-                </div>
 
-                <!-- Success/Error Messages -->
-                <c:if test="${not empty sessionScope.successMessage}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle"></i> ${fn:escapeXml(sessionScope.successMessage)}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    <c:remove var="successMessage" scope="session"/>
-                </c:if>
+            <!-- Edit Modal -->
+            <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">
+                                <i class="fas fa-edit"></i> Edit Return Request #<span id="modalRequestId"></span>
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="editForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
+                            <input type="hidden" name="action" value="updateStatus">
+                            <input type="hidden" name="requestId" id="editRequestId">
+                            <input type="hidden" name="currentStatus" id="currentStatus">
 
-                <c:if test="${not empty sessionScope.errorMessage}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle"></i> ${fn:escapeXml(sessionScope.errorMessage)}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    <c:remove var="errorMessage" scope="session"/>
-                </c:if>
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Update the status for this return request.
+                                </div>
 
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Request ID</th>
-                                    <th>Order ID</th>
-                                    <th>Customer ID</th>
-                                    <th>Created on Date</th>
-                                    <th>Return Status</th>
-                                    <th>Reason</th>
-                                    <th>Bank Account Info</th>
-                                    <th>Note</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <c:forEach var="r" items="${requests}">
-                                    <tr>
-                                        <td>#${r.returnRequestId}</td>
-                                        <td><a href="#" class="order-link">#${r.orderId}</a></td>
-                                        <td>${r.customerId}</td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${r.requestDate != null}">
-                                                    ${r.requestDate.toLocalDate()}
-                                                </c:when>
-                                                <c:otherwise>
-                                                    N/A
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-${r.returnStatus == 'APPROVED' ? 'success' : r.returnStatus == 'PENDING' ? 'warning' : 'danger'}">
-                                                ${fn:escapeXml(r.returnStatus)}
-                                            </span>
-                                        </td>
-                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.reason)}">
-                                            <c:out value="${r.reason}" default="N/A"/>
-                                        </td>
-                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.bankAccountInfo)}">
-                                            <c:out value="${r.bankAccountInfo}" default="N/A"/>
-                                        </td>
-                                        <td class="text-truncate-custom" title="${fn:escapeXml(r.note)}">
-                                            <c:out value="${r.note}" default="N/A"/>
-                                        </td>
-                                        <td class="text-center">
-                                            <button class="btn btn-info btn-sm me-1" 
-                                                    data-action="view" 
-                                                    data-request-id="${r.returnRequestId}">
-                                                <i class="fas fa-eye"></i> View
-                                            </button>
-                                            <button class="btn btn-warning btn-sm me-1" 
-                                                    data-action="edit"
-                                                    data-request-id="${r.returnRequestId}" 
-                                                    data-status="${fn:escapeXml(r.returnStatus)}">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </button>
-                                            <c:choose>
-                                                <c:when test="${r.returnStatus == 'APPROVED' || r.returnStatus == 'REJECTED'}">
-                                                    <button class="btn btn-danger btn-sm" 
-                                                            data-action="delete"
-                                                            data-request-id="${r.returnRequestId}" 
-                                                            data-order-id="${r.orderId}">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <button class="btn btn-secondary btn-sm" disabled 
-                                                            title="Only finalized (APPROVED/REJECTED) requests can be deleted">
-                                                        <i class="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
+                                <div class="alert alert-warning" id="statusWarning" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <strong>Warning:</strong> Changing status from PENDING to APPROVED/REJECTED is irreversible!
+                                </div>
 
-                                <c:if test="${empty requests}">
-                                    <tr>
-                                        <td colspan="9" class="text-center text-muted">
-                                            No return requests found
-                                        </td>
-                                    </tr>
-                                </c:if>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Modal -->
-        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">
-                            <i class="fas fa-edit"></i> Edit Return Request #<span id="modalRequestId"></span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="editForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
-                        <input type="hidden" name="action" value="updateStatus">
-                        <input type="hidden" name="requestId" id="editRequestId">
-                        <input type="hidden" name="currentStatus" id="currentStatus">
-
-                        <div class="modal-body">
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Update the status for this return request.
-                            </div>
-
-                            <div class="alert alert-warning" id="statusWarning" style="display: none;">
-                                <i class="fas fa-exclamation-triangle"></i> 
-                                <strong>Warning:</strong> Changing status from PENDING to APPROVED/REJECTED is irreversible!
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="editStatus" class="form-label">
-                                    <i class="fas fa-tasks"></i> Return Status *
-                                </label>
-                                <select name="status" id="editStatus" class="form-select" required>
-                                    <option value="">-- Select Status --</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="APPROVED">Approved</option>
-                                    <option value="REJECTED">Rejected</option>
-                                </select>
-                                <div class="invalid-feedback">
-                                    Please select a valid status.
+                                <div class="mb-3">
+                                    <label for="editStatus" class="form-label">
+                                        <i class="fas fa-tasks"></i> Return Status *
+                                    </label>
+                                    <select name="status" id="editStatus" class="form-select" required>
+                                        <option value="">-- Select Status --</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="APPROVED">Approved</option>
+                                        <option value="REJECTED">Rejected</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select a valid status.
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="saveBtn">
-                                <i class="fas fa-save"></i> Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delete Modal -->
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title" id="deleteModalLabel">
-                            <i class="fas fa-exclamation-triangle"></i> Confirm Delete
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="deleteForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="requestId" id="deleteRequestId">
-                        <input type="hidden" name="orderId" id="deleteOrderIdHidden">
-
-                        <div class="modal-body">
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-circle"></i> 
-                                <strong>Warning!</strong> This action cannot be undone.
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="saveBtn">
+                                    <i class="fas fa-save"></i> Save Changes
+                                </button>
                             </div>
-                            <p>Are you sure you want to delete this return request?</p>
-                            <ul class="list-unstyled mt-3">
-                                <li><strong>Request ID:</strong> #<span id="deleteRequestIdDisplay"></span></li>
-                                <li><strong>Order ID:</strong> #<span id="deleteOrderId"></span></li>
-                            </ul>
-                            <p class="text-muted small">
-                                <i class="fas fa-info-circle"></i> This will permanently remove the return request from the system.
-                            </p>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                            <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
-                                <i class="fas fa-trash"></i> Delete Request
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-        <script>
-            let editModal;
-            let deleteModal;
+            <!-- Delete Modal -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteModalLabel">
+                                <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form id="deleteForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="requestId" id="deleteRequestId">
+                            <input type="hidden" name="orderId" id="deleteOrderIdHidden">
 
-            document.addEventListener('DOMContentLoaded', function () {
-                editModal = new bootstrap.Modal(document.getElementById('editModal'));
-                deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                            <div class="modal-body">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle"></i> 
+                                    <strong>Warning!</strong> This action cannot be undone.
+                                </div>
+                                <p>Are you sure you want to delete this return request?</p>
+                                <ul class="list-unstyled mt-3">
+                                    <li><strong>Request ID:</strong> #<span id="deleteRequestIdDisplay"></span></li>
+                                    <li><strong>Order ID:</strong> #<span id="deleteOrderId"></span></li>
+                                </ul>
+                                <p class="text-muted small">
+                                    <i class="fas fa-info-circle"></i> This will permanently remove the return request from the system.
+                                </p>
+                            </div>
 
-                // Event delegation for action buttons
-                document.querySelector('.table-responsive').addEventListener('click', function (e) {
-                    const btn = e.target.closest('button[data-action]');
-                    if (!btn)
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button type="submit" class="btn btn-danger" id="confirmDeleteBtn">
+                                    <i class="fas fa-trash"></i> Delete Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+            <script>
+                let editModal;
+                let deleteModal;
+
+                document.addEventListener('DOMContentLoaded', function () {
+                    editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+                    // Event delegation for action buttons
+                    document.querySelector('.table-responsive').addEventListener('click', function (e) {
+                        const btn = e.target.closest('button[data-action]');
+                        if (!btn)
+                            return;
+
+                        const action = btn.dataset.action;
+                        const requestId = parseInt(btn.dataset.requestId);
+
+                        // Validate requestId
+                        if (!requestId || isNaN(requestId) || requestId <= 0) {
+                            alert('Invalid request ID');
+                            return;
+                        }
+
+                        switch (action) {
+                            case 'view':
+                                viewDetail(requestId);
+                                break;
+                            case 'edit':
+                                const status = btn.dataset.status;
+                                openEditModal(requestId, status);
+                                break;
+                            case 'delete':
+                                const orderId = parseInt(btn.dataset.orderId);
+                                if (!orderId || isNaN(orderId) || orderId <= 0) {
+                                    alert('Invalid order ID');
+                                    return;
+                                }
+                                openDeleteModal(requestId, orderId);
+                                break;
+                        }
+                    });
+
+                    // Form validation for edit form
+                    const editForm = document.getElementById('editForm');
+                    editForm.addEventListener('submit', function (e) {
+                        if (!editForm.checkValidity()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        } else {
+                            // Double check before submission
+                            const status = document.getElementById('editStatus').value;
+                            const currentStatus = document.getElementById('currentStatus').value;
+
+                            if (currentStatus === 'PENDING' && (status === 'APPROVED' || status === 'REJECTED')) {
+                                if (!confirm('Are you sure you want to finalize this status? This action cannot be undone.')) {
+                                    e.preventDefault();
+                                    return;
+                                }
+                            }
+
+                            // Disable submit button to prevent double submission
+                            document.getElementById('saveBtn').disabled = true;
+                        }
+                        editForm.classList.add('was-validated');
+                    });
+
+                    // Status change warning
+                    document.getElementById('editStatus').addEventListener('change', function () {
+                        const currentStatus = document.getElementById('currentStatus').value;
+                        const newStatus = this.value;
+                        const warning = document.getElementById('statusWarning');
+
+                        if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
+                            warning.style.display = 'block';
+                        } else {
+                            warning.style.display = 'none';
+                        }
+                    });
+
+                    // Prevent double submission for delete form
+                    const deleteForm = document.getElementById('deleteForm');
+                    deleteForm.addEventListener('submit', function () {
+                        document.getElementById('confirmDeleteBtn').disabled = true;
+                    });
+                });
+
+                function viewDetail(requestId) {
+                    // Validate before redirect
+                    if (!requestId || isNaN(requestId) || requestId <= 0) {
+                        alert('Invalid request ID');
                         return;
+                    }
+                    window.location.href = '${pageContext.request.contextPath}/staff/manage-return-request?action=detail&requestId=' + encodeURIComponent(requestId);
+                }
 
-                    const action = btn.dataset.action;
-                    const requestId = parseInt(btn.dataset.requestId);
-
-                    // Validate requestId
+                function openEditModal(requestId, status) {
+                    // Sanitize and validate inputs
+                    requestId = parseInt(requestId);
                     if (!requestId || isNaN(requestId) || requestId <= 0) {
                         alert('Invalid request ID');
                         return;
                     }
 
-                    switch (action) {
-                        case 'view':
-                            viewDetail(requestId);
-                            break;
-                        case 'edit':
-                            const status = btn.dataset.status;
-                            openEditModal(requestId, status);
-                            break;
-                        case 'delete':
-                            const orderId = parseInt(btn.dataset.orderId);
-                            if (!orderId || isNaN(orderId) || orderId <= 0) {
-                                alert('Invalid order ID');
-                                return;
-                            }
-                            openDeleteModal(requestId, orderId);
-                            break;
+                    // Validate status
+                    const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
+                    if (!validStatuses.includes(status)) {
+                        status = '';
                     }
-                });
 
-                // Form validation for edit form
-                const editForm = document.getElementById('editForm');
-                editForm.addEventListener('submit', function (e) {
-                    if (!editForm.checkValidity()) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    } else {
-                        // Double check before submission
-                        const status = document.getElementById('editStatus').value;
-                        const currentStatus = document.getElementById('currentStatus').value;
+                    // Reset form validation
+                    document.getElementById('editForm').classList.remove('was-validated');
+                    document.getElementById('saveBtn').disabled = false;
+                    document.getElementById('statusWarning').style.display = 'none';
 
-                        if (currentStatus === 'PENDING' && (status === 'APPROVED' || status === 'REJECTED')) {
-                            if (!confirm('Are you sure you want to finalize this status? This action cannot be undone.')) {
-                                e.preventDefault();
-                                return;
-                            }
-                        }
+                    // Set form values
+                    document.getElementById('modalRequestId').textContent = requestId;
+                    document.getElementById('editRequestId').value = requestId;
+                    document.getElementById('currentStatus').value = status;
+                    document.getElementById('editStatus').value = status;
 
-                        // Disable submit button to prevent double submission
-                        document.getElementById('saveBtn').disabled = true;
+                    editModal.show();
+                }
+
+                function openDeleteModal(requestId, orderId) {
+                    // Validate inputs
+                    requestId = parseInt(requestId);
+                    orderId = parseInt(orderId);
+
+                    if (!requestId || isNaN(requestId) || requestId <= 0 ||
+                            !orderId || isNaN(orderId) || orderId <= 0) {
+                        alert('Invalid request or order ID');
+                        return;
                     }
-                    editForm.classList.add('was-validated');
-                });
 
-                // Status change warning
-                document.getElementById('editStatus').addEventListener('change', function () {
-                    const currentStatus = document.getElementById('currentStatus').value;
-                    const newStatus = this.value;
-                    const warning = document.getElementById('statusWarning');
+                    // Reset button state
+                    document.getElementById('confirmDeleteBtn').disabled = false;
 
-                    if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
-                        warning.style.display = 'block';
-                    } else {
-                        warning.style.display = 'none';
-                    }
-                });
+                    // Set form values with sanitized data
+                    document.getElementById('deleteRequestId').value = requestId;
+                    document.getElementById('deleteOrderIdHidden').value = orderId;
+                    document.getElementById('deleteRequestIdDisplay').textContent = requestId;
+                    document.getElementById('deleteOrderId').textContent = orderId;
 
-                // Prevent double submission for delete form
-                const deleteForm = document.getElementById('deleteForm');
-                deleteForm.addEventListener('submit', function () {
-                    document.getElementById('confirmDeleteBtn').disabled = true;
-                });
-            });
-
-            function viewDetail(requestId) {
-                // Validate before redirect
-                if (!requestId || isNaN(requestId) || requestId <= 0) {
-                    alert('Invalid request ID');
-                    return;
+                    deleteModal.show();
                 }
-                window.location.href = '${pageContext.request.contextPath}/staff/manage-return-request?action=detail&requestId=' + encodeURIComponent(requestId);
-            }
-
-            function openEditModal(requestId, status) {
-                // Sanitize and validate inputs
-                requestId = parseInt(requestId);
-                if (!requestId || isNaN(requestId) || requestId <= 0) {
-                    alert('Invalid request ID');
-                    return;
-                }
-
-                // Validate status
-                const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
-                if (!validStatuses.includes(status)) {
-                    status = '';
-                }
-
-                // Reset form validation
-                document.getElementById('editForm').classList.remove('was-validated');
-                document.getElementById('saveBtn').disabled = false;
-                document.getElementById('statusWarning').style.display = 'none';
-
-                // Set form values
-                document.getElementById('modalRequestId').textContent = requestId;
-                document.getElementById('editRequestId').value = requestId;
-                document.getElementById('currentStatus').value = status;
-                document.getElementById('editStatus').value = status;
-
-                editModal.show();
-            }
-
-            function openDeleteModal(requestId, orderId) {
-                // Validate inputs
-                requestId = parseInt(requestId);
-                orderId = parseInt(orderId);
-
-                if (!requestId || isNaN(requestId) || requestId <= 0 ||
-                        !orderId || isNaN(orderId) || orderId <= 0) {
-                    alert('Invalid request or order ID');
-                    return;
-                }
-
-                // Reset button state
-                document.getElementById('confirmDeleteBtn').disabled = false;
-
-                // Set form values with sanitized data
-                document.getElementById('deleteRequestId').value = requestId;
-                document.getElementById('deleteOrderIdHidden').value = orderId;
-                document.getElementById('deleteRequestIdDisplay').textContent = requestId;
-                document.getElementById('deleteOrderId').textContent = orderId;
-
-                deleteModal.show();
-            }
-        </script>
-    </body>
-</html>
+            </script>
+        </body>
+    </html>

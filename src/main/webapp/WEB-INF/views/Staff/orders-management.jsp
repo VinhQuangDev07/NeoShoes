@@ -239,6 +239,51 @@
                 color: #94a3b8;
                 cursor: not-allowed;
             }
+            /* Action Buttons */
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                border: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                margin: 0 2px;
+            }
+            
+            .btn-view {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+
+            .btn-view:hover {
+                background-color: #1976d2;
+                color: white;
+                transform: scale(1.1);
+            }
+
+            .btn-edit {
+                background-color: #fff3e0;
+                color: #f57c00;
+            }
+
+            .btn-edit:hover {
+                background-color: #f57c00;
+                color: white;
+                transform: scale(1.1);
+            }
+
+            .btn-delete {
+                background-color: #ffebee;
+                color: #d32f2f;
+            }
+
+            .btn-delete:hover {
+                background-color: #d32f2f;
+                color: white;
+                transform: scale(1.1);
+            }
         </style>
     </head>
     <body>
@@ -372,8 +417,8 @@
                                         </td>
                                         <td>
                                             <div style="display: flex; gap: 8px;">
-                                                <button class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;" onclick="viewOrder(${order.orderId})">
-                                                    <i class="fas fa-eye"></i> View
+                                                <button class="action-btn btn-view" style="padding: 4px 8px; font-size: 12px;" onclick="viewOrder(${order.orderId})">
+                                                    <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                                                 </button>
                                                 <c:choose>
                                                     <c:when test="${order.status == 'CANCELLED'}">
@@ -382,8 +427,8 @@
                                                         </button>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <button class="btn btn-warning" style="padding: 4px 8px; font-size: 12px;" onclick="updateStatus(${order.orderId}, '${order.status != null ? order.status : 'No Status'}')">
-                                                            <i class="fas fa-arrow-up"></i> Update
+                                                        <button class="action-btn btn-edit" style="padding: 4px 8px; font-size: 12px;" onclick="updateStatus(${order.orderId}, '${order.status != null ? order.status : 'No Status'}')">
+                                                            <i data-lucide="edit"></i>
                                                         </button>
                                                     </c:otherwise>
                                                 </c:choose>

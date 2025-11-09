@@ -25,6 +25,18 @@
                 padding: 2rem;
             }
 
+            #main-content {
+                margin-left: 0;
+                transition: margin-left 0.3s ease;
+                padding-top: 44px;
+            }
+
+            @media (min-width: 992px) {
+                #main-content {
+                    margin-left: 300px;
+                }
+            }
+
             .page-header {
                 background: white;
                 border-radius: 12px;
@@ -148,106 +160,119 @@
         </style>
     </head>
     <body>
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1">Import Product</h2>
-                    <p class="text-muted mb-0">Add new product stock to inventory</p>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+        <!-- Main Content -->
+        <div id="main-content">
+            <div class="container-fluid p-4">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">Import Product</h2>
+                            <p class="text-muted mb-0">Add new product stock to inventory</p>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/staff/import-records" 
+                           class="btn btn-outline-secondary">
+                            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                            Back to List
+                        </a>
+                    </div>
                 </div>
-                <a href="${pageContext.request.contextPath}/staff/import-records" 
-                   class="btn btn-outline-secondary">
-                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
-                    Back to List
-                </a>
+
+                <!-- Import Form -->
+                <form method="post" id="importForm" action="${pageContext.request.contextPath}/staff/import-product">
+                    <input type="hidden" name="action" value="create"/>
+
+                    <!-- Header Information -->
+                    <div class="form-card">
+                        <h5 class="mb-3">Import Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="supplierName" name="supplierName" placeholder="Supplier Name">
+                                    <label for="supplierName">Supplier Name (Optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="datetime-local" class="form-control" id="importDate" name="importDate" placeholder="Import Date" required>
+                                    <label for="importDate">Import Date *</label>
+                                    <small>Error message</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" id="note" name="note" placeholder="Note" style="height: 100px"></textarea>
+                                    <label for="note">Note (Optional)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Variants Table -->
+                    <div class="table-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Import Details</h5>
+                            <button type="button" id="addLineBtn" class="btn btn-sm btn-primary">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                Add Line
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle mb-0" id="linesTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%">Product & Variant</th>
+                                        <th style="width: 15%">Quantity</th>
+                                        <th style="width: 20%">Cost Price ($)</th>
+                                        <th style="width: 20%">Subtotal ($)</th>
+                                        <th style="width: 5%">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="linesTableBody">
+                                    <!-- Lines will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Total Section -->
+                        <div class="total-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Total Items:</strong> <span id="totalItems">0</span></p>
+                                    <p class="mb-0"><strong>Total Quantity:</strong> <span id="totalQuantity">0</span></p>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <h4 class="mb-0">
+                                        <strong>Total Cost:</strong> 
+                                        <span class="text-primary" id="totalCost">0$</span>
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="${pageContext.request.contextPath}/staff/import-records" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                            Save Import
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <!-- Import Form -->
-        <form method="post" id="importForm" action="${pageContext.request.contextPath}/staff/import-product">
-            <input type="hidden" name="action" value="create"/>
-
-            <!-- Header Information -->
-            <div class="form-card">
-                <h5 class="mb-3">Import Information</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="supplierName" name="supplierName" placeholder="Supplier Name">
-                            <label for="supplierName">Supplier Name (Optional)</label>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="datetime-local" class="form-control" id="importDate" name="importDate" placeholder="Import Date" required>
-                            <label for="importDate">Import Date *</label>
-                            <small>Error message</small>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-floating">
-                            <textarea class="form-control" id="note" name="note" placeholder="Note" style="height: 100px"></textarea>
-                            <label for="note">Note (Optional)</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product Variants Table -->
-            <div class="table-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">Import Details</h5>
-                    <button type="button" id="addLineBtn" class="btn btn-sm btn-primary">
-                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                        Add Line
-                    </button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0" id="linesTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 40%">Product & Variant</th>
-                                <th style="width: 15%">Quantity</th>
-                                <th style="width: 20%">Cost Price ($)</th>
-                                <th style="width: 20%">Subtotal ($)</th>
-                                <th style="width: 5%">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="linesTableBody">
-                            <!-- Lines will be added here dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Total Section -->
-                <div class="total-section">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Total Items:</strong> <span id="totalItems">0</span></p>
-                            <p class="mb-0"><strong>Total Quantity:</strong> <span id="totalQuantity">0</span></p>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <h4 class="mb-0">
-                                <strong>Total Cost:</strong> 
-                                <span class="text-primary" id="totalCost">0$</span>
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-end gap-2">
-                <a href="${pageContext.request.contextPath}/staff/import-records" class="btn btn-outline-secondary">
-                    Cancel
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
-                    Save Import
-                </button>
-            </div>
-        </form>
 
         <!-- Product Selection Modal -->
         <div class="modal fade" id="productModal" tabindex="-1">

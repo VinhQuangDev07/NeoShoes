@@ -34,6 +34,8 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Lucide Icons -->
+        <script src="https://unpkg.com/lucide@latest"></script>
 
         <style>
             body {
@@ -41,17 +43,21 @@
                 padding: 20px 0;
             }
 
+            .main-content {
+                margin-top: 10px;
+                margin-left: 300px; /* phù hợp sidebar */
+                padding: 40px 50px;
+                transition: margin-left 0.3s ease;
+            }
+
             .order-detail-modal {
+                margin-left: 300px;
                 background: white;
                 border-radius: 12px;
                 box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-                max-width: 800px;
+                max-width: 1200px;
                 margin: 20px auto;
                 overflow: hidden;
-            }
-
-            .container {
-                margin-top: 100px;
             }
 
             .order-header {
@@ -508,312 +514,308 @@
         <!-- Notification -->
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-10 col-xl-8">
-                    <div class="order-detail-modal">
-                        <!-- Order Header -->
-                        <div class="order-header">
-                            <div class="order-title">
-                                <div class="order-icon">
-                                    <i class="fas fa-receipt"></i>
-                                </div>
-                                <h4 class="mb-0">Order Detail #<c:out value="${order.orderId}"/></h4>
-                            </div>
-                            <div class="order-meta">
-                                <div class="order-date">
-                                    <i class="fas fa-calendar"></i>
-                                    <span class="order-date" data-date="${order.placedAt}"></span>
-                                </div>
-                                <span class="order-status">
-                                    <c:choose>
-                                        <c:when test="${empty order.status}">
-                                            <span class="badge bg-secondary status-badge">No Status</span>
-                                        </c:when>
-                                        <c:when test="${order.status == 'PENDING'}">
-                                            <span class="badge bg-warning status-badge">Pending</span>
-                                        </c:when>
-                                        <c:when test="${order.status == 'APPROVED'}">
-                                            <span class="badge bg-info status-badge">Approved</span>
-                                        </c:when>
-                                        <c:when test="${order.status == 'SHIPPED'}">
-                                            <span class="badge bg-primary status-badge">Shipped</span>
-                                        </c:when>
-                                        <c:when test="${order.status == 'COMPLETED'}">
-                                            <span class="badge bg-success status-badge">Completed</span>
-                                        </c:when>
-                                        <c:when test="${order.status == 'CANCELLED'}">
-                                            <span class="badge bg-danger status-badge">Cancelled</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="badge bg-secondary status-badge">${order.status}</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </span>
-                            </div>
+        <div class="main-content">
+            <div class="order-detail-modal">
+                <!-- Order Header -->
+                <div class="order-header">
+                    <div class="order-title">
+                        <div class="order-icon">
+                            <i class="fas fa-receipt"></i>
                         </div>
-
-                        <!-- Status History Section -->
-                        <c:if test="${not empty statusHistory}">
-                            <div class="status-history-section">
-                                <h6><i class="fas fa-history"></i> Order Progress</h6>
-                                <div class="timeline">
-                                    <c:forEach var="history" items="${statusHistory}">
-                                        <div class="timeline-item">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div>
-                                                    <div class="d-flex align-items-center mb-1">
-                                                        <c:choose>
-                                                            <c:when test="${history.orderStatus == 'PENDING'}">
-                                                                <i class="fas fa-clock me-2 text-warning"></i>
-                                                            </c:when>
-                                                            <c:when test="${history.orderStatus == 'APPROVED'}">
-                                                                <i class="fas fa-check-circle me-2 text-info"></i>
-                                                            </c:when>
-                                                            <c:when test="${history.orderStatus == 'SHIPPED'}">
-                                                                <i class="fas fa-shipping-fast me-2 text-primary"></i>
-                                                            </c:when>
-                                                            <c:when test="${history.orderStatus == 'COMPLETED'}">
-                                                                <i class="fas fa-check-double me-2 text-success"></i>
-                                                            </c:when>
-                                                            <c:when test="${history.orderStatus == 'CANCELLED'}">
-                                                                <i class="fas fa-times-circle me-2 text-danger"></i>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <i class="fas fa-info-circle me-2 text-secondary"></i>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                        <strong class="me-2">
-                                                            <c:choose>
-                                                                <c:when test="${history.orderStatus == 'SHIPPED'}">Shipping</c:when>
-                                                                <c:otherwise>${history.orderStatus}</c:otherwise>
-                                                            </c:choose>
-                                                        </strong>
-                                                    </div>
-                                                    <p class="text-muted mb-1 small">
-                                                        <i class="fas fa-user me-1" style="color: #0A437F;"></i>Changed by: ${history.changedByName}
-                                                    </p>
-                                                </div>
-                                                <small class="text-muted">
-                                                    <span class="status-date" data-date="${history.changedAt}"></span>
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </div>
-                        </c:if>
-
-                        <!-- Order Summary -->
-                        <div class="order-summary">
-                            <div class="summary-section">
-                                <h6>Payment Summary</h6>
-                                <div class="summary-item">
-                                    <span>Items Subtotal:</span>
-                                    <span>$<fmt:formatNumber value="${order.totalAmount - order.shippingFee}" pattern="#,##0.00"/></span>
-                                </div>
-                                <div class="summary-item">
-                                    <span>Shipping Fee:</span>
-                                    <span>$<fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00"/></span>
-                                </div>
-                                <div class="summary-item summary-total">
-                                    <span>Total Amount:</span>
-                                    <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
-                                </div>
-                            </div>
-                            <div class="summary-section">
-                                <h6>Payment Method</h6>
-                                <c:choose>
-                                    <c:when test="${order.status == 'CANCELLED'}">
-                                        <div class="mb-3">
-                                            <span class="payment-badge payment-cancelled">
-                                                <i class="fas fa-times-circle"></i>
-                                                Cancelled
-                                            </span>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="mb-3">
-                                            <span class="payment-badge payment-cod">
-                                                <i class="fas fa-money-bill-wave"></i>
-                                                <c:out value="${order.paymentMethodName}" default="Cash on Delivery"/>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="payment-badge payment-completed">
-                                                <i class="fas fa-check-circle"></i>
-                                                <c:out value="${order.paymentStatusName}" default="Completed"/>
-                                            </span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
+                        <h4 class="mb-0">Order Detail #<c:out value="${order.orderId}"/></h4>
+                    </div>
+                    <div class="order-meta">
+                        <div class="order-date">
+                            <i class="fas fa-calendar"></i>
+                            <span class="order-date" data-date="${order.placedAt}"></span>
                         </div>
-
-                        <!-- Customer Information -->
-                        <div class="shipping-section">
-                            <h6><i class="fas fa-user-circle"></i> Customer Information</h6>
-                            <div class="address-info">
-                                <c:set var="hasCustomerName" value="${not empty order.customerName}" />
-                                <c:set var="hasCustomerEmail" value="${not empty order.customerEmail}" />
-                                <c:set var="hasCustomerPhone" value="${not empty order.customerPhone}" />
-                                <c:set var="hasAnyCustomerData" value="${hasCustomerName || hasCustomerEmail || hasCustomerPhone}" />
-
-                                <c:choose>
-                                    <c:when test="${hasAnyCustomerData}">
-                                        <div class="address-horizontal">
-                                            <c:if test="${hasCustomerName}">
-                                                <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.customerName}"/></strong></span>
-                                            </c:if>
-
-                                            <c:if test="${hasCustomerName && (hasCustomerEmail || hasCustomerPhone)}">
-                                                <span class="address-separator">•</span>
-                                            </c:if>
-
-                                            <c:if test="${hasCustomerEmail}">
-                                                <span class="address-item"><i class="fas fa-envelope"></i> <c:out value="${order.customerEmail}"/></span>
-                                            </c:if>
-
-                                            <c:if test="${hasCustomerEmail && hasCustomerPhone}">
-                                                <span class="address-separator">•</span>
-                                            </c:if>
-
-                                            <c:if test="${hasCustomerPhone}">
-                                                <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.customerPhone}"/></span>
-                                            </c:if>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="address-horizontal">
-                                            <span class="address-item text-muted">
-                                                <i class="fas fa-info-circle"></i> 
-                                                Customer information not available
-                                            </span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                        </div>
-
-                        <!-- Shipping Info -->
-                        <div class="shipping-section">
-                            <h6><i class="fas fa-shipping-fast"></i> Delivery Address</h6>
-                            <div class="address-info">
-                                <c:set var="hasRecipientName" value="${not empty order.recipientName}" />
-                                <c:set var="hasAddressDetails" value="${not empty order.addressDetails}" />
-                                <c:set var="hasRecipientPhone" value="${not empty order.recipientPhone}" />
-                                <c:set var="hasAnyAddressData" value="${hasRecipientName || hasAddressDetails || hasRecipientPhone}" />
-
-                                <c:choose>
-                                    <c:when test="${hasAnyAddressData}">
-                                        <div class="address-horizontal">
-                                            <c:if test="${hasRecipientName}">
-                                                <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.recipientName}"/></strong></span>
-                                            </c:if>
-
-                                            <c:if test="${hasRecipientName && (hasAddressDetails || hasRecipientPhone)}">
-                                                <span class="address-separator">•</span>
-                                            </c:if>
-
-                                            <c:if test="${hasAddressDetails}">
-                                                <span class="address-item"><i class="fas fa-map-marker-alt"></i> <c:out value="${order.addressDetails}"/></span>
-                                            </c:if>
-
-                                            <c:if test="${hasAddressDetails && hasRecipientPhone}">
-                                                <span class="address-separator">•</span>
-                                            </c:if>
-
-                                            <c:if test="${hasRecipientPhone}">
-                                                <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></span>
-                                            </c:if>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="address-horizontal">
-                                            <span class="address-item text-muted">
-                                                <i class="fas fa-info-circle"></i> 
-                                                Address information not available
-                                            </span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                        </div>
-
-                        <!-- Products --> 
-                        <div class="products-section">
-                            <h6><i class="fas fa-box"></i> Products</h6>
+                        <span class="order-status">
                             <c:choose>
-                                <c:when test="${not empty order.items}">
-                                    <c:forEach items="${order.items}" var="item">
-                                        <div class="product-item">
-                                            <c:set var="productName" value="${fn:toLowerCase(item.productName)}"/>
-                                            <c:choose>
-                                                <c:when test="${fn:contains(productName, 'vans')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:when test="${fn:contains(productName, 'nike')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:when test="${fn:contains(productName, 'adidas')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:when test="${fn:contains(productName, 'converse')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:when test="${fn:contains(productName, 'jordan')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:when test="${fn:contains(productName, 'puma')}">
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
-                                                </c:otherwise>
-                                            </c:choose>
-                                            <img src="${imageUrl}" 
-                                                 alt="<c:out value='${item.productName}'/>" 
-                                                 class="product-image"
-                                                 loading="lazy">
-                                            <div class="product-info">
-                                                <div class="product-name">
-                                                    <c:out value="${item.productName}"/>
-                                                </div>
-                                                <div class="product-variant">
-                                                    <c:if test="${not empty item.color}">Color: ${item.color}</c:if>
-                                                    <c:if test="${not empty item.size}"> • Size: ${item.size}</c:if>
-                                                    </div>
-                                                    <div class="product-quantity">
-                                                        Quantity: x<c:out value="${item.detailQuantity}"/>
-                                                </div>
-                                            </div>
-                                            <div class="product-price">
-                                                $<fmt:formatNumber value="${item.detailPrice}" pattern="#,##0.00"/>
-                                            </div>
-                                        </div>
-                                    </c:forEach>
+                                <c:when test="${empty order.status}">
+                                    <span class="badge bg-secondary status-badge">No Status</span>
+                                </c:when>
+                                <c:when test="${order.status == 'PENDING'}">
+                                    <span class="badge bg-warning status-badge">Pending</span>
+                                </c:when>
+                                <c:when test="${order.status == 'APPROVED'}">
+                                    <span class="badge bg-info status-badge">Approved</span>
+                                </c:when>
+                                <c:when test="${order.status == 'SHIPPED'}">
+                                    <span class="badge bg-primary status-badge">Shipped</span>
+                                </c:when>
+                                <c:when test="${order.status == 'COMPLETED'}">
+                                    <span class="badge bg-success status-badge">Completed</span>
+                                </c:when>
+                                <c:when test="${order.status == 'CANCELLED'}">
+                                    <span class="badge bg-danger status-badge">Cancelled</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <div class="product-item">
-                                        <div class="product-info">
-                                            <div class="product-name">No items found</div>
-                                            <div class="product-quantity">Please check order details</div>
-                                        </div>
-                                    </div>
+                                    <span class="badge bg-secondary status-badge">${order.status}</span>
                                 </c:otherwise>
                             </c:choose>
-                        </div>
+                        </span>
+                    </div>
+                </div>
 
-
-
-                        <!-- Footer Actions -->
-                        <div class="modal-footer">
-                            <a href="${pageContext.request.contextPath}/staff/orders" class="btn-action close-btn">
-                                <i class="fas fa-arrow-left"></i>
-                                Back to Orders
-                            </a>
+                <!-- Status History Section -->
+                <c:if test="${not empty statusHistory}">
+                    <div class="status-history-section">
+                        <h6><i class="fas fa-history"></i> Order Progress</h6>
+                        <div class="timeline">
+                            <c:forEach var="history" items="${statusHistory}">
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <c:choose>
+                                                    <c:when test="${history.orderStatus == 'PENDING'}">
+                                                        <i class="fas fa-clock me-2 text-warning"></i>
+                                                    </c:when>
+                                                    <c:when test="${history.orderStatus == 'APPROVED'}">
+                                                        <i class="fas fa-check-circle me-2 text-info"></i>
+                                                    </c:when>
+                                                    <c:when test="${history.orderStatus == 'SHIPPED'}">
+                                                        <i class="fas fa-shipping-fast me-2 text-primary"></i>
+                                                    </c:when>
+                                                    <c:when test="${history.orderStatus == 'COMPLETED'}">
+                                                        <i class="fas fa-check-double me-2 text-success"></i>
+                                                    </c:when>
+                                                    <c:when test="${history.orderStatus == 'CANCELLED'}">
+                                                        <i class="fas fa-times-circle me-2 text-danger"></i>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <i class="fas fa-info-circle me-2 text-secondary"></i>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <strong class="me-2">
+                                                    <c:choose>
+                                                        <c:when test="${history.orderStatus == 'SHIPPED'}">Shipping</c:when>
+                                                        <c:otherwise>${history.orderStatus}</c:otherwise>
+                                                    </c:choose>
+                                                </strong>
+                                            </div>
+                                            <p class="text-muted mb-1 small">
+                                                <i class="fas fa-user me-1" style="color: #0A437F;"></i>Changed by: ${history.changedByName}
+                                            </p>
+                                        </div>
+                                        <small class="text-muted">
+                                            <span class="status-date" data-date="${history.changedAt}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
                     </div>
+                </c:if>
+
+                <!-- Order Summary -->
+                <div class="order-summary">
+                    <div class="summary-section">
+                        <h6>Payment Summary</h6>
+                        <div class="summary-item">
+                            <span>Items Subtotal:</span>
+                            <span>$<fmt:formatNumber value="${order.totalAmount - order.shippingFee}" pattern="#,##0.00"/></span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Shipping Fee:</span>
+                            <span>$<fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00"/></span>
+                        </div>
+                        <div class="summary-item summary-total">
+                            <span>Total Amount:</span>
+                            <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
+                        </div>
+                    </div>
+                    <div class="summary-section">
+                        <h6>Payment Method</h6>
+                        <c:choose>
+                            <c:when test="${order.status == 'CANCELLED'}">
+                                <div class="mb-3">
+                                    <span class="payment-badge payment-cancelled">
+                                        <i class="fas fa-times-circle"></i>
+                                        Cancelled
+                                    </span>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="mb-3">
+                                    <span class="payment-badge payment-cod">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <c:out value="${order.paymentMethodName}" default="Cash on Delivery"/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="payment-badge payment-completed">
+                                        <i class="fas fa-check-circle"></i>
+                                        <c:out value="${order.paymentStatusName}" default="Completed"/>
+                                    </span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- Customer Information -->
+                <div class="shipping-section">
+                    <h6><i class="fas fa-user-circle"></i> Customer Information</h6>
+                    <div class="address-info">
+                        <c:set var="hasCustomerName" value="${not empty order.customerName}" />
+                        <c:set var="hasCustomerEmail" value="${not empty order.customerEmail}" />
+                        <c:set var="hasCustomerPhone" value="${not empty order.customerPhone}" />
+                        <c:set var="hasAnyCustomerData" value="${hasCustomerName || hasCustomerEmail || hasCustomerPhone}" />
+
+                        <c:choose>
+                            <c:when test="${hasAnyCustomerData}">
+                                <div class="address-horizontal">
+                                    <c:if test="${hasCustomerName}">
+                                        <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.customerName}"/></strong></span>
+                                    </c:if>
+
+                                    <c:if test="${hasCustomerName && (hasCustomerEmail || hasCustomerPhone)}">
+                                        <span class="address-separator">•</span>
+                                    </c:if>
+
+                                    <c:if test="${hasCustomerEmail}">
+                                        <span class="address-item"><i class="fas fa-envelope"></i> <c:out value="${order.customerEmail}"/></span>
+                                    </c:if>
+
+                                    <c:if test="${hasCustomerEmail && hasCustomerPhone}">
+                                        <span class="address-separator">•</span>
+                                    </c:if>
+
+                                    <c:if test="${hasCustomerPhone}">
+                                        <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.customerPhone}"/></span>
+                                    </c:if>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="address-horizontal">
+                                    <span class="address-item text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Customer information not available
+                                    </span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- Shipping Info -->
+                <div class="shipping-section">
+                    <h6><i class="fas fa-shipping-fast"></i> Delivery Address</h6>
+                    <div class="address-info">
+                        <c:set var="hasRecipientName" value="${not empty order.recipientName}" />
+                        <c:set var="hasAddressDetails" value="${not empty order.addressDetails}" />
+                        <c:set var="hasRecipientPhone" value="${not empty order.recipientPhone}" />
+                        <c:set var="hasAnyAddressData" value="${hasRecipientName || hasAddressDetails || hasRecipientPhone}" />
+
+                        <c:choose>
+                            <c:when test="${hasAnyAddressData}">
+                                <div class="address-horizontal">
+                                    <c:if test="${hasRecipientName}">
+                                        <span class="address-item"><i class="fas fa-user"></i> <strong><c:out value="${order.recipientName}"/></strong></span>
+                                    </c:if>
+
+                                    <c:if test="${hasRecipientName && (hasAddressDetails || hasRecipientPhone)}">
+                                        <span class="address-separator">•</span>
+                                    </c:if>
+
+                                    <c:if test="${hasAddressDetails}">
+                                        <span class="address-item"><i class="fas fa-map-marker-alt"></i> <c:out value="${order.addressDetails}"/></span>
+                                    </c:if>
+
+                                    <c:if test="${hasAddressDetails && hasRecipientPhone}">
+                                        <span class="address-separator">•</span>
+                                    </c:if>
+
+                                    <c:if test="${hasRecipientPhone}">
+                                        <span class="address-item"><i class="fas fa-phone"></i> <c:out value="${order.recipientPhone}"/></span>
+                                    </c:if>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="address-horizontal">
+                                    <span class="address-item text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Address information not available
+                                    </span>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+
+                <!-- Products --> 
+                <div class="products-section">
+                    <h6><i class="fas fa-box"></i> Products</h6>
+                    <c:choose>
+                        <c:when test="${not empty order.items}">
+                            <c:forEach items="${order.items}" var="item">
+                                <div class="product-item">
+                                    <c:set var="productName" value="${fn:toLowerCase(item.productName)}"/>
+                                    <c:choose>
+                                        <c:when test="${fn:contains(productName, 'vans')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:when test="${fn:contains(productName, 'nike')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:when test="${fn:contains(productName, 'adidas')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:when test="${fn:contains(productName, 'converse')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:when test="${fn:contains(productName, 'jordan')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:when test="${fn:contains(productName, 'puma')}">
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="imageUrl" value="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=60&h=60&fit=crop&crop=center"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <img src="${imageUrl}" 
+                                         alt="<c:out value='${item.productName}'/>" 
+                                         class="product-image"
+                                         loading="lazy">
+                                    <div class="product-info">
+                                        <div class="product-name">
+                                            <c:out value="${item.productName}"/>
+                                        </div>
+                                        <div class="product-variant">
+                                            <c:if test="${not empty item.color}">Color: ${item.color}</c:if>
+                                            <c:if test="${not empty item.size}"> • Size: ${item.size}</c:if>
+                                            </div>
+                                            <div class="product-quantity">
+                                                Quantity: x<c:out value="${item.detailQuantity}"/>
+                                        </div>
+                                    </div>
+                                    <div class="product-price">
+                                        $<fmt:formatNumber value="${item.detailPrice}" pattern="#,##0.00"/>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="product-item">
+                                <div class="product-info">
+                                    <div class="product-name">No items found</div>
+                                    <div class="product-quantity">Please check order details</div>
+                                </div>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+
+
+                <!-- Footer Actions -->
+                <div class="modal-footer">
+                    <a href="${pageContext.request.contextPath}/staff/orders" class="btn-action close-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Orders
+                    </a>
                 </div>
             </div>
         </div>
@@ -822,6 +824,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
+            lucide.createIcons();
             // Format datetime
             document.querySelectorAll('.order-date[data-date], .status-date[data-date]').forEach(element => {
                 const dateStr = element.getAttribute('data-date');

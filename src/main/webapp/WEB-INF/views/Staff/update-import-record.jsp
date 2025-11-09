@@ -25,6 +25,19 @@
                 padding: 2rem;
             }
 
+            .main-content {
+                margin-top: 30px;
+                margin-left: 300px;
+                padding: 2rem;
+                transition: margin-left 0.3s ease;
+            }
+
+            @media (max-width: 991.98px) {
+                .main-content {
+                    margin-left: 0;
+                }
+            }
+
             .page-header {
                 background: white;
                 border-radius: 12px;
@@ -165,157 +178,168 @@
         </style>
     </head>
     <body>
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-1">Update Import Record</h2>
-                    <p class="text-muted mb-0">Edit import record #${importRecord.importProductId}</p>
-                </div>
-                <a href="${pageContext.request.contextPath}/staff/import-records" 
-                   class="btn btn-outline-secondary">
-                    <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
-                    Back to List
-                </a>
-            </div>
-        </div>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
 
-        <!-- Update Form -->
-        <form method="post" id="updateForm" action="${pageContext.request.contextPath}/staff/update-import-record">
-            <input type="hidden" name="action" value="update"/>
-            <input type="hidden" name="importProductId" value="${importRecord.importProductId}"/>
+        <!-- Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
 
-            <!-- Record Information -->
-            <div class="form-card">
-                <h5 class="mb-3">Record Information</h5>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="importId" value="#${importRecord.importProductId}" disabled>
-                            <label for="importId">Import ID</label>
-                        </div>
+        <!-- Notification -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1">Update Import Record</h2>
+                        <p class="text-muted mb-0">Edit import record #${importRecord.importProductId}</p>
                     </div>
-                    <div class="col-md-9">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="createdBy" value="${importRecord.staffName}" disabled>
-                            <label for="createdBy">Created By</label>
-                        </div>
-                    </div>
+                    <a href="${pageContext.request.contextPath}/staff/import-records" 
+                       class="btn btn-outline-secondary">
+                        <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                        Back to List
+                    </a>
                 </div>
             </div>
 
-            <!-- Import Information -->
-            <div class="form-card">
-                <h5 class="mb-3">Import Information</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="supplierName" name="supplierName" 
-                                   value="${fn:escapeXml(importRecord.supplierName)}" placeholder="Supplier Name">
-                            <label for="supplierName">Supplier Name (Optional)</label>
+            <!-- Update Form -->
+            <form method="post" id="updateForm" action="${pageContext.request.contextPath}/staff/update-import-record">
+                <input type="hidden" name="action" value="update"/>
+                <input type="hidden" name="importProductId" value="${importRecord.importProductId}"/>
+
+                <!-- Record Information -->
+                <div class="form-card">
+                    <h5 class="mb-3">Record Information</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="importId" value="#${importRecord.importProductId}" disabled>
+                                <label for="importId">Import ID</label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-floating">
-                            <input type="text" class="form-control" id="importDate" name="importDate" 
-                                   value="${importRecord.formattedImportDate}" placeholder="Import Date" disabled>
-                            <label for="importDate">Import Date</label>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="form-floating">
-                            <textarea class="form-control" id="note" name="note" placeholder="Note" 
-                                      style="height: 100px">${fn:escapeXml(importRecord.note)}</textarea>
-                            <label for="note">Note (Optional)</label>
+                        <div class="col-md-9">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="createdBy" value="${importRecord.staffName}" disabled>
+                                <label for="createdBy">Created By</label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Import Details Table -->
-            <div class="table-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0">Import Details</h5>
-                    <button type="button" id="addLineBtn" class="btn btn-sm btn-primary">
-                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                        Add Line
+                <!-- Import Information -->
+                <div class="form-card">
+                    <h5 class="mb-3">Import Information</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="supplierName" name="supplierName" 
+                                       value="${fn:escapeXml(importRecord.supplierName)}" placeholder="Supplier Name">
+                                <label for="supplierName">Supplier Name (Optional)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="importDate" name="importDate" 
+                                       value="${importRecord.formattedImportDate}" placeholder="Import Date" disabled>
+                                <label for="importDate">Import Date</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="note" name="note" placeholder="Note" 
+                                          style="height: 100px">${fn:escapeXml(importRecord.note)}</textarea>
+                                <label for="note">Note (Optional)</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import Details Table -->
+                <div class="table-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Import Details</h5>
+                        <button type="button" id="addLineBtn" class="btn btn-sm btn-primary">
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            Add Line
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle mb-0" id="linesTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%">Product & Variant</th>
+                                    <th style="width: 15%">Quantity</th>
+                                    <th style="width: 20%">Cost Price ($)</th>
+                                    <th style="width: 20%">Subtotal ($)</th>
+                                    <th style="width: 5%">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="linesTableBody">
+                                <c:forEach var="line" items="${importRecord.importProductDetails}">
+                                    <tr data-line-id="${line.importProductDetailId}">
+                                        <td>
+                                            <input type="hidden" name="lineIds[]" value="${line.importProductDetailId}">
+                                            <input type="hidden" name="productIds[]" value="${line.productId}">
+                                            <input type="hidden" name="variantIds[]" value="${line.productVariantId}">
+                                            <input type="hidden" name="colors[]" value="${fn:escapeXml(line.color)}">
+                                            <input type="hidden" name="sizes[]" value="${fn:escapeXml(line.size)}">
+                                            <div class="variant-selector selected" style="cursor: pointer;">
+                                                ${line.productName} - ${line.color} - ${line.size}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="quantities[]" class="form-control quantity-input" 
+                                                   min="1" value="${line.quantity}" required>
+                                        </td>
+                                        <td>
+                                            <input type="hidden" name="costPrices[]" class="cost-price-hidden" value="${line.costPrice}">
+                                            <strong class="cost-price-display">${line.costPrice}</strong>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong class="subtotal">${line.costPrice * line.quantity}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-sm btn-danger btn-remove">
+                                                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Total Section -->
+                    <div class="total-section">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Total Items:</strong> <span id="totalItems">0</span></p>
+                                <p class="mb-0"><strong>Total Quantity:</strong> <span id="totalQuantity">0</span></p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <h4 class="mb-0">
+                                    <strong>Total Cost:</strong> 
+                                    <span class="text-primary" id="totalCost">0$</span>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="${pageContext.request.contextPath}/staff/import-records" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                        Update Import
                     </button>
                 </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0" id="linesTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 40%">Product & Variant</th>
-                                <th style="width: 15%">Quantity</th>
-                                <th style="width: 20%">Cost Price ($)</th>
-                                <th style="width: 20%">Subtotal ($)</th>
-                                <th style="width: 5%">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="linesTableBody">
-                            <c:forEach var="line" items="${importRecord.importProductDetails}">
-                                <tr data-line-id="${line.importProductDetailId}">
-                                    <td>
-                                        <input type="hidden" name="lineIds[]" value="${line.importProductDetailId}">
-                                        <input type="hidden" name="productIds[]" value="${line.productId}">
-                                        <input type="hidden" name="variantIds[]" value="${line.productVariantId}">
-                                        <input type="hidden" name="colors[]" value="${fn:escapeXml(line.color)}">
-                                        <input type="hidden" name="sizes[]" value="${fn:escapeXml(line.size)}">
-                                        <div class="variant-selector selected" style="cursor: pointer;">
-                                            ${line.productName} - ${line.color} - ${line.size}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <input type="number" name="quantities[]" class="form-control quantity-input" 
-                                               min="1" value="${line.quantity}" required>
-                                    </td>
-                                    <td>
-                                        <input type="hidden" name="costPrices[]" class="cost-price-hidden" value="${line.costPrice}">
-                                        <strong class="cost-price-display">${line.costPrice}</strong>
-                                    </td>
-                                    <td class="text-end">
-                                        <strong class="subtotal">${line.costPrice * line.quantity}</strong>
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger btn-remove">
-                                            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Total Section -->
-                <div class="total-section">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p class="mb-1"><strong>Total Items:</strong> <span id="totalItems">0</span></p>
-                            <p class="mb-0"><strong>Total Quantity:</strong> <span id="totalQuantity">0</span></p>
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <h4 class="mb-0">
-                                <strong>Total Cost:</strong> 
-                                <span class="text-primary" id="totalCost">0$</span>
-                            </h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-end gap-2">
-                <a href="${pageContext.request.contextPath}/staff/import-records" class="btn btn-outline-secondary">
-                    Cancel
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
-                    Update Import
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
 
         <!-- Product Selection Modal -->
         <div class="modal fade" id="productModal" tabindex="-1">
@@ -372,7 +396,6 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             lucide.createIcons();
-            
             // Product variants grouped by product ID
             const productVariantsData = {
             <c:forEach var="product" items="${products}" varStatus="status">
@@ -389,26 +412,21 @@
             ]${!status.last ? ',' : ''}
             </c:forEach>
             };
-
             let currentLineRow = null;
             let selectedProduct = null;
             let lineCount = 0;
-
             const productModal = new bootstrap.Modal(document.getElementById('productModal'));
             const variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
-
             // Initialize on page load
             document.addEventListener('DOMContentLoaded', function() {
             calculateTotals();
             });
-
             // Add Line Button
             document.getElementById('addLineBtn').addEventListener('click', function() {
             currentLineRow = null;
             lineCount++;
             addEmptyLine();
             });
-
             // Add empty row to table
             function addEmptyLine() {
             const tbody = document.getElementById('linesTableBody');
@@ -442,18 +460,15 @@
                 `;
             tbody.appendChild(row);
             lucide.createIcons();
-
             // Event listeners
             const variantSelector = row.querySelector('.variant-selector');
             variantSelector.addEventListener('click', function() {
             currentLineRow = row;
             productModal.show();
             });
-
             const quantityInput = row.querySelector('.quantity-input');
             quantityInput.addEventListener('input', calculateTotals);
             quantityInput.addEventListener('change', calculateTotals);
-
             row.querySelector('.btn-remove').addEventListener('click', function() {
             row.remove();
             calculateTotals();
@@ -472,14 +487,12 @@
             showVariantModal();
             });
             });
-
             // Show variant modal
             function showVariantModal() {
             document.getElementById('selectedProductName').textContent = selectedProduct.name;
             const variantList = document.getElementById('variantList');
             variantList.innerHTML = '';
             const variants = productVariantsData[selectedProduct.id] || [];
-
             if (variants.length === 0) {
             variantList.innerHTML = '<p class="text-muted text-center py-3">No existing variants</p>';
             } else {
@@ -503,7 +516,6 @@
             let costPrice = 0;
             const variants = productVariantsData[selectedProduct.id] || [];
             const variant = variants.find(v => v.variantId == variantId);
-
             if (variant) {
             costPrice = variant.price || 0;
             }
@@ -516,7 +528,6 @@
             currentLineRow.querySelector('input[name="sizes[]"]').value = size;
             currentLineRow.querySelector('.cost-price-hidden').value = costPrice;
             currentLineRow.querySelector('.cost-price-display').textContent = costPrice.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
-
             variantModal.hide();
             calculateTotals();
             }
@@ -528,28 +539,23 @@
             item.style.display = item.textContent.toLowerCase().includes(term) ? 'block' : 'none';
             });
             });
-
             // Calculate totals
             function calculateTotals() {
             let totalItems = 0;
             let totalQty = 0;
             let totalCost = 0;
-
             document.querySelectorAll('#linesTableBody tr').forEach(row => {
             const qty = parseInt(row.querySelector('.quantity-input').value) || 0;
             const cost = parseFloat(row.querySelector('.cost-price-hidden').value) || 0;
             const subtotal = qty * cost;
-
             row.querySelector('.cost-price-display').textContent = cost.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
             row.querySelector('.subtotal').textContent = subtotal.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
-
             if (row.querySelector('input[name="productIds[]"]').value) {
             totalItems++;
             totalQty += qty;
             totalCost += subtotal;
             }
             });
-
             document.getElementById('totalItems').textContent = totalItems;
             document.getElementById('totalQuantity').textContent = totalQty;
             document.getElementById('totalCost').textContent = totalCost.toLocaleString('en-US', {style: 'currency', currency: 'USD'});
@@ -558,7 +564,6 @@
             // Form validation
             document.getElementById('updateForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
             if (!document.getElementById('importDate').value) {
             alert('Import date is required');
             return;
@@ -577,10 +582,8 @@
             valid = false;
             }
             });
-
             if (valid) this.submit();
             });
-
             // Attach event listeners to existing remove buttons
             document.querySelectorAll('.btn-remove').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -588,13 +591,11 @@
             calculateTotals();
             });
             });
-
             // Attach event listeners to existing quantity inputs
             document.querySelectorAll('.quantity-input').forEach(input => {
             input.addEventListener('input', calculateTotals);
             input.addEventListener('change', calculateTotals);
             });
-
             // Attach event listeners to existing variant selectors (for editing)
             document.querySelectorAll('.variant-selector').forEach(selector => {
             if (selector.classList.contains('selected')) {
