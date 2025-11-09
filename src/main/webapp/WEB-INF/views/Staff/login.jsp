@@ -86,7 +86,7 @@
 
                         <c:if test="${not empty error}">
                             <div class="alert alert-danger mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i>${error}</div>
-                        </c:if>
+                            </c:if>
 
                         <form method="post" action="${pageContext.request.contextPath}/staff/login" novalidate>
                             <div class="mb-3">
@@ -105,11 +105,17 @@
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 mt-2">Sign in</button>
-                        </form>
 
-                        <div class="floating-footer">
-                            <a href="${pageContext.request.contextPath}/home" class="text-decoration-none">← Back to Storefront</a>
+                        </form>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <a href="${pageContext.request.contextPath}/forget-password?type=staff" 
+                               style="color: #667eea; text-decoration: none; font-size: 14px;">
+                                Forgot Password?
+                            </a>
                         </div>
+<!--                        <div class="floating-footer">
+                            <a href="${pageContext.request.contextPath}/home" class="text-decoration-none">← Back to Storefront</a>
+                        </div>-->
                     </div>
                 </div>
             </div>

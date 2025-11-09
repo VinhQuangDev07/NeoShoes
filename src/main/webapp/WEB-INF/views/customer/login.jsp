@@ -272,8 +272,9 @@
 
             <div class="links">
                 <p class="mb-2">Don't have an account? <a href="${pageContext.request.contextPath}/register">Sign up now</a></p>
-                <div style="text-align: right; margin-top: 10px;">
-                    <a href="${pageContext.request.contextPath}/forget-password" 
+                <div style="text-align: center; margin-top: 10px;">
+                    <a href="#" 
+                       onclick="goToForgotPassword(); return false;"
                        style="color: #667eea; text-decoration: none; font-size: 14px;">
                         Forgot Password?
                     </a>
@@ -296,6 +297,19 @@
                     toggleIcon.classList.add('fa-eye');
                 }
             }
+
+
+            // Thêm function này
+    function goToForgotPassword() {
+        const emailInput = document.querySelector('input[name="email"]');
+        const email = emailInput ? emailInput.value : '';
+        
+        if (email) {
+            window.location.href = '${pageContext.request.contextPath}/forget-password?email=' + encodeURIComponent(email);
+        } else {
+            window.location.href = '${pageContext.request.contextPath}/forget-password';
+        }
+    }
         </script>
     </body>
 </html>

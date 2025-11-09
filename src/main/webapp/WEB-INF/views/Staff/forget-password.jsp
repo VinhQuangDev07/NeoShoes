@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forget Password - NeoShoes</title>
+    <title>Staff - Forget Password</title>
     <style>
         * {
             margin: 0;
@@ -39,9 +39,27 @@
         
         .subtitle {
             color: #6b7280;
-            font-size: 14px;
             text-align: center;
             margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
         }
         
         .form-group {
@@ -50,9 +68,9 @@
         
         label {
             display: block;
-            margin-bottom: 8px;
             color: #374151;
-            font-weight: 500;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
         
         input[type="email"] {
@@ -60,7 +78,7 @@
             padding: 12px 15px;
             border: 2px solid #e5e7eb;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 16px;
             transition: all 0.3s;
         }
         
@@ -72,7 +90,7 @@
         
         button {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -88,24 +106,6 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
-        .error {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        .success {
-            background: #d1fae5;
-            color: #059669;
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
         .back-link {
             text-align: center;
             margin-top: 20px;
@@ -114,7 +114,7 @@
         .back-link a {
             color: #667eea;
             text-decoration: none;
-            font-weight: 500;
+            font-size: 14px;
         }
         
         .back-link a:hover {
@@ -124,39 +124,40 @@
 </head>
 <body>
     <div class="container">
-        <h2>🔑 Forget Password</h2>
-<p class="subtitle">Confirm your email to receive OTP code</p>
+        <h2>🔑 Staff - Forget Password</h2>
+        <p class="subtitle">Confirm your email to receive OTP code</p>
 
-<% if (request.getAttribute("error") != null) { %>
-    <div class="error">
-        <%= request.getAttribute("error") %>
-    </div>
-<% } %>
+        <% if (request.getAttribute("error") != null) { %>
+            <div class="error">
+                ❌ <%= request.getAttribute("error") %>
+            </div>
+        <% } %>
 
-<% if (request.getAttribute("message") != null) { %>
-    <div class="success">
-        <%= request.getAttribute("message") %>
-    </div>
-<% } %>
+        <% if (request.getAttribute("message") != null) { %>
+            <div class="success">
+                ✅ <%= request.getAttribute("message") %>
+            </div>
+        <% } %>
 
-<form method="post" action="${pageContext.request.contextPath}/forget-password">
-    <input type="hidden" name="userType" value="customer">
-    <div class="form-group">
-        <label for="email">📧 Email Address</label>
-        <input type="email" id="email" name="email" 
-               value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
-               placeholder="your.email@example.com" required>
-        <small style="display: block; margin-top: 5px; color: #6b7280; font-size: 13px;">
-            OTP code will be sent to this email
-        </small>
-    </div>
-    
-    <button type="submit">Send OTP Code</button>
-</form>
+        <form method="post" action="${pageContext.request.contextPath}/forget-password">
+            <input type="hidden" name="userType" value="staff">
+            
+            <div class="form-group">
+                <label for="email">📧 Staff Email Address</label>
+                <input type="email" id="email" name="email" 
+                       value="<%= request.getParameter("email") != null ? request.getParameter("email") : "" %>"
+                       placeholder="staff.email@neoshoes.com" required>
+                <small style="display: block; margin-top: 5px; color: #6b7280; font-size: 13px;">
+                    OTP code will be sent to your staff email
+                </small>
+            </div>
+            
+            <button type="submit">Send OTP Code</button>
+        </form>
 
-<div class="back-link">
-    <a href="${pageContext.request.contextPath}/login">← Back to Login</a>
-</div>
+        <div class="back-link">
+            <a href="${pageContext.request.contextPath}/staff/login">← Back to Staff Login</a>
+        </div>
     </div>
 </body>
 </html>

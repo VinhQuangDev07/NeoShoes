@@ -1,16 +1,12 @@
 package DAOs;
 
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import DB.DBContext;
 import Models.Staff;
@@ -246,4 +242,149 @@ public class StaffDAO extends DBContext {
             return null;
         }
     }
+
+    // ============================================
+// FORGET PASSWORD METHODS
+// ============================================
+
+/**
+ * Tìm Staff theo email
+ */
+public Staff findByEmail(String email) {
+    String query = "SELECT * FROM Staff WHERE Email = ? AND IsDeleted = 0";
+    try (ResultSet rs = this.execSelectQuery(query, new Object[]{email})) {
+        if (rs != null && rs.next()) {
+            return mapStaff(rs);
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ findByEmail: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return null;
+}
+
+/**
+ * Xóa OTP cũ của staff (UserType = 1 là reset password)
+ */
+public void deleteOldVerifyCode(int staffId) {
+    String query = "DELETE FROM VerifyCodeStaff WHERE StaffId = ? AND UserType = 1";
+    try {
+        this.execQuery(query, new Object[]{staffId});
+        System.out.println("✅ Deleted old OTP for staffId: " + staffId);
+    } catch (SQLException e) {
+        System.err.println("❌ deleteOldVerifyCode: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+/**
+ * Lưu OTP mới (UserType = 1 cho reset password)
+ */
+public void saveVerifyCode(int staffId, String code, java.time.LocalDateTime expiredAt) {
+    String query = "INSERT INTO VerifyCodeStaff (StaffId, UserType, FailedCount, RequestCount, Code, ExpiredAt, CreatedAt) " +
+                   "VALUES (?, 1, 0, 1, ?, ?, GETDATE())";
+    try {
+        this.execQuery(query, new Object[]{
+            staffId, 
+            code, 
+            java.sql.Timestamp.valueOf(expiredAt)
+        });
+        System.out.println("✅ Saved OTP for staffId: " + staffId);
+    } catch (SQLException e) {
+        System.err.println("❌ saveVerifyCode: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+/**
+ * Verify OTP reset password (UserType = 1)
+ */
+public boolean verifyResetOTP(String email, String otp) {
+    String query = "SELECT TOP 1 vc.Code, vc.ExpiredAt, vc.FailedCount " +
+                   "FROM VerifyCodeStaff vc " +
+                   "INNER JOIN Staff s ON vc.StaffId = s.StaffId " +
+                   "WHERE s.Email = ? AND vc.UserType = 1 " +
+                   "ORDER BY vc.CreatedAt DESC";
+    
+    try (ResultSet rs = this.execSelectQuery(query, new Object[]{email})) {
+        if (rs != null && rs.next()) {
+            String storedOTP = rs.getString("Code");
+            java.sql.Timestamp expiry = rs.getTimestamp("ExpiredAt");
+            int failedCount = rs.getInt("FailedCount");
+            
+            // Kiểm tra số lần nhập sai
+            if (failedCount >= 5) {
+                System.out.println("❌ Too many failed attempts for: " + email);
+                return false;
+            }
+            
+            // Kiểm tra OTP và thời gian hết hạn
+            if (storedOTP.equals(otp) && 
+                java.time.LocalDateTime.now().isBefore(expiry.toLocalDateTime())) {
+                System.out.println("✅ OTP verified for: " + email);
+                return true;
+            } else {
+                System.out.println("❌ Invalid or expired OTP for: " + email);
+                incrementFailedCount(email);
+                return false;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ verifyResetOTP: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return false;
+}
+
+/**
+ * Tăng số lần nhập sai
+ */
+private void incrementFailedCount(String email) {
+    String query = "UPDATE VerifyCodeStaff " +
+                   "SET FailedCount = FailedCount + 1 " +
+                   "WHERE StaffId = (SELECT StaffId FROM Staff WHERE Email = ?) " +
+                   "AND UserType = 1";
+    try {
+        this.execQuery(query, new Object[]{email});
+    } catch (SQLException e) {
+        System.err.println("❌ incrementFailedCount: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+/**
+ * Xóa OTP sau khi dùng xong
+ */
+public void clearResetOTP(String email) {
+    String query = "DELETE FROM VerifyCodeStaff " +
+                   "WHERE StaffId = (SELECT StaffId FROM Staff WHERE Email = ?) " +
+                   "AND UserType = 1";
+    try {
+        this.execQuery(query, new Object[]{email});
+        System.out.println("✅ Cleared OTP for: " + email);
+    } catch (SQLException e) {
+        System.err.println("❌ clearResetOTP: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+/**
+ * Cập nhật mật khẩu mới
+ */
+public boolean updatePasswordByEmail(String email, String newPassword) {
+    String query = "UPDATE Staff SET PasswordHash = ?, UpdatedAt = GETDATE() " +
+                   "WHERE Email = ? AND IsDeleted = 0";
+    try {
+        String hashedPassword = Utils.hashPassword(newPassword);
+        int result = this.execQuery(query, new Object[]{hashedPassword, email});
+        if (result > 0) {
+            System.out.println("✅ Password updated for: " + email);
+            return true;
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ updatePasswordByEmail: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return false;
+}
 }

@@ -2,14 +2,13 @@ package Controllers.Staff;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import DAOs.VoucherDAO;
+import Models.Staff;
 import Models.Voucher;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -34,8 +33,12 @@ public class VoucherManagementServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String role = getRoleFromRequest(request);
-        request.setAttribute("userRole", role);
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
         String action = getAction(request);
 
@@ -48,32 +51,40 @@ public class VoucherManagementServlet extends HttpServlet {
                     viewVoucherDetail(request, response);
                     break;
                 case "add":
-                    if (canModify(role)) {
-                        showAddForm(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được add
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    showAddForm(request, response);
                     break;
                 case "edit":
-                    if (canModify(role)) {
-                        showEditForm(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được edit
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    showEditForm(request, response);
                     break;
                 case "delete":
-                    if (canModify(role)) {
-                        deleteVoucher(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được delete
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    deleteVoucher(request, response);
                     break;
                 case "toggle":
-                    if (canModify(role)) {
-                        toggleVoucherStatus(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được toggle
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    toggleVoucherStatus(request, response);
                     break;
                 default:
                     listVouchers(request, response);
@@ -88,26 +99,34 @@ public class VoucherManagementServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String role = getRoleFromRequest(request);
-        request.setAttribute("userRole", role);
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        if (staff == null) {
+            response.sendRedirect(request.getContextPath() + "/staff/login");
+            return;
+        }
 
         String action = getAction(request);
 
         try {
             switch (action) {
                 case "add":
-                    if (canModify(role)) {
-                        addVoucher(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được add
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    addVoucher(request, response);
                     break;
                 case "update":
-                    if (canModify(role)) {
-                        updateVoucher(request, response);
-                    } else {
-                        response.sendError(403, "Access Denied - Admin only");
+                    // Chỉ admin mới được update
+                    if (!staff.isRole()) {
+                        session.setAttribute("flash_error", "Access denied! Admin only.");
+                        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+                        return;
                     }
+                    updateVoucher(request, response);
                     break;
                 default:
                     listVouchers(request, response);
@@ -121,12 +140,13 @@ public class VoucherManagementServlet extends HttpServlet {
     // ========== MAIN HANDLERS ==========
     private void listVouchers(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
+        HttpSession session = request.getSession();
+        Staff staff = (Staff) session.getAttribute("staff");
+        
         List<Voucher> vouchers = voucherDAO.getAllVouchersWithUsageCount();
         request.setAttribute("vouchers", vouchers);
-
-        String role = (String) request.getAttribute("userRole");
-        boolean canModify = canModify(role);
-        request.setAttribute("canModify", canModify);
+        // Chỉ admin mới có quyền modify (thêm/sửa/xóa)
+        request.setAttribute("canModify", staff.isRole());
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-list.jsp");
         dispatcher.forward(request, response);
@@ -134,12 +154,6 @@ public class VoucherManagementServlet extends HttpServlet {
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-
         request.setAttribute("formAction", "add");
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-form.jsp");
         dispatcher.forward(request, response);
@@ -147,12 +161,6 @@ public class VoucherManagementServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-
         int id = Integer.parseInt(request.getParameter("id"));
         Voucher voucher = voucherDAO.getVoucherById(id);
 
@@ -162,63 +170,36 @@ public class VoucherManagementServlet extends HttpServlet {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-form.jsp");
             dispatcher.forward(request, response);
         } else {
-            response.sendError(404, "Voucher not found");
+            HttpSession session = request.getSession();
+            session.setAttribute("flash_error", "Voucher not found!");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
         }
     }
 
     private void addVoucher(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-
+        HttpSession session = request.getSession();
         try {
             Voucher voucher = extractVoucherFromRequest(request);
-
-            // Validate voucher code
-            if (voucher.getVoucherCode() == null || voucher.getVoucherCode().trim().isEmpty()) {
-                request.setAttribute("error", "Voucher code is required");
-                showAddForm(request, response);
-                return;
-            }
-
-            // Check if code already exists
-            Voucher existingVoucher = voucherDAO.getVoucherByCode(voucher.getVoucherCode());
-            if (existingVoucher != null) {
-                request.setAttribute("error", "Voucher code already exists");
-                request.setAttribute("voucher", voucher);
-                showAddForm(request, response);
-                return;
-            }
-
             boolean success = voucherDAO.addVoucher(voucher);
 
             if (success) {
-                setFlash(request, "flash", "Voucher added successfully!");
-                response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
+                session.setAttribute("flash", "Voucher added successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
             } else {
-//                request.setAttribute("error", "Failed to add voucher");
-//                request.setAttribute("voucher", voucher);
-//                showAddForm(request, response);
-                setFlash(request, "flash_error", "Failed to add voucher");
-                response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
+                session.setAttribute("flash_error", "Failed to add voucher!");
+                showAddForm(request, response);
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Error: " + e.getMessage());
-            showAddForm(request, response);
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
         }
     }
 
     private void updateVoucher(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
-
+        HttpSession session = request.getSession();
         try {
             int id = Integer.parseInt(request.getParameter("id"));
             Voucher voucher = extractVoucherFromRequest(request);
@@ -227,54 +208,71 @@ public class VoucherManagementServlet extends HttpServlet {
             boolean success = voucherDAO.updateVoucher(voucher);
 
             if (success) {
-                setFlash(request, "flash", "Voucher updated successfully!");
-                response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
+                session.setAttribute("flash", "Voucher updated successfully!");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
             } else {
-                setFlash(request, "flash_error", "Failed to update voucher");
-                response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
+                session.setAttribute("flash_error", "Failed to update voucher!");
+                showEditForm(request, response);
             }
         } catch (Exception e) {
-            request.setAttribute("error", "Error: " + e.getMessage());
-            showEditForm(request, response);
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
         }
     }
 
     private void deleteVoucher(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
+        HttpSession session = request.getSession();
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean success = voucherDAO.deleteVoucher(id);
 
-        int id = Integer.parseInt(request.getParameter("id"));
-        boolean success = voucherDAO.deleteVoucher(id);
-
-        if (success) {
-            setFlash(request, "flash", "Voucher deleted successfully!");
-        } else {
-            setFlash(request, "flash_error", "Failed to delete voucher!");
+            if (success) {
+                session.setAttribute("flash", "Voucher deleted successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to delete voucher!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error: " + e.getMessage());
         }
-        response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
+        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
     }
 
     private void toggleVoucherStatus(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        String role = (String) request.getAttribute("userRole");
-        if (!canModify(role)) {
-            response.sendError(403, "Access Denied - Admin only");
-            return;
-        }
+        HttpSession session = request.getSession();
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean success = voucherDAO.toggleVoucherStatus(id);
 
+            if (success) {
+                session.setAttribute("flash", "Voucher status updated successfully!");
+            } else {
+                session.setAttribute("flash_error", "Failed to update voucher status!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error: " + e.getMessage());
+        }
+        response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
+    }
+
+    private void viewVoucherDetail(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        boolean success = voucherDAO.toggleVoucherStatus(id);
+        Voucher voucher = voucherDAO.getVoucherById(id);
 
-        if (success) {
-            setFlash(request, "flash", "Voucher status toggled successfully!");
+        if (voucher != null) {
+            request.setAttribute("voucher", voucher);
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-detail.jsp");
+            dispatcher.forward(request, response);
         } else {
-            setFlash(request, "flash_error", "Failed to toggle voucher status!");
+            HttpSession session = request.getSession();
+            session.setAttribute("flash_error", "Voucher not found!");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
         }
-        response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + role);
     }
 
     // ========== HELPER METHODS ==========
@@ -311,15 +309,13 @@ public class VoucherManagementServlet extends HttpServlet {
         // StartDate
         String startDateStr = request.getParameter("startDate");
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
-            LocalDateTime startDate = LocalDateTime.parse(startDateStr + "T00:00:00");
-            voucher.setStartDate(startDate);
+            voucher.setStartDate(LocalDateTime.parse(startDateStr + "T00:00:00"));
         }
 
         // EndDate
         String endDateStr = request.getParameter("endDate");
         if (endDateStr != null && !endDateStr.trim().isEmpty()) {
-            LocalDateTime endDate = LocalDateTime.parse(endDateStr + "T23:59:59");
-            voucher.setEndDate(endDate);
+            voucher.setEndDate(LocalDateTime.parse(endDateStr + "T23:59:59"));
         }
 
         // TotalUsageLimit
@@ -341,47 +337,6 @@ public class VoucherManagementServlet extends HttpServlet {
         return voucher;
     }
 
-    private Voucher mapVoucher(ResultSet rs) throws SQLException {
-        Voucher voucher = new Voucher();
-        voucher.setVoucherId(rs.getInt("VoucherId"));
-        voucher.setVoucherCode(rs.getString("VoucherCode"));
-        voucher.setType(rs.getString("Type"));
-        voucher.setValue(rs.getBigDecimal("Value"));
-        voucher.setMaxValue(rs.getBigDecimal("MaxValue"));
-        voucher.setMinValue(rs.getBigDecimal("MinValue"));
-        voucher.setVoucherDescription(rs.getString("VoucherDescription"));
-
-        Timestamp startTimestamp = rs.getTimestamp("StartDate");
-        if (startTimestamp != null) {
-            voucher.setStartDate(startTimestamp.toLocalDateTime());
-        }
-
-        Timestamp endTimestamp = rs.getTimestamp("EndDate");
-        if (endTimestamp != null) {
-            voucher.setEndDate(endTimestamp.toLocalDateTime());
-        }
-
-        voucher.setTotalUsageLimit(rs.getInt("TotalUsageLimit"));
-        voucher.setUserUsageLimit(rs.getInt("UserUsageLimit"));
-        voucher.setActive(rs.getBoolean("IsActive"));
-
-        Timestamp createdTimestamp = rs.getTimestamp("CreatedAt");
-        if (createdTimestamp != null) {
-            voucher.setCreatedAt(createdTimestamp.toLocalDateTime());
-        }
-
-        Timestamp updatedTimestamp = rs.getTimestamp("UpdatedAt");
-        if (updatedTimestamp != null) {
-            voucher.setUpdatedAt(updatedTimestamp.toLocalDateTime());
-        }
-
-        voucher.setDeleted(rs.getBoolean("IsDeleted"));
-
-        // ✅ KHÔNG lấy UsageCount từ bảng Voucher
-        // Sẽ tính từ bảng VoucherUserUsage
-        return voucher;
-    }
-
     private String getAction(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && !"/".equals(pathInfo)) {
@@ -391,70 +346,4 @@ public class VoucherManagementServlet extends HttpServlet {
         String action = request.getParameter("action");
         return (action == null || action.trim().isEmpty()) ? "list" : action.trim();
     }
-
-    private boolean canModify(String role) {
-        return "admin".equals(role);
-    }
-
-    private boolean canView(String role) {
-        return "admin".equals(role) || "staff".equals(role);
-    }
-
-    private String getRoleFromRequest(HttpServletRequest request) {
-        String role = request.getParameter("role");
-
-        if (role == null || role.trim().isEmpty()) {
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                role = (String) session.getAttribute("role");
-            }
-        }
-
-        if (role == null || role.trim().isEmpty()) {
-            role = "staff";
-        }
-
-        return role;
-    }
-
-    private void viewVoucherDetail(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-
-        String idParam = request.getParameter("id");
-
-        if (idParam == null || idParam.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + request.getAttribute("userRole"));
-            return;
-        }
-
-        try {
-            int voucherId = Integer.parseInt(idParam);
-
-            // Lấy thông tin voucher
-            Voucher voucher = voucherDAO.getVoucherById(voucherId);
-
-            if (voucher == null) {
-                request.getSession().setAttribute("errorMessage", "Voucher not found");
-                response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + request.getAttribute("userRole"));
-                return;
-            } else {
-                // Set attributes
-                request.setAttribute("voucher", voucher);
-
-                // Forward to detail page
-                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-detail.jsp");
-                dispatcher.forward(request, response);
-            }
-
-        } catch (NumberFormatException e) {
-            request.getSession().setAttribute("flash_error", "Voucher not found");
-// hoặc "Invalid voucher ID"
-            response.sendRedirect(request.getContextPath() + "/vouchermanage/list?role=" + request.getAttribute("userRole"));
-        }
-    }
-
-    private void setFlash(HttpServletRequest request, String key, String message) {
-        request.getSession().setAttribute(key, message);
-    }
-
 }

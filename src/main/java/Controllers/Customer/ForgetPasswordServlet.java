@@ -2,9 +2,12 @@ package Controllers.Customer;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 import DAOs.CustomerDAO;
+import DAOs.StaffDAO;
 import Models.Customer;
+import Models.Staff;
 import Utils.EmailService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -16,90 +19,144 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/forget-password")
 public class ForgetPasswordServlet extends HttpServlet {
     
-    private final CustomerDAO customerDAO = new CustomerDAO();
+    private CustomerDAO customerDAO = new CustomerDAO();
+    private StaffDAO staffDAO = new StaffDAO();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        forwardToForgetPassword(request, response);
+        
+        String userType = request.getParameter("type"); // "customer" or "staff"
+        
+        if ("staff".equals(userType)) {
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/forget-password.jsp");
+            dispatcher.forward(request, response);
+        } else {
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/forget-password.jsp");
+            dispatcher.forward(request, response);
+        }
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        String userType = request.getParameter("userType"); // Hidden input trong form
         String email = request.getParameter("email");
         
-        if (!isValidEmail(email)) {
-            request.setAttribute("error", "Please enter a valid email address");
-            forwardToForgetPassword(request, response);
-            return;
+        if ("staff".equals(userType)) {
+            processStaffPasswordReset(request, response, email);
+        } else {
+            processCustomerPasswordReset(request, response, email);
         }
-        
-        Customer customer = customerDAO.findByEmail(email);
-        
-        if (customer != null) {
-            processPasswordReset(request, customer);
-        }
-        
-        // Luôn hiển thị success message (security best practice)
-        request.setAttribute("message", 
-            "If an account with that email exists, a password reset link has been sent.");
-        forwardToForgetPassword(request, response);
     }
     
-    private boolean isValidEmail(String email) {
-        return email != null && !email.trim().isEmpty() && email.contains("@");
-    }
-    
-    private void processPasswordReset(HttpServletRequest request, Customer customer) {
+    // ========== CUSTOMER ==========
+    private void processCustomerPasswordReset(HttpServletRequest request, HttpServletResponse response, String email)
+            throws ServletException, IOException {
         try {
-            // Delete old tokens
-            customerDAO.deleteExpiredTokens(customer.getId());
+            Customer customer = customerDAO.getCustomerByEmail(email);
             
-            // Generate new token
-            String token = EmailService.generateResetToken();
-            LocalDateTime expiry = LocalDateTime.now().plusHours(24);
-            
-            // Save token to database
-            boolean tokenCreated = customerDAO.createPasswordResetToken(
-                customer.getId(), token, expiry);
-            
-            if (tokenCreated) {
-                // Build reset link
-                String resetLink = buildResetLink(request, token);
+            if (customer != null) {
+                String otp = generateOTP();
+                LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
                 
-                // Send email
-                boolean emailSent = EmailService.sendPasswordResetEmail(
+                customerDAO.deleteOldVerifyCode(customer.getId());
+                customerDAO.saveVerifyCode(customer.getId(), otp, expiryTime);
+                
+                boolean emailSent = EmailService.sendPasswordResetOTP(
                     customer.getEmail(), 
                     customer.getName(), 
-                    resetLink
+                    otp
                 );
                 
                 if (emailSent) {
-                    System.out.println("Password reset email sent to: " + customer.getEmail());
+                    System.out.println("✅ OTP sent to customer: " + customer.getEmail());
+                    request.setAttribute("email", email);
+                    request.setAttribute("userType", "customer");
+                    request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn");
+                    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/verify-reset-otp.jsp");
+                    dispatcher.forward(request, response);
                 } else {
-                    System.err.println("Failed to send email to: " + customer.getEmail());
+                    System.err.println("❌ Failed to send OTP to customer: " + customer.getEmail());
+                    request.setAttribute("error", "Không thể gửi email. Vui lòng thử lại");
+                    request.setAttribute("userType", "customer");
+                    forwardToForgetPassword(request, response, "customer");
                 }
+            } else {
+                request.setAttribute("error", "Email không tồn tại trong hệ thống");
+                request.setAttribute("userType", "customer");
+                forwardToForgetPassword(request, response, "customer");
             }
             
         } catch (Exception e) {
-            System.err.println("processPasswordReset error: " + e.getMessage());
+            System.err.println("❌ processCustomerPasswordReset error: " + e.getMessage());
             e.printStackTrace();
+            request.setAttribute("error", "Đã xảy ra lỗi. Vui lòng thử lại");
+            request.setAttribute("userType", "customer");
+            forwardToForgetPassword(request, response, "customer");
         }
     }
     
-    private String buildResetLink(HttpServletRequest request, String token) {
-        return request.getScheme() + "://" 
-             + request.getServerName() + ":" 
-             + request.getServerPort() 
-             + request.getContextPath() 
-             + "/reset-password?token=" + token;
+    // ========== STAFF ==========
+    private void processStaffPasswordReset(HttpServletRequest request, HttpServletResponse response, String email)
+            throws ServletException, IOException {
+        try {
+            Staff staff = staffDAO.findByEmail(email);
+            
+            if (staff != null) {
+                String otp = generateOTP();
+                LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
+                
+                staffDAO.deleteOldVerifyCode(staff.getStaffId());
+                staffDAO.saveVerifyCode(staff.getStaffId(), otp, expiryTime);
+                
+                boolean emailSent = EmailService.sendPasswordResetOTP(
+                    staff.getEmail(), 
+                    staff.getName(), 
+                    otp
+                );
+                
+                if (emailSent) {
+                    System.out.println("✅ OTP sent to staff: " + staff.getEmail());
+                    request.setAttribute("email", email);
+                    request.setAttribute("userType", "staff");
+                    request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn");
+                    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/verify-reset-otp.jsp");
+                    dispatcher.forward(request, response);
+                } else {
+                    System.err.println("❌ Failed to send OTP to staff: " + staff.getEmail());
+                    request.setAttribute("error", "Không thể gửi email. Vui lòng thử lại");
+                    request.setAttribute("userType", "staff");
+                    forwardToForgetPassword(request, response, "staff");
+                }
+            } else {
+                request.setAttribute("error", "Email không tồn tại trong hệ thống");
+                request.setAttribute("userType", "staff");
+                forwardToForgetPassword(request, response, "staff");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ processStaffPasswordReset error: " + e.getMessage());
+            e.printStackTrace();
+            request.setAttribute("error", "Đã xảy ra lỗi. Vui lòng thử lại");
+            request.setAttribute("userType", "staff");
+            forwardToForgetPassword(request, response, "staff");
+        }
     }
     
-    private void forwardToForgetPassword(HttpServletRequest request, HttpServletResponse response)
+    private String generateOTP() {
+        Random random = new Random();
+        int otp = 100000 + random.nextInt(900000);
+        return String.valueOf(otp);
+    }
+    
+    private void forwardToForgetPassword(HttpServletRequest request, HttpServletResponse response, String userType)
             throws ServletException, IOException {
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/forget-password.jsp");
+        String jspPath = "staff".equals(userType) 
+            ? "/WEB-INF/views/staff/forget-password.jsp"
+            : "/WEB-INF/views/customer/forget-password.jsp";
+        RequestDispatcher dispatcher = request.getRequestDispatcher(jspPath);
         dispatcher.forward(request, response);
     }
 }
