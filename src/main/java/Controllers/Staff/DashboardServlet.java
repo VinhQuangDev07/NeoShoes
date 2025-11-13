@@ -148,7 +148,7 @@ public class DashboardServlet extends HttpServlet {
                 request.setAttribute("endYear", endYear);
                 break;
         }
-
+        
         // Set attributes for JSP
         request.setAttribute("dashboardData", dashboardData);
         request.setAttribute("totalCustomers", totalCustomers);

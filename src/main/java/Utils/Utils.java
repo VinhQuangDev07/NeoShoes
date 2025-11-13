@@ -4,8 +4,12 @@
  */
 package Utils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  *
@@ -34,7 +38,7 @@ public class Utils {
         String hashedInput = hashPassword(plainPassword);
         return hashedInput.equalsIgnoreCase(storedHash);
     }
-    
+
     /**
      * Get default date range (last 30 days)
      */
@@ -43,7 +47,7 @@ public class Utils {
         LocalDate startDate = endDate.minusDays(29);
         return new String[]{startDate.toString(), endDate.toString()};
     }
-    
+
     /**
      * Get default month range (last 12 months)
      */
@@ -55,7 +59,7 @@ public class Utils {
             endDate.toString().substring(0, 7)
         };
     }
-    
+
     /**
      * Get default year range (last 5 years)
      */

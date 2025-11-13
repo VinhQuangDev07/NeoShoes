@@ -475,7 +475,7 @@
                                                         <c:if test="${voucher.minValue != null}">
                                                             <div class="voucher-detail">
                                                                 <span class="label"><i class="fas fa-shopping-cart"></i> Minimum order:</span>
-                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
+                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</span>
                                                             </div>
                                                         </c:if>
                                                         <c:if test="${voucher.userUsageLimit != null}">

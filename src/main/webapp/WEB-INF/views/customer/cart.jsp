@@ -347,16 +347,6 @@
                                                                 value = 1;
                                                             value += delta;
 
-                                                            if (value < 1)
-                                                                value = 1;
-                                                            if (value > maxQty)
-                                                                value = maxQty;
-
-                                                            if (value > maxQty) {
-                                                                showNotification("Not enough stock available!", "error");
-                                                                value = maxQty;
-                                                            }
-
                                                             input.value = value;
 
                                                             // Gửi AJAX đến servlet để cập nhật DB mà không reload
@@ -397,7 +387,6 @@
                                                                     })
                                                                     .catch(err => {
                                                                         console.error(" Update failed:", err);
-                                                                        showNotification("Update failed!", "error");
                                                                         // Nếu lỗi, khôi phục giá trị cũ
                                                                         input.value = parseInt(input.defaultValue || 1);
                                                                     });

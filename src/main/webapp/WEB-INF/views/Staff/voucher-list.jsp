@@ -70,7 +70,6 @@
                 display: inline-block;
                 padding: 10px 14px;
                 border-radius: 10px;
-                background: #111827;
                 color: #fff;
                 text-decoration: none;
                 font-weight: 700;
@@ -131,8 +130,8 @@
             }
 
             thead th {
-                background: #111827;
-                color: #fff;
+                background-color: #f8f9fa;
+                color: #6c757d;
                 padding: 14px 12px;
                 text-align: left;
                 font-weight: 700;
@@ -279,23 +278,6 @@
                     </a>
                 </c:if>
             </div>
-
-            <!-- Flash Messages -->
-            <c:if test="${not empty sessionScope.flash}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ${sessionScope.flash}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <c:remove var="flash" scope="session"/>
-            </c:if>
-
-            <c:if test="${not empty sessionScope.flash_error}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    ${sessionScope.flash_error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-                <c:remove var="flash_error" scope="session"/>
-            </c:if>
 
             <!-- Voucher Table -->
             <div class="table-card">
