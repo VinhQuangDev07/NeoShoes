@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<fmt:setLocale value="en_US" />
 
 <!DOCTYPE html>
 <html lang="en">
@@ -310,13 +311,13 @@
 
                                 <div class="voucher-container p-4">
                                     <!-- Breadcrumb Navigation -->
-                                    <div class="breadcrumb-nav mb-3">
+<!--                                    <div class="breadcrumb-nav mb-3">
                                         <a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Home</a>
                                         <span class="separator">/</span>
                                         <a href="${pageContext.request.contextPath}/voucher">My Vouchers</a>
                                         <span class="separator">/</span>
                                         <span class="current">${voucher.voucherCode}</span>
-                                    </div>
+                                    </div>-->
 
                                     <!-- Main Voucher Content -->
                                     <div class="voucher-details-content">
@@ -400,7 +401,7 @@
                                             </div>
                                         </div>
 
-                                        <!-- Terms & Conditions -->
+<!--                                         Terms & Conditions 
                                         <div class="details-card">
                                             <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
                                             <ul class="terms-list">
@@ -412,7 +413,7 @@
                                                 <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}"><li>Maximum discount capped at: <strong><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</strong></li></c:if>
                                                 <li>Valid until: <strong><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></strong></li>
                                             </ul>
-                                        </div>
+                                        </div>-->
 
                                         <!-- Action Buttons -->
                                         <div class="action-buttons">
