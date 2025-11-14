@@ -393,12 +393,22 @@
         <!-- Dashboard Script -->
         <script>
 // ====== Order Status Labels and Colors ======
-            const ORDER_STATUS_LABELS = ["Pending", "Processing", "Shipped", "Delivered"];
+            const ORDER_STATUS_LABELS = [
+                "Pending",
+                "Processing",
+                "Shipped",
+                "Delivered",
+                "Returned",
+                "Cancelled"
+            ];
+
             const ORDER_STATUS_COLORS = [
-                "#0d6efd", // Pending (Bootstrap primary blue)
+                "#0d6efd", // Pending (blue)
                 "#a78bfa", // Processing (purple)
-                "#ffc107", // Shipped (Bootstrap warning yellow)
-                "#198754", // Delivered (Bootstrap success green)
+                "#ffc107", // Shipped (yellow)
+                "#198754", // Delivered (green)
+                "#0dcaf0", // Returned (bootstrap info cyan)
+                "#dc3545", // Cancelled (bootstrap danger red)
             ];
 
 // ================== DASHBOARD MAIN FUNCTION ==================
@@ -468,9 +478,9 @@
                                 legend: {display: false},
                                 tooltip: {
                                     callbacks: {
-                                        label: ctx => new Intl.NumberFormat('vi-VN', {
+                                        label: ctx => new Intl.NumberFormat('en-US', {
                                                 style: 'currency',
-                                                currency: 'VND',
+                                                currency: 'USD',
                                                 maximumFractionDigits: 0
                                             }).format(ctx.parsed.y)
                                     }
@@ -480,9 +490,9 @@
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        callback: value => new Intl.NumberFormat('vi-VN', {
+                                        callback: value => new Intl.NumberFormat('en-US', {
                                                 style: 'currency',
-                                                currency: 'VND',
+                                                currency: 'USD',
                                                 maximumFractionDigits: 0
                                             }).format(value)
                                     }

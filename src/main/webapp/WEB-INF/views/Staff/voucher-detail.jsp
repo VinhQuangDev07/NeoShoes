@@ -180,8 +180,8 @@
             <div class="page-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-1">Import Records</h2>
-                        <p class="text-muted mb-0">Manage product import transactions</p>
+                        <h2 class="mb-1">Voucher Detail</h2>
+                        <p class="text-muted mb-0">View voucher detail</p>
                     </div>
                 </div>
             </div>

@@ -213,7 +213,9 @@ public class DashboardDAO extends DB.DBContext {
                     + "SUM(CASE WHEN osh.OrderStatus = 'PENDING' THEN 1 ELSE 0 END) AS Pending, "
                     + "SUM(CASE WHEN osh.OrderStatus = 'PROCESSING' THEN 1 ELSE 0 END) AS Processing, "
                     + "SUM(CASE WHEN osh.OrderStatus = 'SHIPPED' THEN 1 ELSE 0 END) AS Shipped, "
-                    + "SUM(CASE WHEN osh.OrderStatus = 'COMPLETED' THEN 1 ELSE 0 END) AS Delivered "
+                    + "SUM(CASE WHEN osh.OrderStatus = 'COMPLETED' THEN 1 ELSE 0 END) AS Delivered, "
+                    + "SUM(CASE WHEN osh.OrderStatus = 'RETURNED' THEN 1 ELSE 0 END) AS Returned, "
+                    + "SUM(CASE WHEN osh.OrderStatus = 'CANCELLED' THEN 1 ELSE 0 END) AS Cancelled "
                     + "FROM ( "
                     + "    SELECT OrderId, OrderStatus, "
                     + "           ROW_NUMBER() OVER (PARTITION BY OrderId ORDER BY ChangedAt DESC) AS rn "
@@ -227,6 +229,8 @@ public class DashboardDAO extends DB.DBContext {
                     data.setProcessing(rs.getInt("Processing"));
                     data.setShipped(rs.getInt("Shipped"));
                     data.setDelivered(rs.getInt("Delivered"));
+                    data.setReturned(rs.getInt("Returned"));
+                    data.setCancelled(rs.getInt("Cancelled"));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

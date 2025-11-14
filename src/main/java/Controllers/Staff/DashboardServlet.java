@@ -166,6 +166,8 @@ public class DashboardServlet extends HttpServlet {
         statusMap.put("Processing", orderStatus.getProcessing());
         statusMap.put("Shipped", orderStatus.getShipped());
         statusMap.put("Delivered", orderStatus.getDelivered());
+        statusMap.put("Returned", orderStatus.getReturned());
+        statusMap.put("Cancelled", orderStatus.getCancelled());
         request.setAttribute("orderStatus", gson.toJson(statusMap));
 
         // Forward to JSP
