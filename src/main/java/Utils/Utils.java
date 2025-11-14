@@ -4,6 +4,7 @@
  */
 package Utils;
 
+import Models.Voucher;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.MessageDigest;
@@ -66,6 +67,19 @@ public class Utils {
     public static int[] getDefaultYearRange() {
         int currentYear = LocalDate.now().getYear();
         return new int[]{currentYear - 4, currentYear};
+    }
+    
+    public static double calculateDiscount(Voucher voucher, double orderTotal) {
+        if ("PERCENTAGE".equalsIgnoreCase(voucher.getType())) {
+            double discount = orderTotal * voucher.getValue().doubleValue() / 100;
+            if (voucher.getMaxValue() != null && discount > voucher.getMaxValue().doubleValue()) {
+                return voucher.getMaxValue().doubleValue();
+            }
+            return discount;
+        } else {
+            // Fixed amount
+            return voucher.getValue().doubleValue();
+        }
     }
 
 }

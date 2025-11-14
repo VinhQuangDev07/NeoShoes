@@ -6,6 +6,8 @@
 <c:set var="approvedTime" value="" />
 <c:set var="shippedTime" value="" />
 <c:set var="deliveredTime" value="" />
+<c:set var="returnedTime" value="" />
+<c:set var="cancelledTime" value="" />
 
 <c:forEach items="${statusHistory}" var="history">
     <c:choose>
@@ -17,6 +19,12 @@
         </c:when>
         <c:when test="${history.orderStatus == 'COMPLETED'}">
             <c:set var="deliveredTime" value="${history.changedAt}" />
+        </c:when>
+        <c:when test="${history.orderStatus == 'RETURNED'}">
+            <c:set var="returnedTime" value="${history.changedAt}" />
+        </c:when>
+        <c:when test="${history.orderStatus == 'CANCELLED'}">
+            <c:set var="cancelledTime" value="${history.changedAt}" />
         </c:when>
     </c:choose>
 </c:forEach>
@@ -39,14 +47,14 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Custom CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-        
+
         <style>
             .orders-container {
                 background: #f8f9fa;
                 min-height: 100vh;
                 padding: 20px 0;
             }
-            
+
             .order-detail-card {
                 background: white;
                 border-radius: 12px;
@@ -54,7 +62,7 @@
                 overflow: hidden;
                 margin-bottom: 20px;
             }
-            
+
             .order-header {
                 padding: 20px;
                 border-bottom: 1px solid #f0f0f0;
@@ -64,129 +72,164 @@
                 flex-wrap: wrap;
                 gap: 15px;
             }
-            
+
             .order-info {
                 display: flex;
                 align-items: center;
                 gap: 15px;
                 flex-wrap: wrap;
             }
-            
+
             .order-number {
                 font-weight: 600;
                 color: #007bff;
                 font-size: 18px;
             }
-            
+
             .order-date {
                 color: #666;
                 font-size: 14px;
             }
-            
+
             .status-badge {
                 font-size: 0.8rem;
                 padding: 0.25rem 0.5rem;
             }
-            
+
             .badge.bg-secondary {
                 background-color: #6c757d !important;
                 color: white;
             }
-            
+
             .progress-section {
                 padding: 20px;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .progress-timeline {
                 position: relative;
-                padding-left: 30px;
+                padding-left: 50px;
             }
-            
-            .progress-step {
-                position: relative;
-                margin-bottom: 20px;
-            }
-            
-            .progress-step:last-child {
-                margin-bottom: 0;
-            }
-            
-            .progress-step::before {
+
+            .progress-timeline::before {
                 content: '';
                 position: absolute;
-                left: -20px;
-                top: 20px;
+                left: 20px;
+                top: 10px;
+                bottom: 10px;
                 width: 2px;
-                height: 40px;
-                background: #e9ecef;
+                background: #dee2e6;
+                z-index: 1;
             }
-            
-            .progress-step.completed::before {
-                background: #28a745;
+
+            .timeline-item {
+                position: relative;
+                margin-bottom: 20px;
+                padding-left: 0;
             }
-            
-            .progress-step:last-child::before {
-                display: none;
+
+            .timeline-item:last-child {
+                margin-bottom: 0;
             }
-            
-            .step-circle {
+
+            .timeline-dot {
                 position: absolute;
-                left: -30px;
-                top: 0;
+                left: -40px;
+                top: 2px;
                 width: 20px;
                 height: 20px;
                 border-radius: 50%;
                 background: #e9ecef;
-                color: #6c757d;
+                border: 3px solid white;
+                box-shadow: 0 0 0 2px #dee2e6;
+                z-index: 3;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 12px;
-                font-weight: bold;
-                border: 2px solid #e9ecef;
+                transition: all 0.3s ease;
             }
-            
-            .step-circle.completed {
+
+            .timeline-dot::after {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #6c757d;
+                transition: all 0.3s ease;
+            }
+
+            .timeline-dot.completed {
                 background: #28a745;
-                color: white;
-                border-color: #28a745;
+                border-color: white;
+                box-shadow: 0 0 0 2px #28a745;
             }
-            
-            .step-circle.current {
+
+            .timeline-dot.completed::after {
+                background: white;
+            }
+
+            .timeline-dot.current {
                 background: #007bff;
-                color: white;
-                border-color: #007bff;
-                animation: pulse 2s infinite;
+                border-color: white;
+                box-shadow: 0 0 0 2px #007bff;
+                animation: pulse-dot 2s infinite;
             }
-            
-            @keyframes pulse {
-                0% {
-                    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+
+            .timeline-dot.current::after {
+                background: white;
+            }
+
+            @keyframes pulse-dot {
+                0%, 100% {
+                    box-shadow: 0 0 0 2px #007bff, 0 0 0 4px rgba(0,123,255,0.3);
                 }
-                70% {
-                    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
-                }
-                100% {
-                    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+                50% {
+                    box-shadow: 0 0 0 2px #007bff, 0 0 0 8px rgba(0,123,255,0);
                 }
             }
-            
-            .step-info {
+
+            .timeline-content {
+                background: #fff;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 14px 16px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                margin-left: 0;
+            }
+
+            .timeline-status {
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                font-weight: 600;
+                color: #212529;
+                font-size: 15px;
+                margin-bottom: 6px;
             }
-            
-            .step-text {
-                flex: 1;
+
+            .timeline-status i {
+                font-size: 16px;
             }
-            
-            .step-date {
-                color: #666;
-                font-size: 14px;
+
+            .timeline-meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                font-size: 13px;
+                color: #6c757d;
+                align-items: center;
             }
-            
+
+            .timeline-meta span {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .timeline-meta i {
+                font-size: 12px;
+            }
+
             .order-summary {
                 padding: 20px;
                 display: grid;
@@ -194,19 +237,19 @@
                 gap: 30px;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .summary-section h6 {
                 font-weight: 600;
                 margin-bottom: 15px;
                 color: #333;
             }
-            
+
             .summary-item {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 8px;
             }
-            
+
             .summary-total {
                 font-weight: bold;
                 color: #007bff;
@@ -215,7 +258,7 @@
                 border-top: 1px solid #e0e0e0;
                 margin-top: 8px;
             }
-            
+
             .payment-badge {
                 padding: 6px 12px;
                 border-radius: 20px;
@@ -224,22 +267,22 @@
                 display: inline-block;
                 margin-right: 8px;
             }
-            
+
             .payment-cod {
                 background: #28a745;
                 color: white;
             }
-            
+
             .payment-completed {
                 background: #17a2b8;
                 color: white;
             }
-            
+
             .payment-cancelled {
                 background: #dc3545;
                 color: white;
             }
-            
+
             .delivery-info {
                 background: #f8f9fa;
                 padding: 15px 20px;
@@ -250,26 +293,26 @@
                 align-items: flex-start;
                 gap: 8px;
             }
-            
+
             .delivery-info i {
                 margin-top: 2px;
             }
-            
+
             .order-items {
                 padding: 20px;
             }
-            
+
             .order-item {
                 display: flex;
                 align-items: center;
                 padding: 15px 0;
                 border-bottom: 1px solid #f0f0f0;
             }
-            
+
             .order-item:last-child {
                 border-bottom: none;
             }
-            
+
             .item-image {
                 width: 60px;
                 height: 60px;
@@ -278,34 +321,34 @@
                 margin-right: 15px;
                 border: 1px solid #e0e0e0;
             }
-            
+
             .item-details {
                 flex: 1;
             }
-            
+
             .item-name {
                 font-weight: 600;
                 margin-bottom: 4px;
                 color: #333;
             }
-            
+
             .item-variant {
                 color: #999;
                 font-size: 13px;
                 margin-bottom: 2px;
             }
-            
+
             .item-quantity {
                 color: #666;
                 font-size: 14px;
             }
-            
+
             .item-price {
                 font-weight: 600;
                 color: #333;
                 margin-right: 15px;
             }
-            
+
             .order-actions {
                 padding: 20px;
                 background: #f8f9fa;
@@ -314,7 +357,7 @@
                 gap: 10px;
                 flex-wrap: wrap;
             }
-            
+
             .action-buttons .btn {
                 font-size: 14px;
                 padding: 8px 16px;
@@ -327,38 +370,38 @@
                 font-weight: 500;
                 transition: all 0.3s ease;
             }
-            
+
             .btn-primary {
                 background: #007bff;
                 border-color: #007bff;
             }
-            
+
             .btn-primary:hover {
                 background: #0056b3;
                 border-color: #0056b3;
             }
-            
+
             .btn-danger {
                 background: #dc3545;
                 border-color: #dc3545;
             }
-            
+
             .btn-danger:hover {
                 background: #c82333;
                 border-color: #c82333;
             }
-            
+
             .btn-secondary {
                 background: #6c757d;
                 border-color: #6c757d;
             }
-            
+
             .btn-loading {
                 position: relative;
                 pointer-events: none;
                 opacity: 0.7;
             }
-            
+
             .btn-loading::after {
                 content: "";
                 position: absolute;
@@ -373,24 +416,26 @@
                 border-top-color: transparent;
                 animation: spinner 0.6s linear infinite;
             }
-            
+
             @keyframes spinner {
-                to { transform: rotate(360deg); }
+                to {
+                    transform: rotate(360deg);
+                }
             }
-            
+
             /* Cancel Modal - matching order list style */
             .modal-content {
                 border-radius: 12px;
                 border: none;
                 box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             }
-            
+
             .modal-header {
                 background: #f8f9fa;
                 border-bottom: 1px solid #e0e0e0;
                 padding: 20px;
             }
-            
+
             .modal-title {
                 font-size: 18px;
                 font-weight: 600;
@@ -399,11 +444,11 @@
                 align-items: center;
                 gap: 10px;
             }
-            
+
             .modal-body {
                 padding: 20px;
             }
-            
+
             .cancel-warning {
                 background: #fff3cd;
                 border: 1px solid #ffeaa7;
@@ -415,49 +460,49 @@
                 align-items: flex-start;
                 gap: 10px;
             }
-            
+
             .cancel-order-info {
                 background: #f8f9fa;
                 padding: 15px;
                 border-radius: 8px;
                 margin-bottom: 15px;
             }
-            
+
             .cancel-info-item {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 8px;
             }
-            
+
             .cancel-info-item:last-child {
                 margin-bottom: 0;
             }
-            
+
             .cancel-info-label {
                 color: #666;
                 font-weight: 500;
             }
-            
+
             .cancel-info-value {
                 color: #333;
                 font-weight: 600;
             }
-            
+
             @media (max-width: 768px) {
                 .order-header {
                     flex-direction: column;
                     align-items: flex-start;
                 }
-                
+
                 .order-summary {
                     grid-template-columns: 1fr;
                     gap: 20px;
                 }
-                
+
                 .order-actions {
                     flex-direction: column;
                 }
-                
+
                 .action-buttons .btn {
                     width: 100%;
                     justify-content: center;
@@ -469,7 +514,7 @@
         <!-- Header -->
         <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
-        
+
         <div class="orders-container">
             <div class="container">
                 <div class="row">
@@ -488,7 +533,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </c:if>
-                        
+
                         <c:if test="${not empty errorMessage}">
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle"></i>
@@ -533,112 +578,184 @@
                             </div>
 
                             <!-- Order Progress Timeline -->
-                            <c:if test="${order.status != 'CANCELLED'}">
-                                <div class="progress-section">
-                                    <h6>Order Progress</h6>
-                                    <div class="progress-timeline">
-                                        <!-- Step 1: Order Placed -->
-                                        <div class="progress-step completed">
-                                            <div class="step-circle completed">
-                                                <i class="fas fa-check"></i>
+                            <div class="progress-section">
+                                <h6>Order Progress</h6>
+                                <div class="progress-timeline">
+                                    <!-- Step 1: Pending -->
+                                    <c:set var="pendingDotClass" value="${order.status == 'PENDING' ? 'current' : 'completed'}"/>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot ${pendingDotClass}"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-status">
+                                                <i class="fas fa-clock ${order.status == 'PENDING' ? 'text-warning' : 'text-muted'}"></i>
+                                                <span>Pending</span>
                                             </div>
-                                            <div class="step-info">
-                                                <div class="step-text">
-                                                    <div>Pending</div>
-                                                    <div class="step-date" data-date="${order.placedAt}"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Step 2: Approved -->
-                                        <div class="progress-step ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
-                                            <div class="step-circle ${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'PENDING' ? '' : 'current')}">
-                                                <c:choose>
-                                                    <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
-                                                        <i class="fas fa-check"></i>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <i class="fas fa-clock"></i>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="step-info">
-                                                <div class="step-text">
-                                                    <div>Approved</div>
-                                                    <div class="step-date">
-                                                        <c:choose>
-                                                            <c:when test="${not empty approvedTime}">
-                                                                <span data-date="${approvedTime}"></span>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                Not yet
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Step 3: Shipping -->
-                                        <div class="progress-step ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : ''}">
-                                            <div class="step-circle ${order.status == 'SHIPPED' || order.status == 'COMPLETED' ? 'completed' : (order.status == 'APPROVED' ? 'current' : '')}">
-                                                <c:choose>
-                                                    <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED'}">
-                                                        <i class="fas fa-check"></i>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <i class="fas fa-truck"></i>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="step-info">
-                                                <div class="step-text">
-                                                    <div>Shipping</div>
-                                                    <div class="step-date">
-                                                        <c:choose>
-                                                            <c:when test="${not empty shippedTime}">
-                                                                <span data-date="${shippedTime}"></span>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                Not yet
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Step 4: Delivered -->
-                                        <div class="progress-step ${order.status == 'COMPLETED' ? 'completed' : ''}">
-                                            <div class="step-circle ${order.status == 'COMPLETED' ? 'completed' : (order.status == 'SHIPPED' ? 'current' : '')}">
-                                                <c:choose>
-                                                    <c:when test="${order.status == 'COMPLETED'}">
-                                                        <i class="fas fa-check"></i>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <i class="fas fa-home"></i>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="step-info">
-                                                <div class="step-text">
-                                                    <div>Delivered</div>
-                                                    <div class="step-date">
-                                                        <c:choose>
-                                                            <c:when test="${not empty deliveredTime}">
-                                                                <span data-date="${deliveredTime}"></span>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                Not yet
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                </div>
+                                            <div class="timeline-meta">
+                                                <span class="timeline-date" data-date="${order.placedAt}"></span>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Step 2: Approved -->
+                                    <c:choose>
+                                        <c:when test="${not empty approvedTime}">
+                                            <c:set var="approvedDotClass" value="completed"/>
+                                            <c:set var="approvedIconClass" value="text-info"/>
+                                        </c:when>
+                                        <c:when test="${order.status == 'APPROVED' || order.status == 'SHIPPED' || order.status == 'COMPLETED' || order.status == 'RETURNED'}">
+                                            <c:set var="approvedDotClass" value="completed"/>
+                                            <c:set var="approvedIconClass" value="text-info"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="approvedDotClass" value=""/>
+                                            <c:set var="approvedIconClass" value="text-muted"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot ${approvedDotClass}"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-status">
+                                                <i class="fas fa-check-circle ${approvedIconClass}"></i>
+                                                <span>Approved</span>
+                                            </div>
+                                            <div class="timeline-meta">
+                                                <c:choose>
+                                                    <c:when test="${not empty approvedTime}">
+                                                        <span class="timeline-date" data-date="${approvedTime}"></span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-muted">Not yet</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3: Shipping -->
+                                    <c:choose>
+                                        <c:when test="${not empty shippedTime}">
+                                            <c:set var="shippingDotClass" value="completed"/>
+                                            <c:set var="shippingIconClass" value="text-primary"/>
+                                        </c:when>
+                                        <c:when test="${order.status == 'SHIPPED' || order.status == 'COMPLETED' || order.status == 'RETURNED'}">
+                                            <c:set var="shippingDotClass" value="completed"/>
+                                            <c:set var="shippingIconClass" value="text-primary"/>
+                                        </c:when>
+                                        <c:when test="${order.status == 'APPROVED'}">
+                                            <c:set var="shippingDotClass" value="current"/>
+                                            <c:set var="shippingIconClass" value="text-primary"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="shippingDotClass" value=""/>
+                                            <c:set var="shippingIconClass" value="text-muted"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot ${shippingDotClass}"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-status">
+                                                <i class="fas fa-shipping-fast ${shippingIconClass}"></i>
+                                                <span>Shipping</span>
+                                            </div>
+                                            <div class="timeline-meta">
+                                                <c:choose>
+                                                    <c:when test="${not empty shippedTime}">
+                                                        <span class="timeline-date" data-date="${shippedTime}"></span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-muted">Not yet</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 4: Delivered -->
+                                    <c:choose>
+                                        <c:when test="${not empty deliveredTime}">
+                                            <c:set var="deliveredDotClass" value="completed"/>
+                                            <c:set var="deliveredIconClass" value="text-success"/>
+                                        </c:when>
+                                        <c:when test="${order.status == 'COMPLETED' || order.status == 'RETURNED'}">
+                                            <c:set var="deliveredDotClass" value="completed"/>
+                                            <c:set var="deliveredIconClass" value="text-success"/>
+                                        </c:when>
+                                        <c:when test="${order.status == 'SHIPPED'}">
+                                            <c:set var="deliveredDotClass" value="current"/>
+                                            <c:set var="deliveredIconClass" value="text-success"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <c:set var="deliveredDotClass" value=""/>
+                                            <c:set var="deliveredIconClass" value="text-muted"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot ${deliveredDotClass}"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-status">
+                                                <i class="fas fa-home ${deliveredIconClass}"></i>
+                                                <span>Delivered</span>
+                                            </div>
+                                            <div class="timeline-meta">
+                                                <c:choose>
+                                                    <c:when test="${not empty deliveredTime}">
+                                                        <span class="timeline-date" data-date="${deliveredTime}"></span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-muted">Not yet</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Optional: Returned -->
+                                    <c:if test="${not empty returnedTime || order.status == 'RETURNED'}">
+                                        <div class="timeline-item">
+                                            <div class="timeline-dot ${not empty returnedTime ? 'completed' : 'current'}"></div>
+                                            <div class="timeline-content">
+                                                <div class="timeline-status">
+                                                    <i class="fas fa-undo-alt ${not empty returnedTime ? 'text-secondary' : 'text-secondary'}"></i>
+                                                    <span>Returned</span>
+                                                </div>
+                                                <div class="timeline-meta">
+                                                    <c:choose>
+                                                        <c:when test="${not empty returnedTime}">
+                                                            <span class="timeline-date" data-date="${returnedTime}"></span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-muted">Processing</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+
+                                    <!-- Optional: Cancelled -->
+                                    <c:if test="${order.status == 'CANCELLED' || not empty cancelledTime}">
+                                        <div class="timeline-item">
+                                            <div class="timeline-dot ${not empty cancelledTime ? 'completed' : 'current'}"></div>
+                                            <div class="timeline-content">
+                                                <div class="timeline-status">
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                    <span>Cancelled</span>
+                                                </div>
+                                                <div class="timeline-meta">
+                                                    <c:choose>
+                                                        <c:when test="${not empty cancelledTime}">
+                                                            <span class="timeline-date" data-date="${cancelledTime}"></span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-muted">Processing</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
                                 </div>
-                            </c:if>
+                            </div>
 
                             <!-- Order Summary -->
                             <div class="order-summary">
@@ -646,25 +763,39 @@
                                     <h6>Payment Summary</h6>
                                     <div class="summary-item">
                                         <span>Items Subtotal:</span>
-                                        <span>$<fmt:formatNumber value="${order.totalAmount - order.shippingFee}" pattern="#,##0.00"/></span>
+                                        <span>$<fmt:formatNumber value="${totalOrder}" pattern="#,##0.00"/></span>
                                     </div>
                                     <div class="summary-item">
                                         <span>Shipping Fee:</span>
                                         <span>$<fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00"/></span>
                                     </div>
+                                    <c:if test="${not empty discount}">
+                                        <div class="summary-item">
+                                            <span>Discount:</span>
+                                            <span>$<fmt:formatNumber value="${discount}" pattern="#,##0.00"/></span>
+                                        </div>
+                                    </c:if>
                                     <div class="summary-item summary-total">
                                         <span>Total Amount:</span>
                                         <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
                                     </div>
                                 </div>
                                 <div class="summary-section">
-                                    <h6>Payment Method</h6>
+                                    <h6>Payment</h6>
                                     <c:choose>
                                         <c:when test="${order.status == 'CANCELLED'}">
                                             <div class="mb-3">
                                                 <span class="payment-badge payment-cancelled">
                                                     <i class="fas fa-times-circle"></i>
                                                     Cancelled
+                                                </span>
+                                            </div>
+                                        </c:when>
+                                        <c:when test="${order.status == 'RETURNED'}">
+                                            <div class="mb-3">
+                                                <span class="payment-badge payment-cancelled">
+                                                    <i class="fas fa-times-circle"></i>
+                                                    Returned
                                                 </span>
                                             </div>
                                         </c:when>
@@ -743,8 +874,8 @@
                                                     <div class="item-variant">
                                                         <c:if test="${not empty item.color}">Color: ${item.color}</c:if>
                                                         <c:if test="${not empty item.size}"> • Size: ${item.size}</c:if>
-                                                    </div>
-                                                    <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
+                                                        </div>
+                                                        <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
                                                 </div>
                                                 <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
                                             </div>
@@ -868,11 +999,11 @@
             const OrderDetailManager = {
                 orderId: '${order.orderId}',
                 contextPath: '${pageContext.request.contextPath}',
-                
+
                 init() {
                     this.attachEventListeners();
                 },
-                
+
                 attachEventListeners() {
                     // Confirm cancel button
                     const confirmBtn = document.getElementById('confirmCancelBtn');
@@ -882,61 +1013,61 @@
                         });
                     }
                 },
-                
+
                 confirmCancelOrder(button) {
                     // Prevent double submission
                     if (button.classList.contains('btn-loading')) {
                         return;
                     }
-                    
+
                     // Show loading state
                     button.classList.add('btn-loading');
                     const originalText = button.textContent;
                     button.textContent = 'Processing...';
-                    
+
                     // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = this.contextPath + '/orders/detail';
-                    
+
                     // Add action parameter
                     const actionInput = document.createElement('input');
                     actionInput.type = 'hidden';
                     actionInput.name = 'action';
                     actionInput.value = 'cancel';
                     form.appendChild(actionInput);
-                    
+
                     // Add orderId parameter
                     const orderIdInput = document.createElement('input');
                     orderIdInput.type = 'hidden';
                     orderIdInput.name = 'orderId';
                     orderIdInput.value = this.orderId;
                     form.appendChild(orderIdInput);
-                    
+
                     // Submit the form
                     document.body.appendChild(form);
                     form.submit();
                 }
             };
-            
+
             // Initialize when DOM is ready
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 // Initialize order detail manager
                 OrderDetailManager.init();
-                
+
                 // Set active menu based on current page
                 const currentPath = window.location.pathname;
                 const menuLinks = document.querySelectorAll('.nav-link-item');
-                
+
                 menuLinks.forEach(link => {
                     const linkHref = link.getAttribute('href');
                     link.classList.remove('active');
-                    
+
                     if (currentPath.includes(linkHref.split('/').pop())) {
                         link.classList.add('active');
                     }
                 });
-                
+
                 // Default to orders if no match
                 const hasActive = document.querySelector('.nav-link-item.active');
                 if (!hasActive) {
@@ -945,7 +1076,7 @@
                         ordersLink.classList.add('active');
                     }
                 }
-                
+
                 // Format datetime like in order list
                 document.querySelectorAll('.order-date[data-date]').forEach(element => {
                     const dateStr = element.getAttribute('data-date');
@@ -965,9 +1096,9 @@
                         }
                     }
                 });
-                
-                // Format step dates
-                document.querySelectorAll('.step-date[data-date]').forEach(element => {
+
+                // Format timeline dates
+                document.querySelectorAll('.timeline-date[data-date]').forEach(element => {
                     const dateStr = element.getAttribute('data-date');
                     if (dateStr) {
                         try {
@@ -985,7 +1116,7 @@
                         }
                     }
                 });
-                
+
                 // Auto-hide alerts after 5 seconds
                 const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
                 alerts.forEach(alert => {
@@ -995,7 +1126,7 @@
                     }, 5000);
                 });
             });
-            
+
             // Export to window
             window.OrderDetailManager = OrderDetailManager;
         </script>

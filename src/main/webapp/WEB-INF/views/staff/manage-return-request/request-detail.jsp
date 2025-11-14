@@ -42,7 +42,7 @@
                 margin-bottom: 24px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
-            
+
             .back-btn {
                 color: #007bff;
                 text-decoration: none;
@@ -149,6 +149,14 @@
             }
             .btn-refund {
                 background-color: #17a2b8;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                font-weight: 500;
+            }
+            .btn-complete {
+                background-color: #0d6efd;
                 color: white;
                 padding: 10px 20px;
                 border: none;
@@ -300,7 +308,8 @@
                                     <div class="info-value">
                                         <!-- ✅ FIX 2: Sửa logic status badge - case insensitive -->
                                         <c:set var="statusUpper" value="${fn:toUpperCase(returnRequest.returnStatus)}"/>
-                                        <span class="badge bg-${statusUpper == 'APPROVED' ? 'success' : statusUpper == 'PENDING' ? 'warning' : statusUpper == 'REJECTED' ? 'danger' : 'secondary'}">
+                                        <!--<span class="badge bg-${statusUpper == 'APPROVED' ? 'success' : statusUpper == 'PENDING' ? 'warning' : statusUpper == 'REJECTED' ? 'danger' : 'secondary'}">-->
+                                        <span class="badge bg-${statusUpper == 'APPROVED' ? 'success' : statusUpper == 'PENDING' ? 'warning' : statusUpper == 'REJECTED' ? 'danger' : statusUpper == 'RETURNED' ? 'info' : 'secondary'}">
                                             <c:out value="${returnRequest.returnStatus}"/>
                                         </span>
                                     </div>
@@ -412,7 +421,7 @@
 
                             <c:if test="${statusUpper == 'PENDING'}">
                                 <div class="action-buttons">
-                                    <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
+                                    <form method="post" action="${pageContext.request.contextPath}/staff/manage-return-request" style="display: inline;">
                                         <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
                                         <input type="hidden" name="status" value="APPROVED">
@@ -420,7 +429,7 @@
                                             <i class="fas fa-check"></i> Approve Request
                                         </button>
                                     </form>
-                                    <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
+                                    <form method="post" action="${pageContext.request.contextPath}/staff/manage-return-request" style="display: inline;">
                                         <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
                                         <input type="hidden" name="status" value="REJECTED">
@@ -433,25 +442,15 @@
 
                             <!-- ✅ FIX 8: Chỉ hiện nút Process Refund nếu chưa refund -->
                             <c:if test="${statusUpper == 'APPROVED'}">
-                                <!-- Check if any detail is not yet refunded -->
-                                <c:set var="hasUnrefunded" value="false"/>
-                                <c:forEach var="detail" items="${returnDetails}">
-                                    <c:if test="${detail.refundDate == null}">
-                                        <c:set var="hasUnrefunded" value="true"/>
-                                    </c:if>
-                                </c:forEach>
-
-                                <c:if test="${hasUnrefunded}">
-                                    <div class="action-buttons">
-                                        <form method="post" action="${pageContext.request.contextPath}/admin/manage-return-request" style="display: inline;">
-                                            <input type="hidden" name="action" value="processRefund">
-                                            <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
-                                            <button type="submit" class="btn-refund" onclick="return confirm('Are you sure you want to process the refund?')">
-                                                <i class="fas fa-money-bill-wave"></i> Process Refund
-                                            </button>
-                                        </form>
-                                    </div>
-                                </c:if>
+                                <div class="action-buttons">
+                                    <form method="post" action="${pageContext.request.contextPath}/staff/manage-return-request" style="display: inline;">
+                                        <input type="hidden" name="action" value="completeReturn">
+                                        <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
+                                        <button type="submit" class="btn-complete" onclick="return confirm('Mark this return as completed? Inventory will be restored.')">
+                                            <i class="fas fa-box-open"></i> Complete Return
+                                        </button>
+                                    </form>
+                                </div>
                             </c:if>
                         </div>
 
@@ -485,18 +484,30 @@
                                         </div>
                                     </c:if>
 
+                                    <c:if test="${statusUpper == 'RETURNED'}">
+                                        <div class="timeline-item">
+                                            <div class="timeline-date">
+                                                <c:out value="${returnRequest.formattedDecideDate}" default="N/A"/>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <strong>Return Completed</strong><br>
+                                                Inventory restored and order closed
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                    
                                     <!-- Show refund timeline if applicable -->
-                                    <c:if test="${statusUpper == 'APPROVED'}">
-                                        <c:set var="hasRefunded" value="false"/>
+                                    <c:if test="${statusUpper == 'RETURNED'}">
+                                        <c:set var="hasRefundProcessing" value="false"/>
                                         <c:set var="refundDate" value=""/>
                                         <c:forEach var="detail" items="${returnDetails}">
-                                            <c:if test="${detail.refundDate != null && !hasRefunded}">
-                                                <c:set var="hasRefunded" value="true"/>
+                                            <c:if test="${detail.refundDate != null && !hasRefundProcessing}">
+                                                <c:set var="hasRefundProcessing" value="true"/>
                                                 <c:set var="refundDate" value="${detail.formattedRefundDate}"/>
                                             </c:if>
                                         </c:forEach>
 
-                                        <c:if test="${hasRefunded}">
+                                        <c:if test="${hasRefundProcessing}">
                                             <div class="timeline-item">
                                                 <div class="timeline-date"><c:out value="${refundDate}"/></div>
                                                 <div class="timeline-content">

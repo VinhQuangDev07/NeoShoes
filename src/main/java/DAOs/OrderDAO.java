@@ -339,10 +339,11 @@ public class OrderDAO extends DB.DBContext {
 
             try {
                 // Update order timestamp
-                String updateOrderSql = "UPDATE [Order] SET UpdatedAt = ? WHERE OrderId = ?";
+                String updateOrderSql = "UPDATE [Order] SET UpdatedAt = ?, PaymentStatusId = ?  WHERE OrderId = ?";
                 try ( PreparedStatement ps = con.prepareStatement(updateOrderSql)) {
                     ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-                    ps.setInt(2, orderId);
+                    ps.setInt(2, 4);
+                    ps.setInt(3, orderId);
                     ps.executeUpdate();
                 }
 
