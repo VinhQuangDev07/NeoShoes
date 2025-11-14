@@ -8,6 +8,7 @@ import java.util.List;
 import DAOs.VoucherDAO;
 import Models.Customer;
 import Models.Voucher;
+import Utils.Utils;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -205,7 +206,7 @@ public class VoucherServlet extends HttpServlet {
                 out.print("{\"success\": false, \"message\": \"You have used up all attempts for this voucher!\"}");
             } else {
                 // Calculate discount
-                double discount = calculateDiscount(voucher, orderTotal);
+                double discount = Utils.calculateDiscount(voucher, orderTotal);
                 double finalAmount = orderTotal - discount;
 
                 // Save to session
@@ -269,19 +270,6 @@ public class VoucherServlet extends HttpServlet {
 
         response.setContentType("application/json; charset=UTF-8");
         response.getWriter().write("{\"count\":" + count + "}");
-    }
-
-    private double calculateDiscount(Voucher voucher, double orderTotal) {
-        if ("PERCENTAGE".equalsIgnoreCase(voucher.getType())) {
-            double discount = orderTotal * voucher.getValue().doubleValue() / 100;
-            if (voucher.getMaxValue() != null && discount > voucher.getMaxValue().doubleValue()) {
-                return voucher.getMaxValue().doubleValue();
-            }
-            return discount;
-        } else {
-            // Fixed amount
-            return voucher.getValue().doubleValue();
-        }
     }
 
     private void showVoucherDetails(HttpServletRequest request, HttpServletResponse response, int customerId)

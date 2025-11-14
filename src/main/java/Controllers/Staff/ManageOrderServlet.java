@@ -5,9 +5,13 @@
 package Controllers.Staff;
 
 import DAOs.OrderDAO;
+import DAOs.VoucherDAO;
 import Models.Order;
+import Models.OrderDetail;
 import Models.OrderStatusHistory;
 import Models.Staff;
+import Models.Voucher;
+import Utils.Utils;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -27,10 +31,12 @@ import jakarta.servlet.http.HttpSession;
 public class ManageOrderServlet extends HttpServlet {
 
     private OrderDAO orderDAO;
+    private VoucherDAO voucherDAO ;
 
     @Override
     public void init() throws ServletException {
         orderDAO = new OrderDAO();
+        voucherDAO = new VoucherDAO();
         super.init();
     }
 
@@ -127,8 +133,24 @@ public class ManageOrderServlet extends HttpServlet {
             // Get order status history
             List<OrderStatusHistory> statusHistory = orderDAO.getOrderStatusHistory(orderId);
             
+            List<OrderDetail> orderDetails = order.getItems();
+            
+            double totalOrder = 0;
+            for (OrderDetail orderDetail : orderDetails) {
+                totalOrder += orderDetail.getDetailPrice().doubleValue() * orderDetail.getDetailQuantity();
+            }
+
+            if (order.getVoucherId() != null) {
+                Voucher voucher = voucherDAO.getVoucherById(order.getVoucherId());
+                if (voucher != null) {
+                    double discount = Utils.calculateDiscount(voucher, totalOrder + order.getShippingFee().doubleValue());
+                    request.setAttribute("discount", discount);
+                }
+            }
+            
             // Set attributes for JSP
             request.setAttribute("order", order);
+            request.setAttribute("totalOrder", totalOrder);
             request.setAttribute("statusHistory", statusHistory);
             
             // Forward to order detail JSP

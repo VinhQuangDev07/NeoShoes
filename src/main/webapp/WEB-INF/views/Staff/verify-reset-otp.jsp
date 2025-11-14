@@ -145,13 +145,13 @@
             
             <div>
                 <label>New Password:</label>
-                <input type="password" name="newPassword" required minlength="6" 
-                       placeholder="Minimum 6 characters">
+                <input type="password" name="newPassword" required minlength="8" 
+                       placeholder="Minimum 8 characters">
             </div>
             
             <div>
                 <label>Confirm Password:</label>
-                <input type="password" name="confirmPassword" required minlength="6" 
+                <input type="password" name="confirmPassword" required minlength="8" 
                        placeholder="Re-enter password">
             </div>
             

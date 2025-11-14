@@ -6,6 +6,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <title>Create Return Request</title>
         <style>
             * {
@@ -23,7 +29,6 @@
 
             /* Wrapper cho content chính */
             .main-wrapper {
-                margin-top: 74px;
                 padding: 20px;
                 min-height: calc(100vh - 74px);
             }
@@ -460,209 +465,218 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <div class="main-wrapper">
-            <div class="container">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <h1>
-                        <span>↩️</span>
-                        Create Return Request
-                    </h1>
-                    <a href="${pageContext.request.contextPath}/customer/orders" class="btn-back">
-                        ← Back to Orders
-                    </a>
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <jsp:include page="/WEB-INF/views/customer/common/customer-sidebar.jsp"/>
                 </div>
-
-                <!-- Error Message -->
-                <c:if test="${not empty errorMessage}">
-                    <div class="error-message">
-                        <span>❌</span>
-                        <span><c:out value="${errorMessage}"/></span>
+                <div class="container col-lg-9">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <h1>
+                            <span>↩️</span>
+                            Create Return Request
+                        </h1>
+                        <a href="${pageContext.request.contextPath}/orders" class="btn-back">
+                            ← Back to Orders
+                        </a>
                     </div>
-                </c:if>
 
-                <!-- Success Message -->
-                <c:if test="${not empty successMessage}">
-                    <div class="success-message">
-                        <span>✅</span>
-                        <span><c:out value="${successMessage}"/></span>
-                    </div>
-                </c:if>
+                    <!-- Error Message -->
+                    <c:if test="${not empty errorMessage}">
+                        <div class="error-message">
+                            <span>❌</span>
+                            <span><c:out value="${errorMessage}"/></span>
+                        </div>
+                    </c:if>
 
-                <!-- Order Summary -->
-                <div class="order-summary">
-                    <h2>📦 Order Summary</h2>
-                    <div class="order-info">
-                        <div class="order-info-item">
-                            <div class="order-info-label">Order ID</div>
-                            <div class="order-info-value">#<c:out value="${order.orderId}"/></div>
+                    <!-- Success Message -->
+                    <c:if test="${not empty successMessage}">
+                        <div class="success-message">
+                            <span>✅</span>
+                            <span><c:out value="${successMessage}"/></span>
                         </div>
-                        <div class="order-info-item">
-                            <div class="order-info-label">Total Amount</div>
-                            <div class="order-info-value">$<c:out value="${order.totalAmount}"/></div>
-                        </div>
-                        <div class="order-info-item">
-                            <div class="order-info-label">Status</div>
-                            <div class="order-info-value">
-                                <span class="badge badge-success"><c:out value="${order.status}"/></span>
+                    </c:if>
+
+                    <!-- Order Summary -->
+                    <div class="order-summary">
+                        <h2>📦 Order Summary</h2>
+                        <div class="order-info">
+                            <div class="order-info-item">
+                                <div class="order-info-label">Order ID</div>
+                                <div class="order-info-value">#<c:out value="${order.orderId}"/></div>
+                            </div>
+                            <div class="order-info-item">
+                                <div class="order-info-label">Total Amount</div>
+                                <div class="order-info-value">$<c:out value="${order.totalAmount}"/></div>
+                            </div>
+                            <div class="order-info-item">
+                                <div class="order-info-label">Status</div>
+                                <div class="order-info-value">
+                                    <span class="badge badge-success"><c:out value="${order.status}"/></span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Form Card -->
-                <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/return-request" method="POST" id="returnRequestForm">               
+                    <!-- Form Card -->
+                    <div class="form-card">
+                        <form action="${pageContext.request.contextPath}/return-request" method="POST" id="returnRequestForm">               
 
-                        <input type="hidden" name="action" value="create">
-                        <input type="hidden" name="orderId" value="<c:out value='${order.orderId}'/>">
-                        <input type="hidden" name="customerId" value="<c:out value='${sessionScope.user.customerId}'/>">
+                            <input type="hidden" name="action" value="create">
+                            <input type="hidden" name="orderId" value="<c:out value='${order.orderId}'/>">
+                            <input type="hidden" name="customerId" value="<c:out value='${sessionScope.user.customerId}'/>">
 
-                        <!-- Select Items Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Select Items to Return</h2>
-                            <table class="products-table">
-                                <thead>
-                                    <tr>
-                                        <th class="checkbox-cell">Select</th>
-                                        <th>Product</th>
-                                        <th>Ordered Qty</th>
-                                        <th>Price</th>
-                                        <th>Return Qty</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="item" items="${order.items}">
+                            <!-- Select Items Section -->
+                            <div class="form-section">
+                                <h2 class="section-title">Select Items to Return</h2>
+                                <table class="products-table">
+                                    <thead>
                                         <tr>
-                                            <td class="checkbox-cell">
-                                                <input type="checkbox" 
-                                                       name="productId" 
-                                                       value="${item.productVariantId}"
-                                                       data-max="${item.detailQuantity}"
-                                                       onchange="toggleQty(this, ${item.productVariantId})">
-                                            </td>
-                                            <td>
-                                                <strong><c:out value="${item.productName}"/></strong>
-                                            </td>
-                                            <td><c:out value="${item.detailQuantity}"/></td>
-                                            <td>$<c:out value="${item.detailPrice}"/></td>
-                                            <td>
-                                                <input type="hidden" 
-                                                       name="price_${item.productVariantId}" 
-                                                       value="${item.detailPrice}">
-
-                                                <input type="number" 
-                                                       id="qty_${item.productVariantId}"
-                                                       name="qty_${item.productVariantId}" 
-                                                       value="${item.detailQuantity}"
-                                                       min="1"
-                                                       max="${item.detailQuantity}"
-                                                       class="qty-input"
-                                                       disabled>
-                                            </td>
+                                            <th class="checkbox-cell">Select</th>
+                                            <th>Product</th>
+                                            <th>Ordered Qty</th>
+                                            <th>Price</th>
+                                            <th>Return Qty</th>
                                         </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                            <div class="helper-text">* Select products you want to return and adjust quantities if needed</div>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        <c:forEach var="item" items="${order.items}">
+                                            <tr>
+                                                <td class="checkbox-cell">
+                                                    <input type="checkbox" 
+                                                           name="productId" 
+                                                           value="${item.productVariantId}"
+                                                           data-max="${item.detailQuantity}"
+                                                           onchange="toggleQty(this, ${item.productVariantId})">
+                                                </td>
+                                                <td>
+                                                    <strong><c:out value="${item.productName}"/></strong>
+                                                </td>
+                                                <td><c:out value="${item.detailQuantity}"/></td>
+                                                <td>$<c:out value="${item.detailPrice}"/></td>
+                                                <td>
+                                                    <input type="hidden" 
+                                                           name="price_${item.productVariantId}" 
+                                                           value="${item.detailPrice}">
 
-                        <!-- Return Information Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Return Information</h2>
-
-                            <div class="form-group">
-                                <label for="reason">
-                                    Return Reason
-                                    <span class="required">*</span>
-                                </label>
-                                <select id="reason" name="reason" class="form-control" required>
-                                    <option value="">-- Select a reason --</option>
-                                    <option value="Defective Product">Defective Product</option>
-                                    <option value="Wrong Item">Wrong Item Received</option>
-                                    <option value="Not as Described">Not as Described</option>
-                                    <option value="Changed Mind">Changed Mind</option>
-                                    <option value="Better Price Found">Better Price Found</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                                                    <input type="number" 
+                                                           id="qty_${item.productVariantId}"
+                                                           name="qty_${item.productVariantId}" 
+                                                           value="${item.detailQuantity}"
+                                                           min="1"
+                                                           max="${item.detailQuantity}"
+                                                           class="qty-input"
+                                                           disabled>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </tbody>
+                                </table>
+                                <div class="helper-text">* Select products you want to return and adjust quantities if needed</div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="note">Additional Note</label>
-                                <textarea id="note" 
-                                          name="note" 
-                                          class="form-control" 
-                                          maxlength="500"
-                                          placeholder="Please provide any additional details about your return request..."></textarea>
-                                <div class="helper-text">Optional: Add any relevant information about your return (max 500 characters)</div>
-                            </div>
-                        </div>
+                            <!-- Return Information Section -->
+                            <div class="form-section">
+                                <h2 class="section-title">Return Information</h2>
 
-                        <!-- Bank Information Section -->
-                        <div class="form-section">
-                            <h2 class="section-title">Refund Bank Information</h2>
-
-                            <div class="form-row">
                                 <div class="form-group">
-                                    <label for="bankName">
-                                        Bank Name
+                                    <label for="reason">
+                                        Return Reason
                                         <span class="required">*</span>
                                     </label>
-                                    <select id="bankName" name="bankName" class="form-control" required>
-                                        <option value="">-- Select Bank --</option>
-                                        <option value="VCB">Vietcombank</option>
-                                        <option value="ACB">ACB Bank</option>
-                                        <option value="VTB">VietinBank</option>
-                                        <option value="TCB">Techcombank</option>
-                                        <option value="MB">MB Bank</option>
-                                        <option value="BIDV">BIDV</option>
-                                        <option value="AGR">Agribank</option>
+                                    <select id="reason" name="reason" class="form-control" required>
+                                        <option value="">-- Select a reason --</option>
+                                        <option value="Defective Product">Defective Product</option>
+                                        <option value="Wrong Item">Wrong Item Received</option>
+                                        <option value="Not as Described">Not as Described</option>
+                                        <option value="Changed Mind">Changed Mind</option>
+                                        <option value="Better Price Found">Better Price Found</option>
+                                        <option value="Other">Other</option>
                                     </select>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="accountNumber">
-                                        Account Number
-                                        <span class="required">*</span>
-                                    </label>
-                                    <input type="text" 
-                                           id="accountNumber" 
-                                           name="accountNumber" 
-                                           class="form-control" 
-                                           placeholder="Enter account number"
-                                           pattern="\d{6,}"
-                                           title="Account number must be at least 6 digits"
-                                           required>
-                                    <div class="helper-text">Enter at least 6 digits</div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="accountHolder">
-                                        Account Holder Name
-                                        <span class="required">*</span>
-                                    </label>
-                                    <input type="text" 
-                                           id="accountHolder" 
-                                           name="accountHolder" 
-                                           class="form-control" 
-                                           placeholder="Enter account holder name"
-                                           required>
+                                    <label for="note">Additional Note</label>
+                                    <textarea id="note" 
+                                              name="note" 
+                                              class="form-control" 
+                                              maxlength="500"
+                                              placeholder="Please provide any additional details about your return request..."></textarea>
+                                    <div class="helper-text">Optional: Add any relevant information about your return (max 500 characters)</div>
                                 </div>
                             </div>
-                            <div class="helper-text">⚠️ Please ensure bank information is correct for refund processing</div>
-                        </div>
 
-                        <!-- Form Actions -->
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-secondary" onclick="window.history.back()">
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="submitBtn">
-                                <span id="submitBtnText">✓ Submit Return Request</span>
-                                <span class="spinner" id="submitSpinner"></span>
-                            </button>
-                        </div>
-                    </form>
+                            <!-- Bank Information Section -->
+                            <div class="form-section">
+                                <h2 class="section-title">Refund Bank Information</h2>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="bankName">
+                                            Bank Name
+                                            <span class="required">*</span>
+                                        </label>
+                                        <select id="bankName" name="bankName" class="form-control" required>
+                                            <option value="">-- Select Bank --</option>
+                                            <option value="VCB">Vietcombank</option>
+                                            <option value="ACB">ACB Bank</option>
+                                            <option value="VTB">VietinBank</option>
+                                            <option value="TCB">Techcombank</option>
+                                            <option value="MB">MB Bank</option>
+                                            <option value="BIDV">BIDV</option>
+                                            <option value="AGR">Agribank</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="accountNumber">
+                                            Account Number
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               id="accountNumber" 
+                                               name="accountNumber" 
+                                               class="form-control" 
+                                               placeholder="Enter account number"
+                                               pattern="\d{6,}"
+                                               title="Account number must be at least 6 digits"
+                                               required>
+                                        <div class="helper-text">Enter at least 6 digits</div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="accountHolder">
+                                            Account Holder Name
+                                            <span class="required">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               id="accountHolder" 
+                                               name="accountHolder" 
+                                               class="form-control" 
+                                               placeholder="Enter account holder name"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="helper-text">⚠️ Please ensure bank information is correct for refund processing</div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <span id="submitBtnText">✓ Submit Return Request</span>
+                                    <span class="spinner" id="submitSpinner"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -684,7 +698,11 @@
                 </div>
             </div>
         </div>
+        <!-- Footer -->
+        <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
 
+        <!-- Bootstrap 5 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             // Global variables
             let formSubmitting = false;

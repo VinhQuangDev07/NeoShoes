@@ -13,15 +13,19 @@ public class OrderStatus {
     private int processing;
     private int shipped;
     private int delivered;
+    private int returned;
+    private int cancelled;
 
     public OrderStatus() {
     }
 
-    public OrderStatus(int pending, int processing, int shipped, int delivered) {
+    public OrderStatus(int pending, int processing, int shipped, int delivered, int returned, int cancelled) {
         this.pending = pending;
         this.processing = processing;
         this.shipped = shipped;
         this.delivered = delivered;
+        this.returned = returned;
+        this.cancelled = cancelled;
     }
 
     public int getPending() {
@@ -54,6 +58,22 @@ public class OrderStatus {
 
     public void setDelivered(int delivered) {
         this.delivered = delivered;
+    }
+
+    public int getReturned() {
+        return returned;
+    }
+
+    public void setReturned(int returned) {
+        this.returned = returned;
+    }
+
+    public int getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(int cancelled) {
+        this.cancelled = cancelled;
     }
     
     

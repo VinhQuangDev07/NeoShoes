@@ -614,25 +614,39 @@
                         <h6>Payment Summary</h6>
                         <div class="summary-item">
                             <span>Items Subtotal:</span>
-                            <span>$<fmt:formatNumber value="${order.totalAmount - order.shippingFee}" pattern="#,##0.00"/></span>
+                            <span>$<fmt:formatNumber value="${totalOrder}" pattern="#,##0.00"/></span>
                         </div>
                         <div class="summary-item">
                             <span>Shipping Fee:</span>
                             <span>$<fmt:formatNumber value="${order.shippingFee}" pattern="#,##0.00"/></span>
                         </div>
+                        <c:if test="${not empty discount}">
+                            <div class="summary-item">
+                                <span>Discount:</span>
+                                <span>$<fmt:formatNumber value="${discount}" pattern="#,##0.00"/></span>
+                            </div>
+                        </c:if>
                         <div class="summary-item summary-total">
                             <span>Total Amount:</span>
                             <span>$<fmt:formatNumber value="${order.totalAmount}" pattern="#,##0.00"/></span>
                         </div>
                     </div>
                     <div class="summary-section">
-                        <h6>Payment Method</h6>
+                        <h6>Payment</h6>
                         <c:choose>
                             <c:when test="${order.status == 'CANCELLED'}">
                                 <div class="mb-3">
                                     <span class="payment-badge payment-cancelled">
                                         <i class="fas fa-times-circle"></i>
                                         Cancelled
+                                    </span>
+                                </div>
+                            </c:when>
+                            <c:when test="${order.status == 'RETURNED'}">
+                                <div class="mb-3">
+                                    <span class="payment-badge payment-cancelled">
+                                        <i class="fas fa-times-circle"></i>
+                                        Returned
                                     </span>
                                 </div>
                             </c:when>
