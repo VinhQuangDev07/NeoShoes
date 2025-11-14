@@ -4,8 +4,13 @@
  */
 package Utils;
 
+import Models.Voucher;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.MessageDigest;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  *
@@ -34,7 +39,7 @@ public class Utils {
         String hashedInput = hashPassword(plainPassword);
         return hashedInput.equalsIgnoreCase(storedHash);
     }
-    
+
     /**
      * Get default date range (last 30 days)
      */
@@ -43,7 +48,7 @@ public class Utils {
         LocalDate startDate = endDate.minusDays(29);
         return new String[]{startDate.toString(), endDate.toString()};
     }
-    
+
     /**
      * Get default month range (last 12 months)
      */
@@ -55,13 +60,26 @@ public class Utils {
             endDate.toString().substring(0, 7)
         };
     }
-    
+
     /**
      * Get default year range (last 5 years)
      */
     public static int[] getDefaultYearRange() {
         int currentYear = LocalDate.now().getYear();
         return new int[]{currentYear - 4, currentYear};
+    }
+    
+    public static double calculateDiscount(Voucher voucher, double orderTotal) {
+        if ("PERCENTAGE".equalsIgnoreCase(voucher.getType())) {
+            double discount = orderTotal * voucher.getValue().doubleValue() / 100;
+            if (voucher.getMaxValue() != null && discount > voucher.getMaxValue().doubleValue()) {
+                return voucher.getMaxValue().doubleValue();
+            }
+            return discount;
+        } else {
+            // Fixed amount
+            return voucher.getValue().doubleValue();
+        }
     }
 
 }

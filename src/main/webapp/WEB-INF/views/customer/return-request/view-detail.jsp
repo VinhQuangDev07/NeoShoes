@@ -6,6 +6,12 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <title>Return Request Details</title>
         <style>
             * {
@@ -23,7 +29,6 @@
 
             /* Wrapper cho content chính */
             .main-wrapper {
-                margin-top: 74px;
                 padding: 20px;
                 min-height: calc(100vh - 74px);
             }
@@ -134,6 +139,11 @@
             }
 
             .status-COMPLETED {
+                background-color: #dbeafe;
+                color: #1e40af;
+            }
+            
+            .status-RETURNED {
                 background-color: #dbeafe;
                 color: #1e40af;
             }
@@ -308,236 +318,259 @@
         </style>
     </head>
     <body>
+        <!-- Header -->
+        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <div class="main-wrapper">
-            <div class="container">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <h1>
-                        <span>📄</span>
-                        Return Request Details
-                    </h1>
-                    <div class="header-actions">
-                        <a href="${pageContext.request.contextPath}/orders" class="btn btn-back">
-                            ← Back to Orders
-                        </a>
-
-                        <c:if test="${returnRequest.returnStatus == 'Pending' || returnRequest.returnStatus == 'PENDING'}">
-                            <a href="${pageContext.request.contextPath}/return-request?action=edit&requestId=${returnRequest.returnRequestId}" 
-                               class="btn btn-edit">
-                                ✏️ Edit Request
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <jsp:include page="/WEB-INF/views/customer/common/customer-sidebar.jsp"/>
+                </div>
+                <div class="container">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <h1>
+                            <span>📄</span>
+                            Return Request Details
+                        </h1>
+                        <div class="header-actions">
+                            <a href="${pageContext.request.contextPath}/orders" class="btn btn-back">
+                                ← Back to Orders
                             </a>
-                            <button onclick="confirmCancel()" class="btn btn-cancel">
-                                ❌ Cancel Request
-                            </button>
-                        </c:if>
-                    </div>
-                </div>
 
-                <!-- Status Alert -->
-                <c:if test="${returnRequest.returnStatus == 'Pending' || returnRequest.returnStatus == 'PENDING'}">
-                    <div class="alert alert-warning">
-                        <span>⏳</span>
-                        <div>
-                            <strong>Pending Review</strong> - Your return request is being processed by our team.
+                            <c:if test="${returnRequest.returnStatus == 'Pending' || returnRequest.returnStatus == 'PENDING'}">
+                                <a href="${pageContext.request.contextPath}/return-request?action=edit&requestId=${returnRequest.returnRequestId}" 
+                                   class="btn btn-edit">
+                                    ✏️ Edit Request
+                                </a>
+                                <button onclick="confirmCancel()" class="btn btn-cancel">
+                                    ❌ Cancel Request
+                                </button>
+                            </c:if>
                         </div>
                     </div>
-                </c:if>
 
-                <c:if test="${returnRequest.returnStatus == 'APPROVED'}">
-                    <div class="alert alert-info">
-                        <span>✅</span>
-                        <div>
-                            <strong>Approved</strong> - Your return request has been approved. Refund will be processed soon.
-                        </div>
-                    </div>
-                </c:if>
-
-                <!-- Request Information Card -->
-                <div class="card">
-                    <h2 class="card-title">📋 Request Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Request ID</div>
-                            <div class="info-value">#${returnRequest.returnRequestId}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Request Date</div>
-                            <div class="info-value">${formattedRequestDate}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Status</div>
-                            <div class="info-value">
-                                <span class="status-badge status-${returnRequest.returnStatus}">
-                                    ${returnRequest.returnStatus}
-                                </span>
+                    <!-- Status Alert -->
+                    <c:if test="${returnRequest.returnStatus == 'Pending' || returnRequest.returnStatus == 'PENDING'}">
+                        <div class="alert alert-warning">
+                            <span>⏳</span>
+                            <div>
+                                <strong>Pending Review</strong> - Your return request is being processed by our team.
                             </div>
                         </div>
-                        <div class="info-item">
-                            <div class="info-label">Total Refund Amount</div>
-                            <div class="info-value highlight-amount">
-                                <fmt:formatNumber value="${totalRefund}" type="currency" 
-                                                  currencySymbol="$" maxFractionDigits="2" />
+                    </c:if>
+
+                    <c:if test="${returnRequest.returnStatus == 'Approved' || returnRequest.returnStatus == 'APPROVED'}">
+                        <div class="alert alert-info">
+                            <span>✅</span>
+                            <div>
+                                <strong>Approved</strong> - Your return request has been approved. Refund will be processed soon.
                             </div>
                         </div>
+                    </c:if>
+                    
+                    <c:if test="${returnRequest.returnStatus == 'Rejected' || returnRequest.returnStatus == 'REJECTED'}">
+                        <div class="alert alert-info">
+                            <span>❌</span>
+                            <div>
+                                <strong>Rejected</strong> - Your return request has been rejected.
+                            </div>
+                        </div>
+                    </c:if>
 
-                        <c:if test="${not empty returnRequest.decideDate}">
+                    <!-- Request Information Card -->
+                    <div class="card">
+                        <h2 class="card-title">📋 Request Information</h2>
+                        <div class="info-grid">
                             <div class="info-item">
-                                <div class="info-label">Decision Date</div>
-                                <div class="info-value">${formattedDecideDate}</div>
-                            </div>
-                        </c:if>
-                    </div>
-                </div>
-
-                <!-- Order Information Card -->
-                <div class="card">
-                    <h2 class="card-title">📦 Related Order</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">Order ID</div>
-                            <div class="info-value">#${returnRequest.orderId}</div>
-                        </div>
-                        <c:if test="${not empty order}">
-                            <div class="info-item">
-                                <div class="info-label">Order Date</div>
-                                <div class="info-value">${formattedOrderDate}</div>
+                                <div class="info-label">Request ID</div>
+                                <div class="info-value">#${returnRequest.returnRequestId}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Order Total</div>
+                                <div class="info-label">Request Date</div>
+                                <div class="info-value">${formattedRequestDate}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Status</div>
                                 <div class="info-value">
-                                    <fmt:formatNumber value="${order.totalAmount}" type="currency" 
+                                    <span class="status-badge status-${returnRequest.returnStatus}">
+                                        ${returnRequest.returnStatus}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Total Refund Amount</div>
+                                <div class="info-value highlight-amount">
+                                    <fmt:formatNumber value="${totalRefund}" type="currency" 
                                                       currencySymbol="$" maxFractionDigits="2" />
                                 </div>
                             </div>
-                        </c:if>
+
+                            <c:if test="${not empty returnRequest.decideDate}">
+                                <div class="info-item">
+                                    <div class="info-label">Decision Date</div>
+                                    <div class="info-value">${formattedDecideDate}</div>
+                                </div>
+                            </c:if>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Returned Items Card -->
-                <div class="card">
-                    <h2 class="card-title">📦 Returned Items</h2>
-                    <c:choose>
-                        <c:when test="${not empty returnRequestDetails}">
-                            <table class="items-table">
-                                <thead>
-                                    <tr>
-                                        <th>Product Variant ID</th>
-
-                                        <th>Quantity</th>
-
-                                        <th>Amount</th>
-                                            <c:if test="${not empty returnRequestDetails[0].note}">
-                                            <th>Note</th>
-                                            </c:if>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="detail" items="${returnRequestDetails}">
-                                        <tr>
-                                            <td><strong>#${detail.productVariantId}</strong></td>
-                                            <td>${detail.quantity}</td>
-                                            <td>
-                                                <fmt:formatNumber value="${detail.amount}" 
-                                                                  type="currency" 
-                                                                  currencySymbol="$" 
-                                                                  maxFractionDigits="2"/>
-                                            </td>
-                                            <c:if test="${not empty detail.note}">
-                                                <td><c:out value="${detail.note}"/></td>
-                                            </c:if>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th colspan="2" style="text-align: right;">Total Refund:</th>
-                                        <th>
-                                            <span class="highlight-amount">
-                                                <fmt:formatNumber value="${totalRefund}" 
-                                                                  type="currency" 
-                                                                  currencySymbol="$" 
-                                                                  maxFractionDigits="2"/>
-                                            </span>
-                                        </th>
-                                        <c:if test="${not empty returnRequestDetails[0].note}">
-                                            <th></th>
-                                            </c:if>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="no-data">
-                                📭 No items found
+                    <!-- Order Information Card -->
+                    <div class="card">
+                        <h2 class="card-title">📦 Related Order</h2>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Order ID</div>
+                                <div class="info-value">#${returnRequest.orderId}</div>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
-
-                <!-- Return Reason Card -->
-                <div class="card">
-                    <h2 class="card-title">💬 Return Reason</h2>
-                    <div class="text-content">
-                        <c:out value="${returnRequest.reason}"/>
-                    </div>
-                </div>
-
-                <!-- Bank Account Info Card -->
-                <c:if test="${not empty returnRequest.bankAccountInfo}">
-                    <div class="card">
-                        <h2 class="card-title">🏦 Bank Account Information</h2>
-                        <div class="text-content">
-                            <c:out value="${returnRequest.bankAccountInfo}"/>
+                            <c:if test="${not empty order}">
+                                <div class="info-item">
+                                    <div class="info-label">Order Date</div>
+                                    <div class="info-value">${formattedOrderDate}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Order Total</div>
+                                    <div class="info-value">
+                                        <fmt:formatNumber value="${order.totalAmount}" type="currency" 
+                                                          currencySymbol="$" maxFractionDigits="2" />
+                                    </div>
+                                </div>
+                            </c:if>
                         </div>
                     </div>
-                </c:if>
 
-                <!-- Additional Note Card -->
-                <c:if test="${not empty returnRequest.note}">
+                    <!-- Returned Items Card -->
                     <div class="card">
-                        <h2 class="card-title">📝 Additional Note</h2>
+                        <h2 class="card-title">📦 Returned Items</h2>
+                        <c:choose>
+                            <c:when test="${not empty returnRequestDetails}">
+                                <table class="items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product Variant ID</th>
+
+                                            <th>Quantity</th>
+
+                                            <th>Amount</th>
+                                                <c:if test="${not empty returnRequestDetails[0].note}">
+                                                <th>Note</th>
+                                                </c:if>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <c:forEach var="detail" items="${returnRequestDetails}">
+                                            <tr>
+                                                <td><strong>#${detail.productVariantId}</strong></td>
+                                                <td>${detail.quantity}</td>
+                                                <td>
+                                                    <fmt:formatNumber value="${detail.amount}" 
+                                                                      type="currency" 
+                                                                      currencySymbol="$" 
+                                                                      maxFractionDigits="2"/>
+                                                </td>
+                                                <c:if test="${not empty detail.note}">
+                                                    <td><c:out value="${detail.note}"/></td>
+                                                </c:if>
+                                            </tr>
+                                        </c:forEach>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="2" style="text-align: right;">Total Refund:</th>
+                                            <th>
+                                                <span class="highlight-amount">
+                                                    <fmt:formatNumber value="${totalRefund}" 
+                                                                      type="currency" 
+                                                                      currencySymbol="$" 
+                                                                      maxFractionDigits="2"/>
+                                                </span>
+                                            </th>
+                                            <c:if test="${not empty returnRequestDetails[0].note}">
+                                                <th></th>
+                                                </c:if>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="no-data">
+                                    📭 No items found
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <!-- Return Reason Card -->
+                    <div class="card">
+                        <h2 class="card-title">💬 Return Reason</h2>
                         <div class="text-content">
-                            <c:out value="${returnRequest.note}"/>
+                            <c:out value="${returnRequest.reason}"/>
                         </div>
                     </div>
-                </c:if>
+
+                    <!-- Bank Account Info Card -->
+                    <c:if test="${not empty returnRequest.bankAccountInfo}">
+                        <div class="card">
+                            <h2 class="card-title">🏦 Bank Account Information</h2>
+                            <div class="text-content">
+                                <c:out value="${returnRequest.bankAccountInfo}"/>
+                            </div>
+                        </div>
+                    </c:if>
+
+                    <!-- Additional Note Card -->
+                    <c:if test="${not empty returnRequest.note}">
+                        <div class="card">
+                            <h2 class="card-title">📝 Additional Note</h2>
+                            <div class="text-content">
+                                <c:out value="${returnRequest.note}"/>
+                            </div>
+                        </div>
+                    </c:if>
+                </div>
             </div>
         </div>
+        <!-- Footer -->
+        <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
+
+        <!-- Bootstrap 5 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-            function confirmCancel() {
-                if (!confirm('⚠️ Are you sure you want to cancel this return request?\n\nThis action cannot be undone.')) {
-                    return;
-                }
+                                    function confirmCancel() {
+                                        if (!confirm('⚠️ Are you sure you want to cancel this return request?\n\nThis action cannot be undone.')) {
+                                            return;
+                                        }
 
-                // Create form
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '${pageContext.request.contextPath}/return-request';
+                                        // Create form
+                                        const form = document.createElement('form');
+                                        form.method = 'POST';
+                                        form.action = '${pageContext.request.contextPath}/return-request';
 
-                // Add hidden inputs
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
+                                        // Add hidden inputs
+                                        const actionInput = document.createElement('input');
+                                        actionInput.type = 'hidden';
+                                        actionInput.name = 'action';
+                                        actionInput.value = 'delete';
 
-                const requestIdInput = document.createElement('input');
-                requestIdInput.type = 'hidden';
-                requestIdInput.name = 'requestId';
-                requestIdInput.value = '${returnRequest.returnRequestId}';
+                                        const requestIdInput = document.createElement('input');
+                                        requestIdInput.type = 'hidden';
+                                        requestIdInput.name = 'requestId';
+                                        requestIdInput.value = '${returnRequest.returnRequestId}';
 
-                const customerIdInput = document.createElement('input');
-                customerIdInput.type = 'hidden';
-                customerIdInput.name = 'customerId';
-                customerIdInput.value = '${returnRequest.customerId}';
+                                        const customerIdInput = document.createElement('input');
+                                        customerIdInput.type = 'hidden';
+                                        customerIdInput.name = 'customerId';
+                                        customerIdInput.value = '${returnRequest.customerId}';
 
-                form.appendChild(actionInput);
-                form.appendChild(requestIdInput);
-                form.appendChild(customerIdInput);
+                                        form.appendChild(actionInput);
+                                        form.appendChild(requestIdInput);
+                                        form.appendChild(customerIdInput);
 
-                document.body.appendChild(form);
-                form.submit();
-            }
+                                        document.body.appendChild(form);
+                                        form.submit();
+                                    }
         </script>
     </body>
 </html>

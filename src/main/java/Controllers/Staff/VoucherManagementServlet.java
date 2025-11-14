@@ -90,8 +90,10 @@ public class VoucherManagementServlet extends HttpServlet {
                     listVouchers(request, response);
                     break;
             }
-        } catch (SQLException ex) {
-            throw new ServletException("Database error: " + ex.getMessage(), ex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error of server!");
+            response.sendRedirect(request.getContextPath() + "/staff/dashboard");
         }
     }
 
@@ -132,24 +134,24 @@ public class VoucherManagementServlet extends HttpServlet {
                     listVouchers(request, response);
                     break;
             }
-        } catch (SQLException ex) {
-            throw new ServletException("Database error: " + ex.getMessage(), ex);
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("flash_error", "Error of server!");
+            response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
         }
     }
 
     // ========== MAIN HANDLERS ==========
-    private void listVouchers(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
+    private void listVouchers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         Staff staff = (Staff) session.getAttribute("staff");
-        
+
         List<Voucher> vouchers = voucherDAO.getAllVouchersWithUsageCount();
         request.setAttribute("vouchers", vouchers);
         // Chỉ admin mới có quyền modify (thêm/sửa/xóa)
         request.setAttribute("canModify", staff.isRole());
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/voucher-list.jsp");
-        dispatcher.forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/staff/voucher-list.jsp").forward(request, response);
     }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
@@ -235,7 +237,7 @@ public class VoucherManagementServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("flash_error", "Error: " + e.getMessage());
+            session.setAttribute("flash_error", "Failed to delete voucher!");
         }
         response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
     }
@@ -254,7 +256,7 @@ public class VoucherManagementServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("flash_error", "Error: " + e.getMessage());
+            session.setAttribute("flash_error", "Failed to update voucher status!");
         }
         response.sendRedirect(request.getContextPath() + "/staff/manage-voucher");
     }

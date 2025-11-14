@@ -533,7 +533,7 @@
 
                                         <c:choose>
                                             <c:when test="${empty product.minPrice or empty product.maxPrice}">
-                                                <div id="priceText" class="price">$0.0</div>
+                                                <div id="priceText" class="price">Discontinue</div>
                                             </c:when>
                                             <c:when test="${product.minPrice != product.maxPrice}">
                                                 <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>

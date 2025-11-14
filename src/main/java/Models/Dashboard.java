@@ -4,6 +4,7 @@
  */
 package Models;
 
+import Utils.Utils;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -48,7 +49,5 @@ public class Dashboard {
     public void setTopProducts(List<Product> topProducts) {
         this.topProducts = topProducts;
     }
-    
-    
     
 }

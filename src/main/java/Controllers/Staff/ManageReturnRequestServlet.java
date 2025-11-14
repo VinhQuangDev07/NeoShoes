@@ -4,13 +4,14 @@
  */
 package Controllers.Staff;
 
+import DAOs.OrderDAO;
+import DAOs.ProductVariantDAO;
 import DAOs.ReturnRequestDAO;
 import DAOs.ReturnRequestDetailDAO;
 import Models.ReturnRequest;
 import Models.ReturnRequestDetail;
 import Models.Staff;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -188,7 +189,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
             return;
         }
         String action = request.getParameter("action");
-        
+
         if ("updateStatus".equals(action)) {
             // ✅ FIX 1: Validate requestId parameter
             String requestIdParam = request.getParameter("requestId");
@@ -256,18 +257,6 @@ public class ManageReturnRequestServlet extends HttpServlet {
 
                 // ✅ FIX 7: Chỉ xử lý details nếu update thành công
                 if (result > 0) {
-                    ReturnRequestDetailDAO rrdDAO = new ReturnRequestDetailDAO();
-                    List<ReturnRequestDetail> details = rrdDAO.getDetailsByReturnRequestId(requestId);
-
-                    // ✅ FIX 8: Check details null
-                    if (details != null && !details.isEmpty()) {
-                        // ✅ FIX 9: Cập nhật status/refund date cho details
-                        // Chỉ update refund date nếu status = APPROVED
-                        if ("APPROVED".equals(newStatus)) {
-                            rrdDAO.updateRefundDateByRequestId(requestId);
-                        }
-                    }
-
                     session.setAttribute("flash",
                             "Return request #" + requestId + " status updated to " + newStatus + " successfully");
                 } else {
@@ -280,6 +269,107 @@ public class ManageReturnRequestServlet extends HttpServlet {
             }
 
             response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
+
+        } else if ("completeReturn".equals(action)) {
+            String requestIdParam = request.getParameter("requestId");
+            if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
+                session.setAttribute("flash_error", "Request ID is required");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
+                return;
+            }
+
+            int requestId;
+            try {
+                requestId = Integer.parseInt(requestIdParam.trim());
+                if (requestId <= 0) {
+                    session.setAttribute("flash_error", "Invalid Request ID");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("flash_error", "Invalid Request ID format");
+                response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
+                return;
+            }
+
+            try {
+                ReturnRequestDAO rrDAO = new ReturnRequestDAO();
+                ReturnRequest returnRequest = rrDAO.getReturnRequestById(requestId);
+                if (returnRequest == null) {
+                    session.setAttribute("flash_error", "Return request #" + requestId + " not found");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request");
+                    return;
+                }
+
+                String originalStatus = returnRequest.getReturnStatus();
+                String currentStatus = originalStatus != null
+                        ? originalStatus.toUpperCase()
+                        : "";
+
+                if ("RETURNED".equals(currentStatus)) {
+                    session.setAttribute("flash_info", "Return request #" + requestId + " was already completed");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
+                    return;
+                }
+
+                if (!"APPROVED".equals(currentStatus)) {
+                    session.setAttribute("flash_error", "Only approved requests can be marked as completed");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
+                    return;
+                }
+
+                ReturnRequestDetailDAO detailDAO = new ReturnRequestDetailDAO();
+                List<ReturnRequestDetail> details = detailDAO.getDetailsByReturnRequestId(requestId);
+                if (details == null || details.isEmpty()) {
+                    session.setAttribute("flash_error", "No return items found to restock for request #" + requestId);
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
+                    return;
+                }
+
+                int updateResult = rrDAO.updateReturnRequestStatusByAdmin(requestId, "RETURNED");
+                if (updateResult <= 0) {
+                    ReturnRequestDetailDAO rrdDAO = new ReturnRequestDetailDAO();
+
+                    // ✅ FIX 8: Check details null
+                    if (details != null && !details.isEmpty()) {
+                        // ✅ FIX 9: Cập nhật status/refund date cho details
+                        // Chỉ update refund date nếu status = RETURNED
+                        if ("RETURNED".equals(currentStatus)) {
+                            rrdDAO.updateRefundDateByRequestId(requestId);
+                        }
+                    }
+                    session.setAttribute("flash_error", "Failed to update return request status");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
+                    return;
+                }
+
+                OrderDAO orderDAO = new OrderDAO();
+                boolean orderUpdated = orderDAO.updateOrderStatusForStaff(returnRequest.getOrderId(), "RETURNED", staff.getStaffId());
+                if (!orderUpdated) {
+                    if (originalStatus != null && !"RETURNED".equalsIgnoreCase(originalStatus)) {
+                        rrDAO.updateReturnRequestStatusByAdmin(requestId, originalStatus);
+                    }
+                    session.setAttribute("flash_error", "Unable to update order #" + returnRequest.getOrderId() + " status. Completion aborted.");
+                    response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
+                    return;
+                }
+
+                ProductVariantDAO variantDAO = new ProductVariantDAO();
+                for (ReturnRequestDetail detail : details) {
+                    if (detail != null && detail.getQuantity() > 0) {
+                        variantDAO.increaseQuantityAvailable(detail.getProductVariantId(), detail.getQuantity());
+                    }
+                }
+
+                session.setAttribute("flash",
+                        "Return request #" + requestId + " marked as RETURNED. Inventory restored and order #" + returnRequest.getOrderId() + " updated.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                session.setAttribute("flash_error", "Error completing return: " + e.getMessage());
+            }
+
+            response.sendRedirect(request.getContextPath() + "/staff/manage-return-request?action=detail&requestId=" + requestId);
 
         } else if ("delete".equals(action)) {
             // ✅ FIX 10: Validate requestId

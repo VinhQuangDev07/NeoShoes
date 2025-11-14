@@ -288,154 +288,144 @@
             }
         </style>
     </head>
-    <body class="bg-light">
+    <body>
         <jsp:include page="common/header.jsp"/>
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-        <div class="orders-container">
-            <div class="container">
-                <div class="row">
-                    <!-- Sidebar -->
-                    <div class="col-lg-3">
-                        <jsp:include page="common/customer-sidebar.jsp"/>
-                    </div>
+        <div class="container">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <jsp:include page="common/customer-sidebar.jsp"/>
+                </div>
 
-                    <!-- Main Content -->
-                    <div class="col-lg-9">
-                        <div id="main-content" class="main-content-wrapper mt-2 mb-5">
-                            <div class="card shadow-sm">
-                                <div class="card-body">
-                                    <h3 class="mb-3">Voucher Details</h3>
-                                    <p>View complete information about your voucher</p>
-                                </div>
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div id="main-content" class="main-content-wrapper mt-2 mb-5">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h3 class="mb-3">Voucher Details</h3>
+                                <p>View complete information about your voucher</p>
+                            </div>
 
-                                <div class="voucher-container p-4">
-                                    <!-- Breadcrumb Navigation -->
-<!--                                    <div class="breadcrumb-nav mb-3">
-                                        <a href="${pageContext.request.contextPath}/"><i class="fas fa-home"></i> Home</a>
-                                        <span class="separator">/</span>
-                                        <a href="${pageContext.request.contextPath}/voucher">My Vouchers</a>
-                                        <span class="separator">/</span>
-                                        <span class="current">${voucher.voucherCode}</span>
-                                    </div>-->
+                            <div class="voucher-container p-4">
 
-                                    <!-- Main Voucher Content -->
-                                    <div class="voucher-details-content">
-                                        <!-- Hero Section -->
-                                        <div class="voucher-hero">
-                                            <div class="voucher-code-display">${voucher.voucherCode}</div>
-                                            <div class="voucher-value-display">
-                                                <c:choose>
-                                                    <c:when test="${voucher.type == 'PERCENTAGE'}">
-                                                        ${voucher.value}% OFF
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫ OFF
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <p class="voucher-description-hero">${voucher.voucherDescription}</p>
-                                        </div>
-
-                                        <!-- Status Badge -->
-                                        <div class="text-center mb-3">
+                                <!-- Main Voucher Content -->
+                                <div class="voucher-details-content">
+                                    <!-- Hero Section -->
+                                    <div class="voucher-hero">
+                                        <div class="voucher-code-display">${voucher.voucherCode}</div>
+                                        <div class="voucher-value-display">
                                             <c:choose>
-                                                <c:when test="${voucher.expired}">
-                                                    <span class="status-badge status-expired"><i class="fas fa-times-circle"></i> EXPIRED</span>
-                                                </c:when>
-                                                <c:when test="${not isUsable}">
-                                                    <span class="status-badge status-used"><i class="fas fa-check-circle"></i> FULLY USED</span>
+                                                <c:when test="${voucher.type == 'PERCENTAGE'}">
+                                                    ${voucher.value}% OFF
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="status-badge status-active"><i class="fas fa-check-circle"></i> ACTIVE & READY TO USE</span>
+                                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫ OFF
                                                 </c:otherwise>
                                             </c:choose>
                                         </div>
+                                        <p class="voucher-description-hero">${voucher.voucherDescription}</p>
+                                    </div>
 
-                                        <!-- Details Card -->
-                                        <div class="details-card">
-                                            <h3><i class="fas fa-info-circle"></i> Voucher Information</h3>
+                                    <!-- Status Badge -->
+                                    <div class="text-center mb-3">
+                                        <c:choose>
+                                            <c:when test="${voucher.expired}">
+                                                <span class="status-badge status-expired"><i class="fas fa-times-circle"></i> EXPIRED</span>
+                                            </c:when>
+                                            <c:when test="${not isUsable}">
+                                                <span class="status-badge status-used"><i class="fas fa-check-circle"></i> FULLY USED</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="status-badge status-active"><i class="fas fa-check-circle"></i> ACTIVE & READY TO USE</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
 
+                                    <!-- Details Card -->
+                                    <div class="details-card">
+                                        <h3><i class="fas fa-info-circle"></i> Voucher Information</h3>
+
+                                        <div class="detail-row">
+                                            <span class="detail-label"><i class="far fa-calendar-alt"></i> Valid From</span>
+                                            <span class="detail-value"><fmt:formatDate value="${voucher.startDateAsDate}" pattern="dd MMMM yyyy"/></span>
+                                        </div>
+
+                                        <div class="detail-row">
+                                            <span class="detail-label"><i class="far fa-calendar-times"></i> Valid Until</span>
+                                            <span class="detail-value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd MMMM yyyy"/></span>
+                                        </div>
+
+                                        <c:if test="${voucher.minValue != null}">
                                             <div class="detail-row">
-                                                <span class="detail-label"><i class="far fa-calendar-alt"></i> Valid From</span>
-                                                <span class="detail-value"><fmt:formatDate value="${voucher.startDateAsDate}" pattern="dd MMMM yyyy"/></span>
+                                                <span class="detail-label"><i class="fas fa-shopping-cart"></i> Minimum Order Value</span>
+                                                <span class="detail-value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
                                             </div>
+                                        </c:if>
 
+                                        <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}">
                                             <div class="detail-row">
-                                                <span class="detail-label"><i class="far fa-calendar-times"></i> Valid Until</span>
-                                                <span class="detail-value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd MMMM yyyy"/></span>
+                                                <span class="detail-label"><i class="fas fa-chart-line"></i> Maximum Discount</span>
+                                                <span class="detail-value"><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</span>
                                             </div>
+                                        </c:if>
 
-                                            <c:if test="${voucher.minValue != null}">
-                                                <div class="detail-row">
-                                                    <span class="detail-label"><i class="fas fa-shopping-cart"></i> Minimum Order Value</span>
-                                                    <span class="detail-value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
-                                                </div>
-                                            </c:if>
-
-                                            <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}">
-                                                <div class="detail-row">
-                                                    <span class="detail-label"><i class="fas fa-chart-line"></i> Maximum Discount</span>
-                                                    <span class="detail-value"><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</span>
-                                                </div>
-                                            </c:if>
-
-                                            <c:if test="${voucher.userUsageLimit != null}">
-                                                <div class="detail-row">
-                                                    <span class="detail-label"><i class="fas fa-redo"></i> Usage Limit</span>
-                                                    <span class="detail-value">
-                                                        ${voucher.usageCount} / ${voucher.userUsageLimit} times used
-                                                        <div class="progress-bar-usage"><div class="progress-bar-fill" style="width:${(voucher.usageCount * 100.0 / voucher.userUsageLimit)}%"></div></div>
-                                                    </span>
-                                                </div>
-                                            </c:if>
-
+                                        <c:if test="${voucher.userUsageLimit != null}">
                                             <div class="detail-row">
-                                                <span class="detail-label"><i class="fas fa-tag"></i> Discount Type</span>
+                                                <span class="detail-label"><i class="fas fa-redo"></i> Usage Limit</span>
                                                 <span class="detail-value">
-                                                    <c:choose>
-                                                        <c:when test="${voucher.type == 'PERCENTAGE'}">Percentage Discount</c:when>
-                                                        <c:otherwise>Fixed Amount Discount</c:otherwise>
-                                                    </c:choose>
+                                                    ${voucher.usageCount} / ${voucher.userUsageLimit} times used
+                                                    <div class="progress-bar-usage"><div class="progress-bar-fill" style="width:${(voucher.usageCount * 100.0 / voucher.userUsageLimit)}%"></div></div>
                                                 </span>
                                             </div>
-                                        </div>
+                                        </c:if>
 
-<!--                                         Terms & Conditions 
-                                        <div class="details-card">
-                                            <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
-                                            <ul class="terms-list">
-                                                <li>This voucher is valid for online purchases only</li>
-                                                <li>Cannot be combined with other promotional vouchers</li>
-                                                <li>Non-transferable and non-refundable</li>
-                                                <li>NeoShoes reserves the right to cancel this voucher at any time</li>
-                                                <c:if test="${voucher.minValue != null}"><li>Minimum order value required: <strong><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</strong></li></c:if>
-                                                <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}"><li>Maximum discount capped at: <strong><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</strong></li></c:if>
-                                                <li>Valid until: <strong><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></strong></li>
-                                            </ul>
-                                        </div>-->
-
-                                        <!-- Action Buttons -->
-                                        <div class="action-buttons">
-                                            <c:if test="${isUsable}">
-                                                <button class="btn-action btn-primary-action" onclick="useVoucher('${voucher.voucherCode}')">
-                                                    <i class="fas fa-check-circle"></i> Use This Voucher
-                                                </button>
-                                            </c:if>
-
-                                            <button class="btn-action btn-secondary-action" onclick="copyCode('${voucher.voucherCode}')">
-                                                <i class="fas fa-copy"></i> Copy Voucher Code
-                                            </button>
-
-                                            <a href="${pageContext.request.contextPath}/voucher" class="btn-action btn-secondary-action">
-                                                <i class="fas fa-arrow-left"></i> Back to Vouchers
-                                            </a>
+                                        <div class="detail-row">
+                                            <span class="detail-label"><i class="fas fa-tag"></i> Discount Type</span>
+                                            <span class="detail-value">
+                                                <c:choose>
+                                                    <c:when test="${voucher.type == 'PERCENTAGE'}">Percentage Discount</c:when>
+                                                    <c:otherwise>Fixed Amount Discount</c:otherwise>
+                                                </c:choose>
+                                            </span>
                                         </div>
                                     </div>
+
+                                    <!-- Terms & Conditions -->
+                                    <div class="details-card">
+                                        <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
+                                        <ul class="terms-list">
+                                            <li>This voucher is valid for online purchases only</li>
+                                            <li>Cannot be combined with other promotional vouchers</li>
+                                            <li>Non-transferable and non-refundable</li>
+                                            <li>NeoShoes reserves the right to cancel this voucher at any time</li>
+                                            <c:if test="${voucher.minValue != null}"><li>Minimum order value required: <strong><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</strong></li></c:if>
+                                            <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}"><li>Maximum discount capped at: <strong><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</strong></li></c:if>
+                                            <li>Valid until: <strong><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></strong></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="action-buttons">
+                                        <c:if test="${isUsable}">
+                                            <button class="btn-action btn-primary-action" onclick="useVoucher('${voucher.voucherCode}')">
+                                                <i class="fas fa-check-circle"></i> Use This Voucher
+                                            </button>
+                                        </c:if>
+
+                                        <button class="btn-action btn-secondary-action" onclick="copyCode('${voucher.voucherCode}')">
+                                            <i class="fas fa-copy"></i> Copy Voucher Code
+                                        </button>
+
+                                        <a href="${pageContext.request.contextPath}/voucher" class="btn-action btn-secondary-action">
+                                            <i class="fas fa-arrow-left"></i> Back to Vouchers
+                                        </a>
+                                    </div>
                                 </div>
-                            </div> <!-- end card -->
-                        </div> <!-- end main-content -->
-                    </div>
+                            </div>
+                        </div> <!-- end card -->
+                    </div> <!-- end main-content -->
                 </div>
             </div>
         </div>
@@ -444,25 +434,25 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script>
-                                                function useVoucher(code) {
-                                                    if (confirm('Apply voucher "' + code + '" to your cart now?')) {
-                                                        window.location.href = '${pageContext.request.contextPath}/cart?applyVoucher=' + code;
-                                                    }
+                                            function useVoucher(code) {
+                                                if (confirm('Apply voucher "' + code + '" to your cart now?')) {
+                                                    window.location.href = '${pageContext.request.contextPath}/cart?applyVoucher=' + code;
                                                 }
+                                            }
 
-                                                function copyCode(code) {
-                                                    navigator.clipboard.writeText(code).then(() => {
-                                                        alert('Voucher code copied: ' + code);
-                                                    }).catch(() => {
-                                                        const input = document.createElement('input');
-                                                        input.value = code;
-                                                        document.body.appendChild(input);
-                                                        input.select();
-                                                        document.execCommand('copy');
-                                                        document.body.removeChild(input);
-                                                        alert('Voucher code copied: ' + code);
-                                                    });
-                                                }
+                                            function copyCode(code) {
+                                                navigator.clipboard.writeText(code).then(() => {
+                                                    alert('Voucher code copied: ' + code);
+                                                }).catch(() => {
+                                                    const input = document.createElement('input');
+                                                    input.value = code;
+                                                    document.body.appendChild(input);
+                                                    input.select();
+                                                    document.execCommand('copy');
+                                                    document.body.removeChild(input);
+                                                    alert('Voucher code copied: ' + code);
+                                                });
+                                            }
         </script>
     </body>
 </html>

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public class Voucher {
 
@@ -201,5 +202,12 @@ public class Voucher {
         }
 
         return true;
+    }
+    
+    public String getFormattedDateTime(LocalDateTime dateTime) {
+        if (dateTime != null) {
+            return dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
     }
 }

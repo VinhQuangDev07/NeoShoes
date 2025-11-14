@@ -197,9 +197,9 @@
                                                             <button class="action-btn btn-view" data-action="view" data-request-id="${r.returnRequestId}">
                                                                 <i data-lucide="eye"></i>
                                                             </button>
-                                                            <button class="action-btn btn-edit" data-action="edit" data-request-id="${r.returnRequestId}" data-status="${r.returnStatus}">
+<!--                                                            <button class="action-btn btn-edit" data-action="edit" data-request-id="${r.returnRequestId}" data-status="${r.returnStatus}">
                                                                 <i data-lucide="edit"></i>
-                                                            </button>
+                                                            </button>-->
                                                             <button class="action-btn btn-delete"
                                                                     data-action="delete"
                                                                     data-request-id="${r.returnRequestId}"
@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <!-- Edit Modal -->
+<!--             Edit Modal 
             <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -274,7 +274,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
+            </div>-->
 
             <!-- Delete Modal -->
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -321,11 +321,11 @@
 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
             <script>
-                let editModal;
+//                let editModal;
                 let deleteModal;
 
                 document.addEventListener('DOMContentLoaded', function () {
-                    editModal = new bootstrap.Modal(document.getElementById('editModal'));
+//                    editModal = new bootstrap.Modal(document.getElementById('editModal'));
                     deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
                     // Event delegation for action buttons
@@ -347,10 +347,10 @@
                             case 'view':
                                 viewDetail(requestId);
                                 break;
-                            case 'edit':
-                                const status = btn.dataset.status;
-                                openEditModal(requestId, status);
-                                break;
+//                            case 'edit':
+//                                const status = btn.dataset.status;
+//                                openEditModal(requestId, status);
+//                                break;
                             case 'delete':
                                 const orderId = parseInt(btn.dataset.orderId);
                                 if (!orderId || isNaN(orderId) || orderId <= 0) {
@@ -362,42 +362,42 @@
                         }
                     });
 
-                    // Form validation for edit form
-                    const editForm = document.getElementById('editForm');
-                    editForm.addEventListener('submit', function (e) {
-                        if (!editForm.checkValidity()) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        } else {
-                            // Double check before submission
-                            const status = document.getElementById('editStatus').value;
-                            const currentStatus = document.getElementById('currentStatus').value;
+//                    // Form validation for edit form
+//                    const editForm = document.getElementById('editForm');
+//                    editForm.addEventListener('submit', function (e) {
+//                        if (!editForm.checkValidity()) {
+//                            e.preventDefault();
+//                            e.stopPropagation();
+//                        } else {
+//                            // Double check before submission
+//                            const status = document.getElementById('editStatus').value;
+//                            const currentStatus = document.getElementById('currentStatus').value;
+//
+//                            if (currentStatus === 'PENDING' && (status === 'APPROVED' || status === 'REJECTED')) {
+//                                if (!confirm('Are you sure you want to finalize this status? This action cannot be undone.')) {
+//                                    e.preventDefault();
+//                                    return;
+//                                }
+//                            }
+//
+//                            // Disable submit button to prevent double submission
+//                            document.getElementById('saveBtn').disabled = true;
+//                        }
+//                        editForm.classList.add('was-validated');
+//                    });
 
-                            if (currentStatus === 'PENDING' && (status === 'APPROVED' || status === 'REJECTED')) {
-                                if (!confirm('Are you sure you want to finalize this status? This action cannot be undone.')) {
-                                    e.preventDefault();
-                                    return;
-                                }
-                            }
-
-                            // Disable submit button to prevent double submission
-                            document.getElementById('saveBtn').disabled = true;
-                        }
-                        editForm.classList.add('was-validated');
-                    });
-
-                    // Status change warning
-                    document.getElementById('editStatus').addEventListener('change', function () {
-                        const currentStatus = document.getElementById('currentStatus').value;
-                        const newStatus = this.value;
-                        const warning = document.getElementById('statusWarning');
-
-                        if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
-                            warning.style.display = 'block';
-                        } else {
-                            warning.style.display = 'none';
-                        }
-                    });
+//                    // Status change warning
+//                    document.getElementById('editStatus').addEventListener('change', function () {
+//                        const currentStatus = document.getElementById('currentStatus').value;
+//                        const newStatus = this.value;
+//                        const warning = document.getElementById('statusWarning');
+//
+//                        if (currentStatus === 'PENDING' && (newStatus === 'APPROVED' || newStatus === 'REJECTED')) {
+//                            warning.style.display = 'block';
+//                        } else {
+//                            warning.style.display = 'none';
+//                        }
+//                    });
 
                     // Prevent double submission for delete form
                     const deleteForm = document.getElementById('deleteForm');
@@ -415,33 +415,33 @@
                     window.location.href = '${pageContext.request.contextPath}/staff/manage-return-request?action=detail&requestId=' + encodeURIComponent(requestId);
                 }
 
-                function openEditModal(requestId, status) {
-                    // Sanitize and validate inputs
-                    requestId = parseInt(requestId);
-                    if (!requestId || isNaN(requestId) || requestId <= 0) {
-                        alert('Invalid request ID');
-                        return;
-                    }
-
-                    // Validate status
-                    const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
-                    if (!validStatuses.includes(status)) {
-                        status = '';
-                    }
-
-                    // Reset form validation
-                    document.getElementById('editForm').classList.remove('was-validated');
-                    document.getElementById('saveBtn').disabled = false;
-                    document.getElementById('statusWarning').style.display = 'none';
-
-                    // Set form values
-                    document.getElementById('modalRequestId').textContent = requestId;
-                    document.getElementById('editRequestId').value = requestId;
-                    document.getElementById('currentStatus').value = status;
-                    document.getElementById('editStatus').value = status;
-
-                    editModal.show();
-                }
+//                function openEditModal(requestId, status) {
+//                    // Sanitize and validate inputs
+//                    requestId = parseInt(requestId);
+//                    if (!requestId || isNaN(requestId) || requestId <= 0) {
+//                        alert('Invalid request ID');
+//                        return;
+//                    }
+//
+//                    // Validate status
+//                    const validStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
+//                    if (!validStatuses.includes(status)) {
+//                        status = '';
+//                    }
+//
+//                    // Reset form validation
+//                    document.getElementById('editForm').classList.remove('was-validated');
+//                    document.getElementById('saveBtn').disabled = false;
+//                    document.getElementById('statusWarning').style.display = 'none';
+//
+//                    // Set form values
+//                    document.getElementById('modalRequestId').textContent = requestId;
+//                    document.getElementById('editRequestId').value = requestId;
+//                    document.getElementById('currentStatus').value = status;
+//                    document.getElementById('editStatus').value = status;
+//
+//                    editModal.show();
+//                }
 
                 function openDeleteModal(requestId, orderId) {
                     // Validate inputs
