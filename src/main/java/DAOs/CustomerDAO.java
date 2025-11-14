@@ -25,7 +25,7 @@ public class CustomerDAO extends DB.DBContext {
                 return mapCustomer(rs);
             }
         } catch (SQLException e) {
-            System.err.println("❌ findById: " + e.getMessage());
+            System.err.println("findById: " + e.getMessage());
         }
         return null;
     }
@@ -38,7 +38,7 @@ public class CustomerDAO extends DB.DBContext {
                 list.add(mapCustomer(rs));
             }
         } catch (SQLException e) {
-            System.err.println("❌ getAllCustomers: " + e.getMessage());
+            System.err.println("getAllCustomers: " + e.getMessage());
         }
         return list;
     }
@@ -50,7 +50,7 @@ public class CustomerDAO extends DB.DBContext {
                 return rs.getInt("total");
             }
         } catch (SQLException e) {
-            System.err.println("❌ getTotalCustomers: " + e.getMessage());
+            System.err.println("getTotalCustomers: " + e.getMessage());
         }
         return 0;
     }
@@ -61,7 +61,7 @@ public class CustomerDAO extends DB.DBContext {
             int result = this.execQuery(sql, new Object[]{isBlock, customerId});
             return result > 0;
         } catch (SQLException e) {
-            System.err.println("❌ updateBlockStatus: " + e.getMessage());
+            System.err.println("updateBlockStatus: " + e.getMessage());
             return false;
         }
     }
@@ -74,7 +74,7 @@ public class CustomerDAO extends DB.DBContext {
                 return mapCustomer(rs);
             }
         } catch (SQLException e) {
-            System.err.println("❌ findByEmail: " + e.getMessage());
+            System.err.println("findByEmail: " + e.getMessage());
         }
         return null;
     }
@@ -83,21 +83,21 @@ public class CustomerDAO extends DB.DBContext {
         String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
         try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs == null || !rs.next()) {
-                System.err.println("❌ Customer not found: " + email);
+                System.err.println("Customer not found: " + email);
                 return null;
             }
             if (rs.getBoolean("IsBlock")) {
-                System.err.println("❌ Account is blocked: " + email);
+                System.err.println("Account is blocked: " + email);
                 return null;
             }
             String stored = rs.getString("PasswordHash");
             if (!Utils.verifyPassword(password, stored)) {
-                System.err.println("❌ Invalid password for: " + email);
+                System.err.println("Invalid password for: " + email);
                 return null;
             }
             return mapCustomer(rs);
         } catch (SQLException e) {
-            System.err.println("❌ login: " + e.getMessage());
+            System.err.println("login: " + e.getMessage());
             return null;
         }
     }
@@ -108,7 +108,7 @@ public class CustomerDAO extends DB.DBContext {
             int result = this.execQuery(sql, new Object[]{customerId});
             return result > 0;
         } catch (SQLException e) {
-            System.err.println("❌ updateLastLogin: " + e.getMessage());
+            System.err.println("updateLastLogin: " + e.getMessage());
             return false;
         }
     }
@@ -136,7 +136,7 @@ public class CustomerDAO extends DB.DBContext {
             int result = this.execQuery(sql, new Object[]{name, phone, avatar, gender, id});
             return result > 0;
         } catch (SQLException e) {
-            System.err.println("❌ updateProfile: " + e.getMessage());
+            System.err.println("updateProfile: " + e.getMessage());
             return false;
         }
     }

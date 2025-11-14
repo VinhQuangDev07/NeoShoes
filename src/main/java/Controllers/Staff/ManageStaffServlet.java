@@ -318,9 +318,9 @@ public class ManageStaffServlet extends HttpServlet {
                     System.err.println("Invalid date format: " + dobStr);
                 }
             }
-
+            boolean success=staffDAO.updateStaff(staff);
             // Update staff
-            if (staffDAO.updateStaff(staff)) {
+            if (success) {
                 session.setAttribute("flash", "Staff updated successfully!");
                 System.out.println("Updated staff: " + name);
             } else {
@@ -348,9 +348,9 @@ public class ManageStaffServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/staff/manage-staff");
                 return;
             }
-
+             boolean success=staffDAO.deleteStaff(staffId);
             // Delete staff
-            if (staffDAO.deleteStaff(staffId)) {
+            if (success) {
                 session.setAttribute("flash", "Staff deleted successfully!");
                 System.out.println("Deleted staff: " + staff.getName());
             } else {
