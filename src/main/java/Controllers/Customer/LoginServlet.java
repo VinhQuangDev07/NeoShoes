@@ -63,7 +63,7 @@ public class LoginServlet extends HttpServlet {
         if (email == null || email.trim().isEmpty() || 
             password == null || password.trim().isEmpty()) {
             
-            request.setAttribute("error", "Vui lòng nhập đầy đủ email và mật khẩu!");
+            request.setAttribute("error", "Please enter full email and password!");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/customer/login.jsp").forward(request, response);
             return;
@@ -113,7 +113,7 @@ public class LoginServlet extends HttpServlet {
                 
             } else {
                 // ❌ LOGIN FAILED
-                request.setAttribute("error", "Email hoặc mật khẩu không đúng!");
+                request.setAttribute("error", "Email or password incorrect!");
                 request.setAttribute("email", email);
                 request.getRequestDispatcher("/WEB-INF/views/customer/login.jsp").forward(request, response);
             }
@@ -121,7 +121,7 @@ public class LoginServlet extends HttpServlet {
         } catch (Exception e) {
             // Handle unexpected errors
             e.printStackTrace();
-            request.setAttribute("error", "Đã xảy ra lỗi! Vui lòng thử lại sau.");
+            request.setAttribute("error", "Something went wrong! Please try again later.");
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/customer/login.jsp").forward(request, response);
         }

@@ -21,14 +21,14 @@ public class ProductListServlet extends HttpServlet {
 
     private static final int PAGE_SIZE = 12;
 
-    // ✅ Khai báo biến instance
+    //  Khai báo biến instance
     private ProductDAO productDAO;
     private CategoryDAO categoryDAO;
     private BrandDAO brandDAO;
     private List<Category> categories;
     private List<Brand> brands;
 
-    // ✅ Constructor - khởi tạo DAO và load data
+    //  Constructor - khởi tạo DAO và load data
     public ProductListServlet() {
         super();
         System.out.println("Initializing ProductListServlet...");

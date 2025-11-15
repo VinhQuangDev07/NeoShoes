@@ -33,12 +33,14 @@ public class VoucherServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         Customer customer = (Customer) session.getAttribute("customer");
-        int customerId = customer.getId();
+        
 
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
+        int customerId = customer.getId();
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -81,12 +83,14 @@ public class VoucherServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         Customer customer = (Customer) session.getAttribute("customer");
-        int customerId = customer.getId();
+       
 
         if (customer == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+        
+         int customerId = customer.getId();
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -215,7 +219,7 @@ public class VoucherServlet extends HttpServlet {
                 session.setAttribute("appliedVoucherId", voucher.getVoucherId());
                 session.setAttribute("voucherDiscount", discount);
 
-                System.out.println("✅ Voucher applied successfully!");
+                System.out.println("Voucher applied successfully!");
                 System.out.println("  - Discount: $" + discount);
                 System.out.println("  - Final Amount: $" + finalAmount);
                 System.out.println("===========================");
@@ -229,10 +233,10 @@ public class VoucherServlet extends HttpServlet {
             }
 
         } catch (NumberFormatException e) {
-            System.err.println("❌ Invalid number format: " + e.getMessage());
+            System.err.println("Invalid number format: " + e.getMessage());
             out.print("{\"success\": false, \"message\": \"Invalid order amount!\"}");
         } catch (Exception e) {
-            System.err.println("❌ Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
             out.print("{\"success\": false, \"message\": \"System error!\"}");
         } finally {

@@ -71,7 +71,7 @@ public class ProductDAO extends DBContext {
     private Product mapProduct(ResultSet rs) throws SQLException {
         Product product = new Product();
         product.setProductId(rs.getInt("ProductId"));
-        product.setBrandId(rs.getInt("BrandId"));
+product.setBrandId(rs.getInt("BrandId"));
         product.setCategoryId(rs.getInt("CategoryId"));
         product.setName(rs.getString("Name"));
         product.setDescription(rs.getString("Description"));
@@ -150,7 +150,7 @@ public class ProductDAO extends DBContext {
                     products.add(mapProduct(rs));
                 }
             }
-        } catch (SQLException e) {
+} catch (SQLException e) {
             System.err.println("Error in getProductsByCategory: " + e.getMessage());
             e.printStackTrace();
         }
@@ -228,7 +228,7 @@ public class ProductDAO extends DBContext {
             try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     products.add(mapProduct(rs));
-                }
+}
             }
         } catch (SQLException e) {
             System.err.println("Error in searchProducts: " + e.getMessage());
@@ -306,7 +306,7 @@ public class ProductDAO extends DBContext {
             }
         } catch (SQLException e) {
             System.err.println("Error in getTotalProducts: " + e.getMessage());
-            e.printStackTrace();
+e.printStackTrace();
         }
 
         return 0;
@@ -392,8 +392,7 @@ public class ProductDAO extends DBContext {
                 + "WHERE ProductId = ? AND IsDeleted = 0";
 
         try ( Connection conn = getConnection();  PreparedStatement ps = conn.prepareStatement(query)) {
-
-            ps.setInt(1, productId);
+ps.setInt(1, productId);
 
             int affectedRows = ps.executeUpdate();
 
@@ -472,7 +471,7 @@ public class ProductDAO extends DBContext {
                 + "Material = ?, "
                 + "IsActive = ?, "
                 + "UpdatedAt = GETDATE() "
-                + "WHERE ProductId = ? AND IsDeleted = 0";
++ "WHERE ProductId = ? AND IsDeleted = 0";
 
         Object[] params = {
             product.getBrandId(),

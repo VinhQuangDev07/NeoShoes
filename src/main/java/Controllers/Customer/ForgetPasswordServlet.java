@@ -71,28 +71,28 @@ public class ForgetPasswordServlet extends HttpServlet {
                 );
                 
                 if (emailSent) {
-                    System.out.println("✅ OTP sent to customer: " + customer.getEmail());
+                    System.out.println("OTP sent to customer: " + customer.getEmail());
                     request.setAttribute("email", email);
                     request.setAttribute("userType", "customer");
-                    request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn");
+                    request.setAttribute("message", "OTP code has been sent to your email");
                     RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/customer/verify-reset-otp.jsp");
                     dispatcher.forward(request, response);
                 } else {
-                    System.err.println("❌ Failed to send OTP to customer: " + customer.getEmail());
-                    request.setAttribute("error", "Không thể gửi email. Vui lòng thử lại");
+                    System.err.println("Failed to send OTP to customer: " + customer.getEmail());
+                    request.setAttribute("error", "Email could not be sent. Please try again.");
                     request.setAttribute("userType", "customer");
                     forwardToForgetPassword(request, response, "customer");
                 }
             } else {
-                request.setAttribute("error", "Email không tồn tại trong hệ thống");
+                request.setAttribute("error", "Email does not exist in the system");
                 request.setAttribute("userType", "customer");
                 forwardToForgetPassword(request, response, "customer");
             }
             
         } catch (Exception e) {
-            System.err.println("❌ processCustomerPasswordReset error: " + e.getMessage());
+            System.err.println("processCustomerPasswordReset error: " + e.getMessage());
             e.printStackTrace();
-            request.setAttribute("error", "Đã xảy ra lỗi. Vui lòng thử lại");
+            request.setAttribute("error", "An error occurred. Please try again.");
             request.setAttribute("userType", "customer");
             forwardToForgetPassword(request, response, "customer");
         }
@@ -118,28 +118,28 @@ public class ForgetPasswordServlet extends HttpServlet {
                 );
                 
                 if (emailSent) {
-                    System.out.println("✅ OTP sent to staff: " + staff.getEmail());
+                    System.out.println("OTP sent to staff: " + staff.getEmail());
                     request.setAttribute("email", email);
                     request.setAttribute("userType", "staff");
-                    request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn");
+                    request.setAttribute("message", "OTP code has been sent to your email");
                     RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/staff/verify-reset-otp.jsp");
                     dispatcher.forward(request, response);
                 } else {
-                    System.err.println("❌ Failed to send OTP to staff: " + staff.getEmail());
-                    request.setAttribute("error", "Không thể gửi email. Vui lòng thử lại");
+                    System.err.println("Failed to send OTP to staff: " + staff.getEmail());
+                    request.setAttribute("error", "Email could not be sent. Please try again.");
                     request.setAttribute("userType", "staff");
                     forwardToForgetPassword(request, response, "staff");
                 }
             } else {
-                request.setAttribute("error", "Email không tồn tại trong hệ thống");
+                request.setAttribute("error", "Email does not exist in the system");
                 request.setAttribute("userType", "staff");
                 forwardToForgetPassword(request, response, "staff");
             }
             
         } catch (Exception e) {
-            System.err.println("❌ processStaffPasswordReset error: " + e.getMessage());
+            System.err.println("processStaffPasswordReset error: " + e.getMessage());
             e.printStackTrace();
-            request.setAttribute("error", "Đã xảy ra lỗi. Vui lòng thử lại");
+            request.setAttribute("error", "An error occurred. Please try again.");
             request.setAttribute("userType", "staff");
             forwardToForgetPassword(request, response, "staff");
         }

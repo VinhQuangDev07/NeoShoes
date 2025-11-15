@@ -138,10 +138,11 @@
 
                         <!-- Brand Name -->
                         <div class="mb-3">
-                            <label for="name" class="form-label">Brand Name *</label>
                             <input id="name" name="name" type="text" class="form-control"
-                                   value="${brand.name}" required maxlength="255"
-                                   placeholder="Enter brand name...">
+                            value="${brand.name}" required maxlength="255"
+                            placeholder="Enter brand name..."
+                            oninvalid="this.setCustomValidity(''); showNotification('Brand name cannot be empty', 'error');"
+                            oninput="this.setCustomValidity('');">
                         </div>
 
                         <!-- Logo Upload -->

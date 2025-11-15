@@ -111,8 +111,8 @@ public class EmailService {
      * Send password reset OTP email
      */
     public static boolean sendPasswordResetOTP(String toEmail, String customerName, String otp) {
-        System.out.println("🔄 Sending password reset OTP to: " + toEmail);
-        System.out.println("🔑 OTP: " + otp);
+        System.out.println("Sending password reset OTP to: " + toEmail);
+        System.out.println("OTP: " + otp);
         
         try {
             Properties props = new Properties();
