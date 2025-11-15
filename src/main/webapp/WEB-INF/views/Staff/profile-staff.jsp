@@ -91,7 +91,7 @@
             .field{
                 display:flex;
                 flex-direction:column;
-                gap:8px;
+gap:8px;
                 height:100%;
             }
             .label{
@@ -101,9 +101,9 @@
                 min-height:20px;
             }
 
-            /* ====== INPUT CONTROL ====== */
+            /* Khung chứa input - style chung */
             .ctrl{
-                position:relative;             /* để vẽ tick bên trong */
+                position:relative;
                 display:flex;
                 align-items:center;
                 gap:12px;
@@ -118,7 +118,7 @@
             .ctrl.readonly{
                 background:var(--banana-weak);
             }
-            .ctrl input,.ctrl select{
+            .ctrl input, .ctrl select{
                 border:0;
                 background:transparent;
                 width:100%;
@@ -126,33 +126,82 @@
                 font-size:15px;
                 color:var(--text);
                 font-family:inherit;
-                padding-right:40px;            /* chừa chỗ icon bên phải */
-                min-width:0;                   /* chống overflow trong flex */
+                padding-right:40px;
+                min-width:0;
             }
+            
+            /* Vô hiệu hóa input khi readonly */
+            .ctrl input[readonly], .ctrl input[disabled],
+            .ctrl select[disabled] {
+                pointer-events: none;
+                user-select: none;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                cursor: default;
+            }
+            
+            /* Ẩn mũi tên dropdown mặc định của select */
+            .ctrl select{
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                cursor: pointer;
+            }
+            
+            .ctrl input[type="date"] {
+                padding-right: 20px;
+            }
+            
             .ctrl input::placeholder{
                 color:var(--muted);
                 opacity:.7;
             }
+            
+            /* Viền xanh dương khi đang editing */
             .ctrl.editing{
-                background:#fef9c3;
+                background:var(--banana);
                 border-color:#3b82f6;
-                box-shadow:0 0 0 3px rgba(59,130,246,.1);
+                border-width:2px;
+                box-shadow:0 0 0 3px rgba(59,130,246,.15);
             }
 
-            /* Icon bút */
+            /* Ẩn icon lịch mặc định */
+            .ctrl input[type="date"]::-webkit-calendar-picker-indicator {
+                display: none !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+
+            /* Hiện icon lịch khi editing */
+            .ctrl.editing input[type="date"]::-webkit-calendar-picker-indicator {
+                display: inline-block !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                cursor: pointer;
+                margin-right: 4px;
+            }
+
+            .ctrl input[type="date"]::-webkit-inner-spin-button,
+            .ctrl input[type="date"]::-webkit-clear-button {
+display: none !important;
+            }
+
+            /* Icon bút chỉnh sửa */
             .edit-icon{
                 color:#3b82f6;
                 cursor:pointer;
-                margin-left:auto;
                 transition:.2s;
                 flex-shrink:0;
-                position:relative;
-                z-index:2;
-                margin-right:8px;
+                position:absolute !important;
+                right:16px !important;
+                top:50% !important;
+                transform:translateY(-50%) !important;
+                z-index:3;
+                margin:0 !important;
             }
             .edit-icon:hover{
                 color:#1e40af;
-                transform:scale(1.1)
+                transform:translateY(-50%) scale(1.1) !important;
             }
 
             /* ====== BUTTONS ====== */
@@ -206,7 +255,7 @@
             }
             .ctrl.invalid{
                 border-color:#fca5a5;
-                background:#fef2f2;
+                background:var(--banana); /* Nền trắng */
             }
             .ctrl.valid{
                 border-color:#22c55e !important;
@@ -233,7 +282,7 @@
             /* ====== PASSWORD FIELD ====== */
             .password-field{
                 position:relative;
-                width:100%;
+width:100%;
             }
             .password-field input{
                 padding-right:72px !important; /* mắt + chấm than */
@@ -334,7 +383,7 @@
             /* ====== PASSWORD CARD HEADER ====== */
             .password-header{
                 display:flex;
-                align-items:center;
+align-items:center;
                 gap:12px;
                 margin-bottom:24px;
                 padding-bottom:16px;
@@ -420,6 +469,53 @@
                 opacity:1;
                 transition:all .4s ease;
             }
+
+            #genderCtrl .edit-icon {
+                right: 16px !important;  /* icon bút ngoài cùng bên phải */
+                z-index: 4 !important;
+            }
+#genderCtrl select {
+                padding-right: 70px !important; /* để chừa chỗ cho cả arrow + icon bút */
+            }
+
+            .ctrl input[type="date"]:not(:read-only)::-webkit-calendar-picker-indicator {
+                margin-right: 6px !important;
+            }
+
+            #genderCtrl #genderText {
+                flex: 0 0 auto; /* không giãn ra */
+            }
+
+            /* Khung Gender */
+            #genderCtrl {
+                position: relative;
+            }
+            
+            /* Icon mũi tên xuống cho Gender */
+            #genderCtrl .dropdown-icon {
+                position: absolute;
+                right: 45px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6b7280;
+                cursor: pointer;
+                font-size: 14px;
+                transition: color 0.2s;
+                z-index: 2;
+                display: none;
+            }
+            
+            /* Hiện mũi tên khi editing */
+            #genderCtrl.editing .dropdown-icon {
+                display: block !important;
+            }
+            
+            #genderCtrl .dropdown-icon:hover {
+                color: #3b82f6;
+            }
+
+
+
         </style>
     </head>
 
@@ -460,7 +556,7 @@
                                 <i class="fa-solid fa-image"></i> Change Avatar
                                 <input id="avatarFile" name="avatar" type="file" accept="image/*" style="display:none">
                             </label>
-                        </div>
+</div>
 
                         <div class="grid profile-grid">
                             <div class="col-full field">
@@ -496,26 +592,27 @@
                                         <option value="Male"   <c:if test="${staff.gender eq 'Male'}">selected</c:if>>Male</option>
                                         <option value="Female" <c:if test="${staff.gender eq 'Female'}">selected</c:if>>Female</option>
                                         <option value="Other"  <c:if test="${staff.gender eq 'Other'}">selected</c:if>>Other</option>
-                                        </select>
-                                        <i class="fa-solid fa-pen-to-square edit-icon" onclick="editGender()"></i>
-                                    </div>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down dropdown-icon hidden" id="genderDropdownIcon" onclick="document.getElementById('genderSelect').click()"></i>
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="editGender()"></i>
                                 </div>
+                            </div>
 
                                 <div class="col-field field">
                                     <span class="label">Address</span>
                                     <div class="ctrl editable">
                                         <i class="fa-solid fa-location-dot"></i>
                                         <input name="address" value="${staff.address}" placeholder="Street, City, ..." readonly>
-                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
+<i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
                                 </div>
                             </div>
 
                             <div class="col-field field">
                                 <span class="label">Date of Birth</span>
-                                <div class="ctrl editable" style="position:relative;">
+                                <div class="ctrl editable">
                                     <i class="fa-regular fa-calendar"></i>
-                                    <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly style="padding-right:44px;">
-                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)" style="position:absolute; right:20px; top:50%; transform:translateY(-50%);"></i>
+                                    <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly>
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
                                 </div>
                             </div>
 
@@ -557,7 +654,7 @@
                                 <input type="hidden" name="action" value="changePassword"/>
 
                                 <div class="grid pw-grid">
-                                    <div class="pw-field field">
+<div class="pw-field field">
                                         <span class="label">Current Password</span>
                                         <div class="ctrl password-field" id="ctrlCur">
                                             <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password"/>
@@ -595,7 +692,7 @@
                                 </div>
 
                                 <div class="actions">
-                                    <button class="btn btn-primary" type="submit">
+<button class="btn btn-primary" type="submit">
                                         <i class="fa-solid fa-key"></i> Update Password
                                     </button>
                                 </div>
@@ -646,66 +743,89 @@
             })();
         </script>
 
-        <!-- Realtime VALID phone -->
+        <!-- Validate số điện thoại -->
         <script>
             (function(){
-            const phoneInput = document.getElementById('phoneNumber');
-            const phoneCtrl = document.getElementById('phoneCtrl');
-            const errPhone = document.getElementById('errPhone');
-            if (!phoneInput || !phoneCtrl) return;
-            const reVN = /^(\+84[0-9]{9}|0[0-9]{9})$/;
-            // Chặn nhập ký tự không hợp lệ (chỉ cho phép số, +, và xóa)
-            phoneInput.addEventListener('keypress', function(e){
-            const char = String.fromCharCode(e.which);
-            // Chỉ cho phép số 0-9 và dấu +
-            if (!/[0-9+]/.test(char)) {
-            e.preventDefault();
-            return false;
-            }
-            // Dấu + chỉ được phép ở đầu
-            if (char === '+' && this.value.length > 0) {
-            e.preventDefault();
-            return false;
-            }
-            });
-            // Chặn paste ký tự không hợp lệ
-            phoneInput.addEventListener('paste', function(e){
-            setTimeout(() => {
-            this.value = this.value.replace(/[^0-9+]/g, '');
-            updatePhoneValid();
-            }, 10);
-            });
-            function updatePhoneValid(){
-            const v = (phoneInput.value || '').trim();
-            const editable = !phoneInput.hasAttribute('readonly') && !phoneInput.disabled;
-            if (!editable){
-            phoneCtrl.classList.remove('valid', 'invalid');
-            errPhone.classList.add('hidden');
-            return;
-            }
+                const phoneInput = document.getElementById('phoneNumber');
+                const phoneCtrl = document.getElementById('phoneCtrl');
+                const errPhone = document.getElementById('errPhone');
+                if (!phoneInput || !phoneCtrl) return;
+                const reVN = /^(\+84[0-9]{9}|0[0-9]{9})$/;
+                
+                // Chỉ cho phép nhập số và dấu +
+                phoneInput.addEventListener('keypress', function(e){
+                    if (this.hasAttribute('readonly')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    const char = String.fromCharCode(e.which);
+                    if (!/[0-9+]/.test(char)) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    if (char === '+' && this.value.length > 0) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+// Lọc ký tự khi paste
+                phoneInput.addEventListener('paste', function(e){
+                    if (this.hasAttribute('readonly')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    setTimeout(() => {
+                        this.value = this.value.replace(/[^0-9+]/g, '');
+                        updatePhoneValid();
+                    }, 10);
+                });
+                
+                // Kiểm tra format số điện thoại
+                function updatePhoneValid(){
+                    const v = (phoneInput.value || '').trim();
+                    const editable = !phoneInput.hasAttribute('readonly') && !phoneInput.disabled;
+                    if (!editable){
+                        phoneCtrl.classList.remove('valid', 'invalid');
+                        errPhone.classList.add('hidden');
+                        return;
+                    }
+                    if (!v || reVN.test(v)) {
+                        phoneCtrl.classList.remove('invalid');
+                        errPhone.classList.add('hidden');
+                    } else {
+                        phoneCtrl.classList.add('invalid');
+                        errPhone.classList.remove('hidden');
+                    }
+                }
 
-            // Nếu rỗng hoặc đang nhập
-            if (!v) {
-            phoneCtrl.classList.remove('valid', 'invalid');
-            errPhone.classList.add('hidden');
-            return;
-            }
-
-            // Validate format
-            if (reVN.test(v)){
-            phoneCtrl.classList.remove('invalid');
-            phoneCtrl.classList.add('valid');
-            errPhone.classList.add('hidden');
-            } else {
-            phoneCtrl.classList.remove('valid');
-            phoneCtrl.classList.add('invalid');
-            errPhone.classList.remove('hidden');
-            }
-            }
-
-            phoneInput.addEventListener('input', updatePhoneValid);
-            phoneInput.addEventListener('blur', updatePhoneValid);
+                phoneInput.addEventListener('input', updatePhoneValid);
+                phoneInput.addEventListener('blur', updatePhoneValid);
             })();
+        </script>
+
+        <!-- Chặn edit khi readonly -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const readonlyInputs = document.querySelectorAll('.ctrl input[readonly]');
+                
+                readonlyInputs.forEach(input => {
+                    ['input', 'keydown', 'keypress', 'paste', 'cut', 'drop'].forEach(eventType => {
+                        input.addEventListener(eventType, function(e) {
+                            if (this.hasAttribute('readonly')) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+                    });
+                    
+                    input.addEventListener('mousedown', function(e) {
+                        if (this.hasAttribute('readonly')) {
+                            e.preventDefault();
+                            this.blur();
+                        }
+                    });
+                });
+            });
         </script>
 
         <!-- Preview/reset avatar -->
@@ -716,7 +836,7 @@
             const hidden = document.getElementById('avatarUrlHidden');
             const resetBtn = document.getElementById('btnResetAvatar');
             file?.addEventListener('change', e => {
-            const f = e.target.files?.[0]; if (!f) return;
+const f = e.target.files?.[0]; if (!f) return;
             const url = URL.createObjectURL(f);
             if (img) img.src = url;
             else {
@@ -740,27 +860,61 @@
             });
         </script>
 
-        <!-- Edit enable + Gender toggle -->
+        <!-- Bật/tắt chế độ chỉnh sửa -->
         <script>
+            // Bật chế độ edit cho các ô thông thường
             function enableEdit(icon){
-            const ctrl = icon.closest('.ctrl'); if (!ctrl) return;
-            const input = ctrl.querySelector('input, select'); if (!input) return;
-            if (input.hasAttribute('readonly')) input.removeAttribute('readonly');
-            if (input.disabled) input.disabled = false;
-            ctrl.classList.add('editing'); input.focus();
+                document.querySelectorAll('.ctrl.editing').forEach(ctrl => {
+                ctrl.classList.remove('editing');
+                });
+                const ctrl = icon.closest('.ctrl'); if (!ctrl) return;
+                const input = ctrl.querySelector('input, select'); if (!input) return;
+                if (input.hasAttribute('readonly')) input.removeAttribute('readonly');
+                if (input.disabled) input.disabled = false;
+                ctrl.classList.add('editing');
+                input.focus();
             }
+
+            // Xử lý Gender (toggle giữa text và select)
             function editGender(){
-            const text = document.getElementById('genderText');
-            const select = document.getElementById('genderSelect');
-            const ctrl = document.getElementById('genderCtrl');
-            text.classList.add('hidden'); select.classList.remove('hidden');
-            ctrl.classList.add('editing'); select.focus();
-            select.addEventListener('change', () => {
-            text.textContent = select.value;
-            select.classList.add('hidden'); text.classList.remove('hidden');
-            ctrl.classList.remove('editing');
-            });
+                document.querySelectorAll('.ctrl.editing').forEach(ctrl => {
+                    ctrl.classList.remove('editing');
+                });
+                
+                const text = document.getElementById('genderText');
+                const select = document.getElementById('genderSelect');
+                const ctrl = document.getElementById('genderCtrl');
+                const dropdownIcon = document.getElementById('genderDropdownIcon');
+                
+                if (!text || !select || !ctrl || !dropdownIcon) {
+                    console.error('Không tìm thấy element Gender!');
+                    return;
+                }
+                
+                text.classList.add('hidden');
+                select.classList.remove('hidden');
+                dropdownIcon.classList.remove('hidden');
+                ctrl.classList.add('editing');
+                select.focus();
+                
+                select.addEventListener('change', () => {
+                    text.textContent = select.value;
+                    select.classList.add('hidden');
+                    dropdownIcon.classList.add('hidden');
+                    text.classList.remove('hidden');
+}, {once: true});
             }
+            
+            // Xóa viền xanh khi click ra ngoài
+            document.addEventListener('click', (e) => {
+                const editableCtrl = e.target.closest('.ctrl.editable');
+                const editIcon = e.target.closest('.edit-icon');
+                if (!editableCtrl && !editIcon) {
+                    document.querySelectorAll('.ctrl.editing').forEach(ctrl => {
+                        ctrl.classList.remove('editing');
+                    });
+                }
+            });
         </script>
 
         <!-- Toggle Change Password card -->
@@ -809,7 +963,7 @@
             }
 
             function onCur(){ setValid(ctrlCur, !!cur.value && isStrong(cur.value)); if (errCur) errCur.classList.add('hidden'); }
-            function onNew(){ setValid(ctrlNew, !!nw.value && isStrong(nw.value)); if (errNew) errNew.classList.add('hidden'); onCf(); }
+function onNew(){ setValid(ctrlNew, !!nw.value && isStrong(nw.value)); if (errNew) errNew.classList.add('hidden'); onCf(); }
             function onCf(){  setValid(ctrlCf, !!cf.value && cf.value === nw.value); if (errCf)  errCf.classList.add('hidden'); }
 
             cur?.addEventListener('input', onCur);
@@ -864,7 +1018,7 @@
             const updateEye = () => {
             if (!toggle) return;
             if (input.value.trim() === ''){ toggle.style.opacity = '0'; toggle.style.pointerEvents = 'none'; }
-            else { toggle.style.opacity = '1'; toggle.style.pointerEvents = 'auto'; }
+else { toggle.style.opacity = '1'; toggle.style.pointerEvents = 'auto'; }
             };
             input.addEventListener('input', updateEye); updateEye();
             });

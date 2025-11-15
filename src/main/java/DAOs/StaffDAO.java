@@ -257,7 +257,7 @@ public Staff findByEmail(String email) {
             return mapStaff(rs);
         }
     } catch (SQLException e) {
-        System.err.println("❌ findByEmail: " + e.getMessage());
+        System.err.println("findByEmail: " + e.getMessage());
         e.printStackTrace();
     }
     return null;
@@ -270,9 +270,9 @@ public void deleteOldVerifyCode(int staffId) {
     String query = "DELETE FROM VerifyCodeStaff WHERE StaffId = ? AND UserType = 1";
     try {
         this.execQuery(query, new Object[]{staffId});
-        System.out.println("✅ Deleted old OTP for staffId: " + staffId);
+        System.out.println("Deleted old OTP for staffId: " + staffId);
     } catch (SQLException e) {
-        System.err.println("❌ deleteOldVerifyCode: " + e.getMessage());
+        System.err.println("deleteOldVerifyCode: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -289,9 +289,9 @@ public void saveVerifyCode(int staffId, String code, java.time.LocalDateTime exp
             code, 
             java.sql.Timestamp.valueOf(expiredAt)
         });
-        System.out.println("✅ Saved OTP for staffId: " + staffId);
+        System.out.println("Saved OTP for staffId: " + staffId);
     } catch (SQLException e) {
-        System.err.println("❌ saveVerifyCode: " + e.getMessage());
+        System.err.println("saveVerifyCode: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -314,23 +314,23 @@ public boolean verifyResetOTP(String email, String otp) {
             
             // Kiểm tra số lần nhập sai
             if (failedCount >= 5) {
-                System.out.println("❌ Too many failed attempts for: " + email);
+                System.out.println("Too many failed attempts for: " + email);
                 return false;
             }
             
             // Kiểm tra OTP và thời gian hết hạn
             if (storedOTP.equals(otp) && 
                 java.time.LocalDateTime.now().isBefore(expiry.toLocalDateTime())) {
-                System.out.println("✅ OTP verified for: " + email);
+                System.out.println("OTP verified for: " + email);
                 return true;
             } else {
-                System.out.println("❌ Invalid or expired OTP for: " + email);
+                System.out.println("Invalid or expired OTP for: " + email);
                 incrementFailedCount(email);
                 return false;
             }
         }
     } catch (SQLException e) {
-        System.err.println("❌ verifyResetOTP: " + e.getMessage());
+        System.err.println("verifyResetOTP: " + e.getMessage());
         e.printStackTrace();
     }
     return false;
@@ -347,7 +347,7 @@ private void incrementFailedCount(String email) {
     try {
         this.execQuery(query, new Object[]{email});
     } catch (SQLException e) {
-        System.err.println("❌ incrementFailedCount: " + e.getMessage());
+        System.err.println("incrementFailedCount: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -361,9 +361,9 @@ public void clearResetOTP(String email) {
                    "AND UserType = 1";
     try {
         this.execQuery(query, new Object[]{email});
-        System.out.println("✅ Cleared OTP for: " + email);
+        System.out.println("Cleared OTP for: " + email);
     } catch (SQLException e) {
-        System.err.println("❌ clearResetOTP: " + e.getMessage());
+        System.err.println("clearResetOTP: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -378,11 +378,11 @@ public boolean updatePasswordByEmail(String email, String newPassword) {
         String hashedPassword = Utils.hashPassword(newPassword);
         int result = this.execQuery(query, new Object[]{hashedPassword, email});
         if (result > 0) {
-            System.out.println("✅ Password updated for: " + email);
+            System.out.println("Password updated for: " + email);
             return true;
         }
     } catch (SQLException e) {
-        System.err.println("❌ updatePasswordByEmail: " + e.getMessage());
+        System.err.println("updatePasswordByEmail: " + e.getMessage());
         e.printStackTrace();
     }
     return false;
