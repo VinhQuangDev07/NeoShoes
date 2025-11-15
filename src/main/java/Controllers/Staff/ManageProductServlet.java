@@ -16,7 +16,6 @@ import Models.ProductVariant;
 import Models.Review;
 import Models.Staff;
 import Utils.CloudinaryConfig;
-import com.cloudinary.Cloudinary;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -256,11 +255,7 @@ public class ManageProductServlet extends HttpServlet {
                 String description = request.getParameter("description");
                 String material = request.getParameter("material");
                 String imageUrl = request.getParameter("defaultImageUrl");
-
-                // Check required fields
-                if (name == null || name.trim().isEmpty()) {
-                    throw new IllegalArgumentException("Product name is required!");
-                }
+          
 
                 // Handle uploaded image file
                 Part imagePart = request.getPart("imageFile");
@@ -352,7 +347,7 @@ public class ManageProductServlet extends HttpServlet {
                 boolean success = productDAO.updateProduct(product);
 
                 if (success) {
-                    request.getSession().setAttribute("successMessage", "Product updated successfully!");
+                    request.getSession().setAttribute("flash", "Product updated successfully!");
                     response.sendRedirect(request.getContextPath()
                             + "/staff/product?action=detail&productId=" + productId);
                 } else {
@@ -360,7 +355,7 @@ public class ManageProductServlet extends HttpServlet {
                 }
 
             } catch (Exception e) {
-                request.getSession().setAttribute("errorMessage", "Error: " + e.getMessage());
+                request.getSession().setAttribute("flash_errors", "Error: " + e.getMessage());
                 // Redirect về detail page
                 String productIdStr = request.getParameter("productId");
                 if (productIdStr != null && !productIdStr.isEmpty()) {

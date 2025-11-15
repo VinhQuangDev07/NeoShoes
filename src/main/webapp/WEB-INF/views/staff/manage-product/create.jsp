@@ -518,14 +518,19 @@
                     return false;
                 }
 
-                // Validate URL format
-                try {
-                    new URL(imageUrl);
-                } catch (_) {
-                    e.preventDefault();
-                    alert('Please enter a valid image URL!');
-                    return false;
+                // Validate URL format ONLY IF user is using an URL instead of uploading a file
+                const imageUrl = document.getElementById('imageUrlHidden').value;
+
+                if (imageUrl.trim() !== "") {
+                    try {
+                        new URL(imageUrl);
+                    } catch (_) {
+                        e.preventDefault();
+                        alert('Please enter a valid image URL!');
+                        return false;
+                    }
                 }
+
 
                 return true;
             });

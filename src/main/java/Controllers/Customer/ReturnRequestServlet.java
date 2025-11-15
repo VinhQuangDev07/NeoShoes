@@ -80,11 +80,10 @@ public class ReturnRequestServlet extends HttpServlet {
 
         try {
             int requestId = Integer.parseInt(requestIdParam);
-
             // Get return request information
             ReturnRequest returnRequest = rDAO.getReturnRequestById(requestId);
             if (returnRequest == null) {
-                request.setAttribute("errorMessage", "Return request not found");
+                request.setAttribute("flash_error", "Return request not found");
                 request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
                 return;
             }
@@ -97,19 +96,27 @@ public class ReturnRequestServlet extends HttpServlet {
             Order order = orderDAO.findWithItems(returnRequest.getOrderId());
 
             if (order == null) {
-                request.setAttribute("errorMessage", "Order not found");
+                request.setAttribute("flash_error", "Order not found");
                 request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
                 return;
             }
 
             // ✅ FIXED: Calculate total refund with null checks
-            BigDecimal totalRefund = BigDecimal.ZERO;
+            BigDecimal totalRefund = BigDecimal.ZERO; // Khởi tạo tổng tiền hoàn trả là 0
+
+// Kiểm tra danh sách có dữ liệu không
             if (listDetail != null && !listDetail.isEmpty()) {
-                totalRefund = listDetail.stream()
-                        .map(detail -> detail.getAmount() != null ? detail.getAmount() : BigDecimal.ZERO)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                // Duyệt từng phần tử trong danh sách
+                for (ReturnRequestDetail detail : listDetail) {
+                    BigDecimal amount = detail.getAmount(); // Lấy số tiền của từng chi tiết
+                    if (amount != null) {
+                        totalRefund = totalRefund.add(amount); // Cộng vào tổng
+                    }
+                    // Nếu amount là null thì bỏ qua, tổng giữ nguyên
+                }
             }
 
+// Sau vòng lặp, totalRefund là tổng tiền hoàn trả
             // ✅ FIXED: Check for full return with null safety
             boolean isFullReturn = false;
             if (order.getItems() != null && listDetail != null && !listDetail.isEmpty()) {
@@ -162,12 +169,6 @@ public class ReturnRequestServlet extends HttpServlet {
                     .log(Level.WARNING, "Invalid requestId format: " + requestIdParam, e);
             response.sendRedirect(request.getContextPath() + "/orders");
 
-        } catch (Exception e) {
-            // ✅ ADDED: Catch-all for unexpected errors
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.SEVERE, "Unexpected error in handleViewDetail", e);
-            request.setAttribute("errorMessage", "An unexpected error occurred");
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
         }
     }
 
@@ -175,7 +176,9 @@ public class ReturnRequestServlet extends HttpServlet {
             throws ServletException, IOException {
         String requestIdParam = request.getParameter("requestId");
 
+        // 1. VALIDATE REQUEST ID PARAMETER
         if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
+            request.getSession().setAttribute("flash_error", "Invalid return request ID");
             response.sendRedirect(request.getContextPath() + "/orders");
             return;
         }
@@ -185,57 +188,54 @@ public class ReturnRequestServlet extends HttpServlet {
             ReturnRequestDAO rDAO = new ReturnRequestDAO();
             ReturnRequestDetailDAO dDAO = new ReturnRequestDetailDAO();
 
-            // Get return request information
+            // 2. GET RETURN REQUEST
             ReturnRequest returnRequest = rDAO.getReturnRequestById(requestId);
-
             if (returnRequest == null) {
-                // ✅ FIXED: Forward to error page instead of redirect (to keep errorMessage)
-                request.setAttribute("errorMessage", "Return request not found");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Return request not found");
+                response.sendRedirect(request.getContextPath() + "/orders");
                 return;
             }
 
-            // Only allow editing pending requests
+            // 3. CHECK STATUS - ONLY PENDING CAN BE EDITED
             if (!"Pending".equalsIgnoreCase(returnRequest.getReturnStatus())) {
-                // ✅ FIXED: Use session to preserve message across redirect
-                request.getSession().setAttribute("errorMessage", "Only pending requests can be edited");
+                request.getSession().setAttribute("flash_error", "Only pending requests can be edited");
                 response.sendRedirect(request.getContextPath()
                         + "/return-request?action=detail&requestId=" + requestId);
                 return;
             }
 
-            // Get return request details
+            // 4. GET RETURN REQUEST DETAILS
             List<ReturnRequestDetail> listDetail = dDAO.getDetailsByReturnRequestId(requestId);
 
-            // Get related order information
+            // 5. GET RELATED ORDER
             OrderDAO orderDAO = new OrderDAO();
             Order order = orderDAO.findWithItems(returnRequest.getOrderId());
 
-            // ✅ ADDED: Validate order exists
             if (order == null) {
-                request.setAttribute("errorMessage", "Order not found");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Order not found");
+                response.sendRedirect(request.getContextPath() + "/orders");
                 return;
             }
 
-            // ✅ ADDED: Validate order has items
             if (order.getItems() == null || order.getItems().isEmpty()) {
-                request.setAttribute("errorMessage", "Order has no items");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Order has no items");
+                response.sendRedirect(request.getContextPath() + "/orders");
                 return;
             }
 
-            // ✅ FIXED: Map productVariantId to orderDetailId with null safety
+            // 6. MAP SELECTED PRODUCT VARIANTS
             Set<Integer> selectedOrderDetailIds = new HashSet<>();
-            if (listDetail != null && !listDetail.isEmpty()) {
+            if (listDetail != null) {
                 for (ReturnRequestDetail detail : listDetail) {
-                    order.getItems().stream()
-                            .filter(item -> item.getProductVariantId() == detail.getProductVariantId())
-                            .forEach(item -> selectedOrderDetailIds.add(item.getOrderDetailId()));
+                    for (OrderDetail item : order.getItems()) {
+                        if (item.getProductVariantId() == detail.getProductVariantId()) {
+                            selectedOrderDetailIds.add(item.getOrderDetailId());
+                        }
+                    }
                 }
             }
 
-            // Format order date
+            // 7. FORMAT ORDER DATE
             if (order.getPlacedAt() != null) {
                 request.setAttribute("formattedOrderDate",
                         order.getPlacedAt().format(
@@ -244,6 +244,7 @@ public class ReturnRequestServlet extends HttpServlet {
                 );
             }
 
+            // 8. SET ATTRIBUTES AND FORWARD
             request.setAttribute("selectedOrderDetailIds", selectedOrderDetailIds);
             request.setAttribute("returnRequest", returnRequest);
             request.setAttribute("returnRequestDetails", listDetail);
@@ -255,47 +256,29 @@ public class ReturnRequestServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             Logger.getLogger(ReturnRequestServlet.class.getName())
                     .log(Level.WARNING, "Invalid requestId format: " + requestIdParam, e);
+            request.getSession().setAttribute("flash_error", "Invalid request ID format");
             response.sendRedirect(request.getContextPath() + "/orders");
-
-        } catch (Exception e) {
-            // ✅ ADDED: Catch-all for unexpected errors
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.SEVERE, "Unexpected error in handleEditPage", e);
-            request.setAttribute("errorMessage", "An unexpected error occurred");
-            try {
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-            } catch (ServletException | IOException ex) {
-                Logger.getLogger(ReturnRequestServlet.class.getName())
-                        .log(Level.SEVERE, "Failed to forward to error page", ex);
-                response.sendRedirect(request.getContextPath() + "/orders");
-            }
         }
     }
 
     private void handleCreatePage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         String orderIdParam = request.getParameter("orderId");
-
         // Validate orderId parameter
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/return-request");
             return;
         }
-
         try {
             int orderId = Integer.parseInt(orderIdParam);
             OrderDAO orderDAO = new OrderDAO();
-
             // Get order information
             Order order = orderDAO.findWithItems(orderId);
-
             if (order == null) {
-                request.setAttribute("errorMessage", "Order not found");
+                request.setAttribute("flash_error", "Order not found");
                 response.sendRedirect(request.getContextPath() + "/return-request");
                 return;
             }
-
             // Format order date for create page
             if (order.getPlacedAt() != null) {
                 request.setAttribute("formattedOrderDate",
@@ -337,7 +320,7 @@ public class ReturnRequestServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
+
         int sessionCustomerId = customer.getId();
         String action = request.getParameter("action");
 
@@ -347,7 +330,7 @@ public class ReturnRequestServlet extends HttpServlet {
         } else if ("update".equals(action)) {
             handleUpdatePost(request, response);
         } else if ("delete".equals(action)) {
-            handleDeletePost(request, response,sessionCustomerId);
+            handleDeletePost(request, response, sessionCustomerId);
         }
 
     }
@@ -355,6 +338,7 @@ public class ReturnRequestServlet extends HttpServlet {
     private void handleCreatePost(HttpServletRequest request, HttpServletResponse response, int customerId)
             throws ServletException, IOException {
         try {
+            // 1. VALIDATE ORDER ID
             int orderId;
             try {
                 orderId = Integer.parseInt(request.getParameter("orderId"));
@@ -362,56 +346,33 @@ public class ReturnRequestServlet extends HttpServlet {
                     throw new Exception();
                 }
             } catch (Exception e) {
-                request.setAttribute("errorMessage", "Error orderId");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Invalid order ID");
+                response.sendRedirect(request.getContextPath() + "/orders?id=" + customerId);
                 return;
             }
-            
+            // 2. CHECK IF RETURN REQUEST ALREADY EXISTS
             if (rDAO.existsByOrderId(orderId)) {
-                request.setAttribute("errorMessage", "A return request already exists for this order");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "A return request already exists for this order");
+                response.sendRedirect(request.getContextPath() + "/orders?id=" + customerId);
                 return;
             }
+            // 3. GET PARAMETERS (validation đã làm ở JSP)
             String reason = request.getParameter("reason");
             String bankName = request.getParameter("bankName");
             String accountNumber = request.getParameter("accountNumber");
             String accountHolder = request.getParameter("accountHolder");
             String note = request.getParameter("note");
-
-            if (reason == null || reason.isEmpty()
-                    || bankName == null || bankName.isEmpty()
-                    || accountNumber == null || !accountNumber.matches("\\d{6,20}")
-                    || accountHolder == null || accountHolder.isEmpty()) {
-                request.setAttribute("errorMessage", "Invalid Input");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-                return;
-            }
-
             String[] selectedProducts = request.getParameterValues("productId");
+
+            // 4. DOUBLE-CHECK CRITICAL DATA (an toàn phía server)
             if (selectedProducts == null || selectedProducts.length == 0) {
-                request.setAttribute("errorMessage", "Please select at least one item to return");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Please select at least one item to return");
+                response.sendRedirect(request.getContextPath() + "/return-request?action=form&orderId=" + orderId);
                 return;
             }
-
-            for (String pid : selectedProducts) {
-                String qtyParam = request.getParameter("qty_" + pid);
-                if (qtyParam == null || qtyParam.isEmpty()) {
-                    request.setAttribute("errorMessage", "Missing quantity for product " + pid);
-                    request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-                    return;
-                }
-
-                int returnQty = Integer.parseInt(qtyParam);
-                if (returnQty < 1) {
-                    request.setAttribute("errorMessage", "Return quantity must be at least 1");
-                    request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-                    return;
-                }
-            }
-
-            // 6. CHUẨN BỊ DỮ LIỆU
+            // 5. PREPARE BANK INFO
             String bankInfo = bankName + "_" + accountNumber + "_" + accountHolder;
+            // 6. CREATE RETURN REQUEST OBJECT
             ReturnRequest rr = new ReturnRequest();
             rr.setOrderId(orderId);
             rr.setCustomerId(customerId);
@@ -420,7 +381,7 @@ public class ReturnRequestServlet extends HttpServlet {
             rr.setBankAccountInfo(bankInfo);
             rr.setNote(note);
 
-            // 7. CHUẨN BỊ DETAILS
+            // 7. PREPARE DETAILS
             List<ReturnRequestDetail> details = new ArrayList<>();
             for (String pid : selectedProducts) {
                 int productVariantId = Integer.parseInt(pid);
@@ -437,294 +398,257 @@ public class ReturnRequestServlet extends HttpServlet {
 
                 details.add(detail);
             }
-
-            // 8. TẠO REQUEST VÀ DETAILS TRONG 1 TRANSACTION
+            // 8. CREATE REQUEST AND DETAILS IN TRANSACTION
             int requestId = rDAO.createReturnRequestWithDetails(rr, details);
-
             if (requestId <= 0) {
-                request.setAttribute("errorMessage", "Failed to create return request");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+                request.getSession().setAttribute("flash_error", "Failed to create return request. Please try again.");
+                response.sendRedirect(request.getContextPath() + "/return-request?action=form&orderId=" + orderId);
                 return;
             }
-
-            // 9. REDIRECT THÀNH CÔNG
-            response.sendRedirect(request.getContextPath() + "/orders?id=" + customerId + "&success=return_created");
+            // 9. SUCCESS REDIRECT
+            request.getSession().setAttribute("flash", "Return request submitted successfully! We will process your request soon.");
+            response.sendRedirect(request.getContextPath() + "/orders");
 
         } catch (NumberFormatException e) {
             Logger.getLogger(ReturnRequestServlet.class.getName())
                     .log(Level.SEVERE, "Invalid number format", e);
-            request.setAttribute("errorMessage", "Invalid input format");
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            request.getSession().setAttribute("flash_error", "Invalid input format. Please check your data.");
+            response.sendRedirect(request.getContextPath() + "/orders?id=" + customerId);
 
         } catch (SQLException ex) {
             Logger.getLogger(ReturnRequestServlet.class.getName())
                     .log(Level.SEVERE, "Database error creating return request", ex);
-            request.setAttribute("errorMessage", "System error occurred. Please try again later.");
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            request.getSession().setAttribute("flash_error", "System error occurred. Please try again later.");
+            response.sendRedirect(request.getContextPath() + "/orders?id=" + customerId);
         }
     }
 
-    private void handleUpdatePost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+   private void handleUpdatePost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
 
-        String requestIdParam = request.getParameter("requestId");
+    String requestIdParam = request.getParameter("requestId");
 
-        if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
+    // 1. VALIDATE REQUEST ID PARAMETER
+    if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
+        request.getSession().setAttribute("flash_error", "Invalid return request ID");
+        response.sendRedirect(request.getContextPath() + "/orders");
+        return;
+    }
+
+    try {
+        // 2. GET PARAMETERS
+        int requestId = Integer.parseInt(requestIdParam);
+        int customerId = Integer.parseInt(request.getParameter("customerId"));
+        String reason = request.getParameter("reason");
+        String bankName = request.getParameter("bankName");
+        String accountNumber = request.getParameter("accountNumber");
+        String accountHolder = request.getParameter("accountHolder");
+        String note = request.getParameter("note");
+        String[] selectedOrderDetailIds = request.getParameterValues("orderDetailIds");
+
+        // 3. CHECK RETURN REQUEST EXISTS & IS PENDING
+        ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
+
+        if (existingRequest == null) {
+            request.getSession().setAttribute("flash_error", "Return request not found");
             response.sendRedirect(request.getContextPath() + "/orders");
             return;
         }
 
-        try {
-            // 1. GET PARAMETERS
-            int requestId = Integer.parseInt(requestIdParam);
-            int customerId = Integer.parseInt(request.getParameter("customerId"));
-            String reason = request.getParameter("reason");
-            String bankName = request.getParameter("bankName");
-            String accountNumber = request.getParameter("accountNumber");
-            String accountHolder = request.getParameter("accountHolder");
-            String note = request.getParameter("note");
+        if (!"Pending".equalsIgnoreCase(existingRequest.getReturnStatus())) {
+            request.getSession().setAttribute("flash_error", "Only pending requests can be edited");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=detail&requestId=" + requestId);
+            return;
+        }
 
-            // ✅ Get orderDetailIds from JSP
-            String[] selectedOrderDetailIds = request.getParameterValues("orderDetailIds");
+        // 4. VALIDATE SELECTED ITEMS (critical server-side check)
+        if (selectedOrderDetailIds == null || selectedOrderDetailIds.length == 0) {
+            request.getSession().setAttribute("flash_error", "Please select at least one item to return");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=edit&requestId=" + requestId);
+            return;
+        }
 
-            // 2. VALIDATE INPUT
-            if (reason == null || reason.trim().isEmpty()) {
-                request.setAttribute("errorMessage", "Please select a return reason");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-                return;
-            }
+        // 5. GET ORDER TO MAP ORDER DETAILS
+        OrderDAO orderDAO = new OrderDAO();
+        Order order = orderDAO.findWithItems(existingRequest.getOrderId());
 
-            if (bankName == null || accountNumber == null || accountHolder == null
-                    || bankName.trim().isEmpty() || accountNumber.trim().isEmpty()
-                    || accountHolder.trim().isEmpty()) {
-                request.setAttribute("errorMessage", "Please provide complete bank information");
-                request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
-                return;
-            }
+        if (order == null || order.getItems() == null) {
+            request.getSession().setAttribute("flash_error", "Order not found");
+            response.sendRedirect(request.getContextPath() + "/orders");
+            return;
+        }
 
-        
+        // 6. VALIDATE QUANTITIES FOR SELECTED ITEMS
+        Map<Integer, Integer> returnQuantities = new HashMap<>();
 
-            // 3. CHECK RETURN REQUEST EXISTS & IS PENDING
-            ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
+        for (String orderDetailIdStr : selectedOrderDetailIds) {
+            int orderDetailId = Integer.parseInt(orderDetailIdStr);
 
-            if (existingRequest == null) {
-                request.setAttribute("errorMessage", "Return request not found");
-                response.sendRedirect(request.getContextPath() + "/orders");
-                return;
-            }
+            // Get quantity from form
+            String qtyParam = request.getParameter("qty_" + orderDetailId);
 
-            if (!"Pending".equalsIgnoreCase(existingRequest.getReturnStatus())) {
-                request.setAttribute("errorMessage", "Only pending requests can be edited");
+            if (qtyParam == null || qtyParam.trim().isEmpty()) {
+                request.getSession().setAttribute("flash_error", "Quantity not provided for selected item");
                 response.sendRedirect(request.getContextPath()
-                        + "/return-request?action=detail&requestId=" + requestId);
+                        + "/return-request?action=edit&requestId=" + requestId);
                 return;
             }
 
-            // 4. VALIDATE SELECTED ITEMS
-            if (selectedOrderDetailIds == null || selectedOrderDetailIds.length == 0) {
-                request.setAttribute("errorMessage", "Please select at least one item to return");
+            try {
+                int returnQty = Integer.parseInt(qtyParam);
 
-                OrderDAO orderDAO = new OrderDAO();
-                Order order = orderDAO.findWithItems(existingRequest.getOrderId());
-                request.setAttribute("order", order);
-                request.setAttribute("returnRequest", existingRequest);
+                // Find the order item to get max quantity
+                OrderDetail orderItem = order.getItems().stream()
+                        .filter(item -> item.getOrderDetailId() == orderDetailId)
+                        .findFirst()
+                        .orElse(null);
 
-                List<ReturnRequestDetail> listDetail = dDAO.getDetailsByReturnRequestId(requestId);
-                request.setAttribute("returnRequestDetails", listDetail);
-
-                // Map selected items for re-display
-                Set<Integer> selectedIds = new HashSet<>();
-                if (order != null && order.getItems() != null && listDetail != null) {
-                    for (ReturnRequestDetail detail : listDetail) {
-                        order.getItems().stream()
-                                .filter(item -> item.getProductVariantId() == detail.getProductVariantId())
-                                .forEach(item -> selectedIds.add(item.getOrderDetailId()));
-                    }
-                }
-                request.setAttribute("selectedOrderDetailIds", selectedIds);
-
-                // Format order date
-                if (order != null && order.getPlacedAt() != null) {
-                    request.setAttribute("formattedOrderDate",
-                            order.getPlacedAt().format(
-                                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-                            )
-                    );
+                if (orderItem == null) {
+                    request.getSession().setAttribute("flash_error", "Order item not found");
+                    response.sendRedirect(request.getContextPath()
+                            + "/return-request?action=edit&requestId=" + requestId);
+                    return;
                 }
 
-                request.getRequestDispatcher("/WEB-INF/views/customer/return-request/edit.jsp")
-                        .forward(request, response);
+                // Validate quantity range (server-side safety check)
+                if (returnQty < 1 || returnQty > orderItem.getDetailQuantity()) {
+                    request.getSession().setAttribute("flash_error",
+                            String.format("Invalid return quantity for %s. Must be between 1 and %d",
+                                    orderItem.getProductName(), orderItem.getDetailQuantity()));
+                    response.sendRedirect(request.getContextPath()
+                            + "/return-request?action=edit&requestId=" + requestId);
+                    return;
+                }
+
+                returnQuantities.put(orderDetailId, returnQty);
+
+            } catch (NumberFormatException e) {
+                request.getSession().setAttribute("flash_error", "Invalid quantity format");
+                response.sendRedirect(request.getContextPath()
+                        + "/return-request?action=edit&requestId=" + requestId);
                 return;
             }
+        }
 
-            // 5. GET ORDER TO MAP ORDER DETAILS
-            OrderDAO orderDAO = new OrderDAO();
-            Order order = orderDAO.findWithItems(existingRequest.getOrderId());
+        // 7. UPDATE RETURN REQUEST
+        String bankInfo = bankName + "_" + accountNumber + "_" + accountHolder;
+        int updateResult = rDAO.updateReturnRequest(requestId, customerId, reason, bankInfo, note);
 
-            if (order == null || order.getItems() == null) {
-                request.setAttribute("errorMessage", "Order not found");
-                response.sendRedirect(request.getContextPath() + "/orders");
-                return;
-            }
+        if (updateResult > 0) {
+            // 8. DELETE OLD DETAILS
+            dDAO.deleteDetailsByReturnRequestId(requestId);
 
-            // 6. VALIDATE QUANTITIES FOR SELECTED ITEMS
-            Map<Integer, Integer> returnQuantities = new HashMap<>();
-
+            // 9. INSERT NEW DETAILS
             for (String orderDetailIdStr : selectedOrderDetailIds) {
                 int orderDetailId = Integer.parseInt(orderDetailIdStr);
 
-                // Get quantity from JSP form: qty_{orderDetailId}
-                String qtyParam = request.getParameter("qty_" + orderDetailId);
+                // Find corresponding order item
+                OrderDetail orderItem = order.getItems().stream()
+                        .filter(item -> item.getOrderDetailId() == orderDetailId)
+                        .findFirst()
+                        .orElse(null);
 
-                if (qtyParam == null || qtyParam.trim().isEmpty()) {
-                    request.setAttribute("errorMessage", "Quantity not provided for selected item");
-                    response.sendRedirect(request.getContextPath()
-                            + "/return-request?action=edit&requestId=" + requestId);
-                    return;
-                }
+                if (orderItem != null) {
+                    int returnQty = returnQuantities.get(orderDetailId);
+                    BigDecimal amount = orderItem.getDetailPrice()
+                            .multiply(BigDecimal.valueOf(returnQty));
 
-                try {
-                    int returnQty = Integer.parseInt(qtyParam);
+                    ReturnRequestDetail detail = new ReturnRequestDetail();
+                    detail.setReturnRequestId(requestId);
+                    detail.setProductVariantId(orderItem.getProductVariantId());
+                    detail.setQuantity(returnQty);
+                    detail.setAmount(amount);
+                    detail.setNote(null);
 
-                    // Find the order item to get max quantity
-                    OrderDetail orderItem = order.getItems().stream()
-                            .filter(item -> item.getOrderDetailId() == orderDetailId)
-                            .findFirst()
-                            .orElse(null);
-
-                    if (orderItem == null) {
-                        request.setAttribute("errorMessage", "Order item not found");
-                        response.sendRedirect(request.getContextPath()
-                                + "/return-request?action=edit&requestId=" + requestId);
-                        return;
-                    }
-
-                    // Validate quantity range
-                    if (returnQty < 1 || returnQty > orderItem.getDetailQuantity()) {
-                        request.setAttribute("errorMessage",
-                                String.format("Invalid return quantity for %s. Must be between 1 and %d",
-                                        orderItem.getProductName(), orderItem.getDetailQuantity()));
-                        response.sendRedirect(request.getContextPath()
-                                + "/return-request?action=edit&requestId=" + requestId);
-                        return;
-                    }
-
-                    returnQuantities.put(orderDetailId, returnQty);
-
-                } catch (NumberFormatException e) {
-                    request.setAttribute("errorMessage", "Invalid quantity format");
-                    response.sendRedirect(request.getContextPath()
-                            + "/return-request?action=edit&requestId=" + requestId);
-                    return;
+                    dDAO.addReturnRequestDetail(detail);
                 }
             }
 
-            // 7. UPDATE RETURN REQUEST
-            String bankInfo = bankName + "_" + accountNumber + "_" + accountHolder;
-            int updateResult = rDAO.updateReturnRequest(requestId, customerId, reason, bankInfo, note);
-
-            if (updateResult > 0) {
-                // 8. DELETE OLD DETAILS
-                dDAO.deleteDetailsByReturnRequestId(requestId);
-
-                // 9. INSERT NEW DETAILS WITH CUSTOM QUANTITIES
-                for (String orderDetailIdStr : selectedOrderDetailIds) {
-                    int orderDetailId = Integer.parseInt(orderDetailIdStr);
-
-                    // Find corresponding order item to get product info
-                    OrderDetail orderItem = order.getItems().stream()
-                            .filter(item -> item.getOrderDetailId() == orderDetailId)
-                            .findFirst()
-                            .orElse(null);
-
-                    if (orderItem != null) {
-                        // ✅ Use custom return quantity from form
-                        int returnQty = returnQuantities.get(orderDetailId);
-
-                        // Calculate amount based on return quantity
-                        BigDecimal amount = orderItem.getDetailPrice()
-                                .multiply(BigDecimal.valueOf(returnQty));
-
-                        ReturnRequestDetail detail = new ReturnRequestDetail();
-                        detail.setReturnRequestId(requestId);
-                        detail.setProductVariantId(orderItem.getProductVariantId());
-                        detail.setQuantity(returnQty); // ✅ Use return quantity, not order quantity
-                        detail.setAmount(amount);
-                        detail.setNote(null);
-
-                        dDAO.addReturnRequestDetail(detail);
-                    }
-                }
-
-                // 10. REDIRECT SUCCESS
-                response.sendRedirect(request.getContextPath()
-                        + "/return-request?action=detail&requestId=" + requestId);
-            } else {
-                request.setAttribute("errorMessage", "Failed to update return request");
-                response.sendRedirect(request.getContextPath()
-                        + "/return-request?action=detail&requestId=" + requestId);
-            }
-
-        } catch (NumberFormatException e) {
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.WARNING, "Invalid parameter format", e);
-            response.sendRedirect(request.getContextPath() + "/orders");
-
-        } catch (SQLException e) {
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.SEVERE, "Database error while updating return request", e);
-            request.setAttribute("errorMessage", "System error occurred");
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp").forward(request, response);
+            // 10. SUCCESS REDIRECT
+            request.getSession().setAttribute("flash", "Return request updated successfully!");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=detail&requestId=" + requestId);
+        } else {
+            request.getSession().setAttribute("flash_error", "Failed to update return request. Please try again.");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=edit&requestId=" + requestId);
         }
+
+    } catch (NumberFormatException e) {
+        Logger.getLogger(ReturnRequestServlet.class.getName())
+                .log(Level.WARNING, "Invalid parameter format", e);
+        request.getSession().setAttribute("flash_error", "Invalid input format");
+        response.sendRedirect(request.getContextPath() + "/orders");
+
+    } catch (SQLException e) {
+        Logger.getLogger(ReturnRequestServlet.class.getName())
+                .log(Level.SEVERE, "Database error while updating return request", e);
+        request.getSession().setAttribute("flash_error", "System error occurred. Please try again later.");
+        response.sendRedirect(request.getContextPath() + "/orders");
     }
+}
 
-    private void handleDeletePost(HttpServletRequest request, HttpServletResponse response,int customerId)
-            throws ServletException, IOException {
-
-        String requestIdParam = request.getParameter("requestId");
-
-        if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/return-request");
+   private void handleDeletePost(HttpServletRequest request, HttpServletResponse response, int customerId)
+        throws ServletException, IOException {
+    
+    String requestIdParam = request.getParameter("requestId");
+    
+    // 1. VALIDATE REQUEST ID PARAMETER
+    if (requestIdParam == null || requestIdParam.trim().isEmpty()) {
+        request.getSession().setAttribute("flash_error", "Invalid return request ID");
+        response.sendRedirect(request.getContextPath() + "/orders");
+        return;
+    }
+    
+    try {
+        int requestId = Integer.parseInt(requestIdParam);
+        
+        // 2. CHECK IF RETURN REQUEST EXISTS
+        ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
+        if (existingRequest == null) {
+            request.getSession().setAttribute("flash_error", "Return request not found");
+            response.sendRedirect(request.getContextPath() + "/orders");
             return;
         }
-
-        try {
-            int requestId = Integer.parseInt(requestIdParam);
-                 
-            // Check if return request exists and is pending
-            ReturnRequest existingRequest = rDAO.getReturnRequestById(requestId);
-
-            if (existingRequest == null) {
-                request.setAttribute("errorMessage", "Return request not found");
-                response.sendRedirect(request.getContextPath() + "/return-request");
-                return;
-            }
-
-            // Delete return request (this will only work if status is PENDING - as per DAO method)
-            int deleteResult = rDAO.deleteReturnRequest(requestId, customerId);
-
-            if (deleteResult > 0) {
-                // Also delete related details
-                ReturnRequestDetailDAO detailDAO = new ReturnRequestDetailDAO();
-                detailDAO.deleteDetailsByReturnRequestId(requestId);
-
-                response.sendRedirect(request.getContextPath() + "/orders");
-            }
-
-        } catch (NumberFormatException e) {
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.WARNING, "Invalid requestId format", e);
-            response.sendRedirect(request.getContextPath() + "/return-request");
-
-        } catch (SQLException e) {
-            Logger.getLogger(ReturnRequestServlet.class.getName())
-                    .log(Level.SEVERE, "Database error while cancelling return request", e);
-            request.setAttribute("errorMessage", "System error occurred");
-            request.getRequestDispatcher("/WEB-INF/views/error.jsp")
-                    .forward(request, response);
+        
+        // 3. CHECK IF REQUEST BELONGS TO CUSTOMER
+        if (existingRequest.getCustomerId() != customerId) {
+            request.getSession().setAttribute("flash_error", "You don't have permission to delete this request");
+            response.sendRedirect(request.getContextPath() + "/orders");
+            return;
         }
-
-    }
+        
+        // 4. CHECK IF STATUS IS PENDING (can only delete pending requests)
+        if (!"Pending".equalsIgnoreCase(existingRequest.getReturnStatus())) {
+            request.getSession().setAttribute("flash_error", "Only pending requests can be deleted");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=detail&requestId=" + requestId);
+            return;
+        }
+        
+        
+        // 6. DELETE RETURN REQUEST
+        int deleteResult = rDAO.deleteReturnRequest(requestId, customerId);
+        
+        if (deleteResult > 0) {
+            request.getSession().setAttribute("flash", "Return request cancelled successfully");
+            response.sendRedirect(request.getContextPath() + "/orders");
+        } else {
+            request.getSession().setAttribute("flash_error", "Failed to cancel return request. Please try again.");
+            response.sendRedirect(request.getContextPath()
+                    + "/return-request?action=detail&requestId=" + requestId);
+        }
+        
+    } catch (NumberFormatException e) {
+        Logger.getLogger(ReturnRequestServlet.class.getName())
+                .log(Level.WARNING, "Invalid requestId format", e);
+        request.getSession().setAttribute("flash_error", "Invalid request ID format");
+        response.sendRedirect(request.getContextPath() + "/orders");
+        
+    } 
+}
 
     /**
      * Returns a short description of the servlet.
