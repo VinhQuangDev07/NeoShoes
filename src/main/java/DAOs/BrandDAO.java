@@ -1,15 +1,15 @@
 package DAOs;
 
-import DB.DBContext;
-import Models.Brand;
-
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import DB.DBContext;
+import Models.Brand;
 
 public class BrandDAO {
 
@@ -86,4 +86,20 @@ public class BrandDAO {
 
         return dbContext.execQuery(sql, params) > 0;
     }
+
+
+    public boolean existsByName(String name) {
+    String sql = "SELECT COUNT(1) AS cnt FROM " + TBL + " WHERE Name = ? AND ISNULL(IsDeleted,0) = 0";
+    try (PreparedStatement ps = dbContext.getConnection().prepareStatement(sql)) {
+        ps.setString(1, name);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("cnt") > 0;
+            }
+        }
+    } catch (SQLException ex) {
+        Logger.getLogger(BrandDAO.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return false;
+}
 }

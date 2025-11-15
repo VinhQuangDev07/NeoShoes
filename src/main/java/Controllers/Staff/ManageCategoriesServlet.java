@@ -192,13 +192,14 @@ public class ManageCategoriesServlet extends HttpServlet {
             // Validate tên trống
             if (name == null || name.trim().isEmpty()) {
                 session.setAttribute("flash_error", "Category name cannot be empty");
-                showAddForm(request, response);
+                request.setAttribute("formAction", "add");
+                request.getRequestDispatcher("/WEB-INF/views/staff/category-form.jsp").forward(request, response);
                 return;
             }
 
             // Kiểm tra trùng tên trước khi upload
             if (categoryDAO.isCategoryNameExists(name.trim(), null)) {
-                request.setAttribute("error", "Category name already exists");
+                request.setAttribute("flash_error", "Category name already exists");
                 Category category = new Category();
                 category.setName(name.trim());
                 category.setIsActive(isActive);

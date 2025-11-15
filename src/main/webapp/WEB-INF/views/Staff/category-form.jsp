@@ -147,6 +147,7 @@
                         </c:if>
 
                         <!-- Category Name -->
+                        
                         <div class="mb-3">
                             <label for="name" class="form-label">Category Name *</label>
                             <input type="text" 
@@ -156,7 +157,9 @@
                                    value="${category.name}"
                                    required
                                    maxlength="255"
-                                   placeholder="Enter category name...">
+                                   placeholder="Enter category name..."
+                                   oninvalid="this.setCustomValidity(''); showNotification('Category name cannot be empty', 'error');"
+                                   oninput="this.setCustomValidity('');">
                         </div>
 
                         <!-- Image Upload -->
