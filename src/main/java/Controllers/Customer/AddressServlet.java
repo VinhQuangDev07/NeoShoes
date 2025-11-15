@@ -69,7 +69,7 @@ public class AddressServlet extends HttpServlet {
                         recipientName, recipientPhone, isDefault, false);
 
                 // Use session for success message
-                request.getSession().setAttribute("successMessage", "Address added successfully!");
+                request.getSession().setAttribute("flash", "Address added successfully!");
                 response.sendRedirect(request.getContextPath() + "/profile");
 
             } catch (ValidationException e) {
@@ -77,7 +77,7 @@ public class AddressServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             } catch (SQLException e) {
                 Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, "Error adding address", e);
-                request.getSession().setAttribute("errorMessage", "System error. Please try again.");
+                request.getSession().setAttribute("flash_error", "System error. Please try again.");
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             }
         }
@@ -95,21 +95,21 @@ public class AddressServlet extends HttpServlet {
                 }
 
                 if (address.isIsDefault()) {
-                    request.getSession().setAttribute("errorMessage", "Cannot delete default address! Please set another address as default first.");
+                    request.getSession().setAttribute("flash_error", "Cannot delete default address! Please set another address as default first.");
                     response.sendRedirect(request.getContextPath() + "/profile?id=" + customerId);
                     return;
                 }
 
                 addressDAO.delete(addressId, customerId);
-                request.getSession().setAttribute("successMessage", "Address deleted successfully!");
+                request.getSession().setAttribute("flash", "Address deleted successfully!");
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + customerId);
 
             } catch (ValidationException e) {
-                request.getSession().setAttribute("errorMessage", e.getMessage());
+                request.getSession().setAttribute("flash_error", e.getMessage());
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             } catch (SQLException e) {
                 Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, "Error deleting address", e);
-                request.getSession().setAttribute("errorMessage", "System error. Please try again.");
+                request.getSession().setAttribute("flash_error", "System error. Please try again.");
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             }
         }
@@ -141,15 +141,15 @@ public class AddressServlet extends HttpServlet {
 
                 addressDAO.updateAddress(addressId, customerId, addressName, addressDetails, recipientName, recipientPhone, isDefault);
 
-                request.getSession().setAttribute("successMessage", "Address updated successfully!");
+                request.getSession().setAttribute("flash", "Address updated successfully!");
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + customerId);
 
             } catch (ValidationException e) {
-                request.getSession().setAttribute("errorMessage", e.getMessage());
+                request.getSession().setAttribute("flash_error", e.getMessage());
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             } catch (SQLException e) {
                 Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, "Error updating address", e);
-                request.getSession().setAttribute("errorMessage", "System error. Please try again.");
+                request.getSession().setAttribute("flash_error", "System error. Please try again.");
                 response.sendRedirect(request.getContextPath() + "/profile?id=" + loggedInUserId);
             }
         }

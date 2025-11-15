@@ -263,33 +263,9 @@
                 gap: 20px;
             }
 
-            /* Error Message */
-            .error-message {
-                background-color: #fee2e2;
-                border: 1px solid #fecaca;
-                color: #991b1b;
-                padding: 12px 16px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                font-size: 14px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
+           
 
-            /* Success Message */
-            .success-message {
-                background-color: #d1fae5;
-                border: 1px solid #a7f3d0;
-                color: #065f46;
-                padding: 12px 16px;
-                border-radius: 8px;
-                margin-bottom: 20px;
-                font-size: 14px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
+           
 
             /* Form Actions */
             .form-actions {
@@ -486,21 +462,8 @@
                         </a>
                     </div>
 
-                    <!-- Error Message -->
-                    <c:if test="${not empty errorMessage}">
-                        <div class="error-message">
-                            <span>❌</span>
-                            <span><c:out value="${errorMessage}"/></span>
-                        </div>
-                    </c:if>
 
-                    <!-- Success Message -->
-                    <c:if test="${not empty successMessage}">
-                        <div class="success-message">
-                            <span>✅</span>
-                            <span><c:out value="${successMessage}"/></span>
-                        </div>
-                    </c:if>
+                  
 
                     <!-- Order Summary -->
                     <div class="order-summary">
@@ -855,16 +818,7 @@
                 }
             });
 
-            /**
-             * Prevent navigation if form is submitting
-             */
-            window.addEventListener('beforeunload', function (e) {
-                if (formSubmitting) {
-                    e.preventDefault();
-                    e.returnValue = 'Your return request is being processed. Are you sure you want to leave?';
-                    return e.returnValue;
-                }
-            });
+           
 
             /**
              * Character counter for note textarea
@@ -904,30 +858,7 @@
                 });
             }
 
-            /**
-             * Initialize: Clear any session messages after display
-             */
-            window.addEventListener('load', function () {
-                // Auto-hide success/error messages after 5 seconds
-                const errorMsg = document.querySelector('.error-message');
-                const successMsg = document.querySelector('.success-message');
-
-                if (errorMsg) {
-                    setTimeout(() => {
-                        errorMsg.style.transition = 'opacity 0.5s';
-                        errorMsg.style.opacity = '0';
-                        setTimeout(() => errorMsg.remove(), 500);
-                    }, 5000);
-                }
-
-                if (successMsg) {
-                    setTimeout(() => {
-                        successMsg.style.transition = 'opacity 0.5s';
-                        successMsg.style.opacity = '0';
-                        setTimeout(() => successMsg.remove(), 500);
-                    }, 5000);
-                }
-            });
+         
         </script>
     </body>
 </html>

@@ -174,7 +174,6 @@ public class CustomerDAO extends DB.DBContext {
 //            return false;
 //        }
 //    }
-    
     public boolean changePassword(int id, String newPlain) {
         String sql = "UPDATE Customer SET PasswordHash = ?, UpdatedAt = GETDATE() "
                 + "WHERE CustomerId = ? AND IsDeleted = 0";
@@ -296,100 +295,100 @@ public class CustomerDAO extends DB.DBContext {
     }
     // ==================== PASSWORD RESET ====================
 // Xóa OTP cũ
-public void deleteOldVerifyCode(int customerId) {
-    String sql = "DELETE FROM VerifyCodeCustomer WHERE CustomerId = ?";
-    try {
-        this.execQuery(sql, new Object[]{customerId});
-    } catch (SQLException e) {
-        System.err.println("deleteOldVerifyCode: " + e.getMessage());
-        e.printStackTrace();
+
+    public void deleteOldVerifyCode(int customerId) {
+        String sql = "DELETE FROM VerifyCodeCustomer WHERE CustomerId = ?";
+        try {
+            this.execQuery(sql, new Object[]{customerId});
+        } catch (SQLException e) {
+            System.err.println("deleteOldVerifyCode: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-}
 
 // Lưu OTP mới
-public void saveVerifyCode(int customerId, String code, LocalDateTime expiredAt) {
-    String sql = "INSERT INTO VerifyCodeCustomer (CustomerId, FailedCount, RequestCount, Code, ExpiredAt, CreatedAt) " +
-                 "VALUES (?, 0, 1, ?, ?, GETDATE())";
-    try {
-        this.execQuery(sql, new Object[]{customerId, code, Timestamp.valueOf(expiredAt)});
-    } catch (SQLException e) {
-        System.err.println("saveVerifyCode: " + e.getMessage());
-        e.printStackTrace();
+    public void saveVerifyCode(int customerId, String code, LocalDateTime expiredAt) {
+        String sql = "INSERT INTO VerifyCodeCustomer (CustomerId, FailedCount, RequestCount, Code, ExpiredAt, CreatedAt) "
+                + "VALUES (?, 0, 1, ?, ?, GETDATE())";
+        try {
+            this.execQuery(sql, new Object[]{customerId, code, Timestamp.valueOf(expiredAt)});
+        } catch (SQLException e) {
+            System.err.println("saveVerifyCode: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-}
 
 // Verify OTP reset password
-public boolean verifyResetOTP(String email, String otp) {
-    String sql = "SELECT vc.Code, vc.ExpiredAt, vc.FailedCount " +
-                 "FROM VerifyCodeCustomer vc " +
-                 "INNER JOIN Customer c ON vc.CustomerId = c.CustomerId " +
-                 "WHERE c.Email = ? " +
-                 "ORDER BY vc.CreatedAt DESC";
-    
-    try {
-        ResultSet rs = this.execSelectQuery(sql, new Object[]{email});
-        
-        if (rs != null && rs.next()) {
-            String storedOTP = rs.getString("Code");
-            Timestamp expiry = rs.getTimestamp("ExpiredAt");
-            int failedCount = rs.getInt("FailedCount");
-            
-            if (failedCount >= 5) {
-                return false;
+    public boolean verifyResetOTP(String email, String otp) {
+        String sql = "SELECT vc.Code, vc.ExpiredAt, vc.FailedCount "
+                + "FROM VerifyCodeCustomer vc "
+                + "INNER JOIN Customer c ON vc.CustomerId = c.CustomerId "
+                + "WHERE c.Email = ? "
+                + "ORDER BY vc.CreatedAt DESC";
+
+        try {
+            ResultSet rs = this.execSelectQuery(sql, new Object[]{email});
+
+            if (rs != null && rs.next()) {
+                String storedOTP = rs.getString("Code");
+                Timestamp expiry = rs.getTimestamp("ExpiredAt");
+                int failedCount = rs.getInt("FailedCount");
+
+                if (failedCount >= 5) {
+                    return false;
+                }
+
+                if (storedOTP.equals(otp) && LocalDateTime.now().isBefore(expiry.toLocalDateTime())) {
+                    return true;
+                } else {
+                    incrementFailedCount(email);
+                    return false;
+                }
             }
-            
-            if (storedOTP.equals(otp) && LocalDateTime.now().isBefore(expiry.toLocalDateTime())) {
-                return true;
-            } else {
-                incrementFailedCount(email);
-                return false;
-            }
+        } catch (SQLException e) {
+            System.err.println("❌ verifyResetOTP: " + e.getMessage());
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        System.err.println("❌ verifyResetOTP: " + e.getMessage());
-        e.printStackTrace();
-    }
-    return false;
-}
-
-// Tăng số lần nhập sai
-private void incrementFailedCount(String email) {
-    String sql = "UPDATE VerifyCodeCustomer " +
-                 "SET FailedCount = FailedCount + 1 " +
-                 "WHERE CustomerId = (SELECT CustomerId FROM Customer WHERE Email = ?)";
-    try {
-        this.execQuery(sql, new Object[]{email});
-    } catch (SQLException e) {
-        System.err.println("❌ incrementFailedCount: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-
-// Xóa OTP sau khi dùng xong
-public void clearResetOTP(String email) {
-    String sql = "DELETE FROM VerifyCodeCustomer " +
-                 "WHERE CustomerId = (SELECT CustomerId FROM Customer WHERE Email = ?)";
-    try {
-        this.execQuery(sql, new Object[]{email});
-    } catch (SQLException e) {
-        System.err.println("❌ clearResetOTP: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-
-// Cập nhật password (method này đã có, giữ nguyên)
-public boolean updatePassword(String email, String newPassword) {
-    String sql = "UPDATE Customer SET PasswordHash = ?, UpdatedAt = GETDATE() WHERE Email = ?";
-    try {
-        this.execQuery(sql, new Object[]{newPassword, email});
-        return true;
-    } catch (SQLException e) {
-        System.err.println("❌ updatePassword: " + e.getMessage());
-        e.printStackTrace();
         return false;
     }
-}
-    
+
+// Tăng số lần nhập sai
+    private void incrementFailedCount(String email) {
+        String sql = "UPDATE VerifyCodeCustomer "
+                + "SET FailedCount = FailedCount + 1 "
+                + "WHERE CustomerId = (SELECT CustomerId FROM Customer WHERE Email = ?)";
+        try {
+            this.execQuery(sql, new Object[]{email});
+        } catch (SQLException e) {
+            System.err.println("❌ incrementFailedCount: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+// Xóa OTP sau khi dùng xong
+    public void clearResetOTP(String email) {
+        String sql = "DELETE FROM VerifyCodeCustomer "
+                + "WHERE CustomerId = (SELECT CustomerId FROM Customer WHERE Email = ?)";
+        try {
+            this.execQuery(sql, new Object[]{email});
+        } catch (SQLException e) {
+            System.err.println("❌ clearResetOTP: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+// Cập nhật password (method này đã có, giữ nguyên)
+    public boolean updatePassword(String email, String newPassword) {
+        String sql = "UPDATE Customer SET PasswordHash = ?, UpdatedAt = GETDATE() WHERE Email = ?";
+        try {
+            this.execQuery(sql, new Object[]{newPassword, email});
+            return true;
+        } catch (SQLException e) {
+            System.err.println("❌ updatePassword: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // ==================== MAPPER ====================
     private Customer mapCustomer(ResultSet rs) throws SQLException {

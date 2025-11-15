@@ -344,7 +344,7 @@ public class ManageReturnRequestServlet extends HttpServlet {
                 }
 
                 OrderDAO orderDAO = new OrderDAO();
-                boolean orderUpdated = orderDAO.updateOrderStatusForStaff(returnRequest.getOrderId(), "RETURNED", staff.getStaffId());
+                boolean orderUpdated = orderDAO.updateOrderStatusForReturnRequest(returnRequest.getOrderId(), "RETURNED", staff.getStaffId());
                 if (!orderUpdated) {
                     if (originalStatus != null && !"RETURNED".equalsIgnoreCase(originalStatus)) {
                         rrDAO.updateReturnRequestStatusByAdmin(requestId, originalStatus);

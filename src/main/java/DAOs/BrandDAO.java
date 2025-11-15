@@ -11,21 +11,16 @@ import java.util.logging.Logger;
 import DB.DBContext;
 import Models.Brand;
 
-public class BrandDAO {
+public class BrandDAO extends DBContext{
 
     private static final String TBL = "[dbo].[Brand]";
-    private DBContext dbContext;
-
-    public BrandDAO() {
-        this.dbContext = new DBContext();
-    }
 
     public List<Brand> getAllBrands() {
         List<Brand> brands = new ArrayList<>();
         String sql = "SELECT BrandId, Name, Logo, ISNULL(IsDeleted,0) AS IsDeleted "
                 + "FROM " + TBL + " WHERE ISNULL(IsDeleted,0) = 0 ORDER BY BrandId ASC";
 
-        try ( ResultSet rs = dbContext.execSelectQuery(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql)) {
             while (rs.next()) {
                 Brand b = new Brand();
                 b.setBrandId(rs.getInt("BrandId"));
@@ -45,7 +40,7 @@ public class BrandDAO {
                 + "FROM " + TBL + " WHERE BrandId = ? AND ISNULL(IsDeleted,0) = 0";
 
         Object[] params = {id};
-        try ( ResultSet rs = dbContext.execSelectQuery(sql, params)) {
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
             if (rs.next()) {
                 Brand b = new Brand();
                 b.setBrandId(rs.getInt("BrandId"));
@@ -62,21 +57,21 @@ public class BrandDAO {
         String sql = "INSERT INTO " + TBL + " (Name, Logo, IsDeleted) VALUES (?, ?, 0)";
         Object[] params = {brand.getName(), brand.getLogo()};
 
-        return dbContext.execQuery(sql, params) > 0;
+        return execQuery(sql, params) > 0;
     }
 
     public int addBrandReturnId(Brand brand) throws SQLException {
         String sql = "INSERT INTO " + TBL + " (Name, Logo, IsDeleted) VALUES (?, ?, 0)";
         Object[] params = {brand.getName(), brand.getLogo()};
 
-        return dbContext.execQueryReturnId(sql, params);
+        return execQueryReturnId(sql, params);
     }
 
     public boolean updateBrand(Brand brand) throws SQLException {
         String sql = "UPDATE " + TBL + " SET Name = ?, Logo = ? WHERE BrandId = ? AND ISNULL(IsDeleted,0) = 0";
         Object[] params = {brand.getName(), brand.getLogo(), brand.getBrandId()};
 
-        return dbContext.execQuery(sql, params) > 0;
+        return execQuery(sql, params) > 0;
     }
 
     // Soft delete
@@ -84,15 +79,15 @@ public class BrandDAO {
         String sql = "UPDATE " + TBL + " SET IsDeleted = 1 WHERE BrandId = ?";
         Object[] params = {id};
 
-        return dbContext.execQuery(sql, params) > 0;
+        return execQuery(sql, params) > 0;
     }
 
 
     public boolean existsByName(String name) {
     String sql = "SELECT COUNT(1) AS cnt FROM " + TBL + " WHERE Name = ? AND ISNULL(IsDeleted,0) = 0";
-    try (PreparedStatement ps = dbContext.getConnection().prepareStatement(sql)) {
-        ps.setString(1, name);
-        try (ResultSet rs = ps.executeQuery()) {
+    Object[] params = {name};
+    try {
+        try (ResultSet rs = execSelectQuery(sql, params)) {
             if (rs.next()) {
                 return rs.getInt("cnt") > 0;
             }

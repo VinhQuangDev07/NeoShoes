@@ -117,8 +117,8 @@ public class CartServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        // Using Customer ID = ?
-        int customerId = 1;
+        
+        int customerId = customer.getId();
 
         if ("add".equals(action)) {
             int variantId = Integer.parseInt(request.getParameter("variantId"));

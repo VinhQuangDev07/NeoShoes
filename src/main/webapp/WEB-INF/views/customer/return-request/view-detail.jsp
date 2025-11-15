@@ -142,7 +142,7 @@
                 background-color: #dbeafe;
                 color: #1e40af;
             }
-            
+
             .status-RETURNED {
                 background-color: #dbeafe;
                 color: #1e40af;
@@ -369,7 +369,7 @@
                             </div>
                         </div>
                     </c:if>
-                    
+
                     <c:if test="${returnRequest.returnStatus == 'Rejected' || returnRequest.returnStatus == 'REJECTED'}">
                         <div class="alert alert-info">
                             <span>❌</span>
@@ -531,6 +531,44 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- Confirm Cancel Return Request Modal -->
+        <div class="modal fade" id="confirmCancelModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Cancel Return Request
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p class="mb-3">
+                            Are you sure you want to cancel this return request?
+                        </p>
+                        <div class="small text-muted">
+                            This action <strong>cannot be undone</strong>.
+                        </div>
+                    </div>
+                    <form id="cancelReturnRequestForm" method="POST" action="${pageContext.request.contextPath}/return-request">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="requestId" value="${returnRequest.returnRequestId}">
+                        <input type="hidden" name="customerId" value="${returnRequest.customerId}">
+                        <div class="modal-footer border-0 d-flex justify-content-center">
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="fas fa-times me-1"></i> Cancel Request
+                            </button>
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>         
+
+
         <!-- Footer -->
         <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
 
@@ -539,37 +577,9 @@
 
         <script>
                                     function confirmCancel() {
-                                        if (!confirm('⚠️ Are you sure you want to cancel this return request?\n\nThis action cannot be undone.')) {
-                                            return;
-                                        }
-
-                                        // Create form
-                                        const form = document.createElement('form');
-                                        form.method = 'POST';
-                                        form.action = '${pageContext.request.contextPath}/return-request';
-
-                                        // Add hidden inputs
-                                        const actionInput = document.createElement('input');
-                                        actionInput.type = 'hidden';
-                                        actionInput.name = 'action';
-                                        actionInput.value = 'delete';
-
-                                        const requestIdInput = document.createElement('input');
-                                        requestIdInput.type = 'hidden';
-                                        requestIdInput.name = 'requestId';
-                                        requestIdInput.value = '${returnRequest.returnRequestId}';
-
-                                        const customerIdInput = document.createElement('input');
-                                        customerIdInput.type = 'hidden';
-                                        customerIdInput.name = 'customerId';
-                                        customerIdInput.value = '${returnRequest.customerId}';
-
-                                        form.appendChild(actionInput);
-                                        form.appendChild(requestIdInput);
-                                        form.appendChild(customerIdInput);
-
-                                        document.body.appendChild(form);
-                                        form.submit();
+                                        // Show Bootstrap modal
+                                        const modal = new bootstrap.Modal(document.getElementById('confirmCancelModal'));
+                                        modal.show();
                                     }
         </script>
     </body>

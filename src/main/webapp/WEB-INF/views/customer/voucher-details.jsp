@@ -321,7 +321,7 @@
                                                     ${voucher.value}% OFF
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫ OFF
+                                                    <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>$ OFF
                                                 </c:otherwise>
                                             </c:choose>
                                         </div>
@@ -360,14 +360,14 @@
                                         <c:if test="${voucher.minValue != null}">
                                             <div class="detail-row">
                                                 <span class="detail-label"><i class="fas fa-shopping-cart"></i> Minimum Order Value</span>
-                                                <span class="detail-value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
+                                                <span class="detail-value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</span>
                                             </div>
                                         </c:if>
 
                                         <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}">
                                             <div class="detail-row">
                                                 <span class="detail-label"><i class="fas fa-chart-line"></i> Maximum Discount</span>
-                                                <span class="detail-value"><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>₫</span>
+                                                <span class="detail-value"><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>$</span>
                                             </div>
                                         </c:if>
 
@@ -392,7 +392,19 @@
                                         </div>
                                     </div>
 
-                                  
+                                    <!-- Terms & Conditions -->
+                                    <div class="details-card">
+                                        <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
+                                        <ul class="terms-list">
+                                            <li>This voucher is valid for online purchases only</li>
+                                            <li>Cannot be combined with other promotional vouchers</li>
+                                            <li>Non-transferable and non-refundable</li>
+                                            <li>NeoShoes reserves the right to cancel this voucher at any time</li>
+                                            <c:if test="${voucher.minValue != null}"><li>Minimum order value required: <strong><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</strong></li></c:if>
+                                            <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}"><li>Maximum discount capped at: <strong><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>$</strong></li></c:if>
+                                            <li>Valid until: <strong><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></strong></li>
+                                        </ul>
+                                    </div>
 
                                     <!-- Action Buttons -->
                                     <div class="action-buttons">

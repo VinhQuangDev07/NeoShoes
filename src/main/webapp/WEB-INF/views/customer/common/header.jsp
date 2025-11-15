@@ -35,7 +35,7 @@
         <!-- Logo -->
         <a class="navbar-brand d-flex align-items-center" href="${homeUrl}">
             <div style="height:55px;">
-                <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1759560158/Logo_NeoShoes-removebg-preview_d0efnb.png"
+                <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1763199430/Logo_NeoShoes-removebg_yy4z2r.png"
                      alt="Neo Shoes Logo" class="h-100" style="object-fit:cover;">
             </div>
         </a>

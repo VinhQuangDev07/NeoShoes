@@ -448,7 +448,39 @@
                 </div>
             </div>
         </div>
-
+        <div class="modal fade" id="confirmDeleteAddressModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Delete Address
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p id="deleteAddressMessage" class="mb-3">
+                            Are you sure you want to delete this address?
+                        </p>
+                        <div class="small text-muted">
+                            This action <strong>cannot be undone</strong>.
+                        </div>
+                    </div>
+                    <form id="deleteAddressForm" method="POST" action="${pageContext.request.contextPath}/address">
+                        <input type="hidden" name="addressAction" value="deleteAddress">
+                        <input type="hidden" name="addressId" id="deleteAddressId">
+                        <input type="hidden" name="customerId" value="${sessionScope.customer.id}">
+                        <div class="modal-footer border-0 d-flex justify-content-center">
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -856,33 +888,14 @@
                                                                 }
 
                                                                 // ===== DELETE ADDRESS =====
+                                                                // ===== DELETE ADDRESS =====
                                                                 function deleteAddress(addressId) {
-                                                                    if (confirm('Are you sure you want to delete this address?')) {
-                                                                        const form = document.createElement('form');
-                                                                        form.method = 'POST';
-                                                                        form.action = '<%= request.getContextPath()%>/address';
+                                                                    // Set addressId vào hidden input
+                                                                    document.getElementById('deleteAddressId').value = addressId;
 
-                                                                        const actionInput = document.createElement('input');
-                                                                        actionInput.type = 'hidden';
-                                                                        actionInput.name = 'addressAction';
-                                                                        actionInput.value = 'deleteAddress';
-
-                                                                        const idInput = document.createElement('input');
-                                                                        idInput.type = 'hidden';
-                                                                        idInput.name = 'addressId';
-                                                                        idInput.value = addressId;
-
-                                                                        const customeridInput = document.createElement('input');
-                                                                        customeridInput.type = 'hidden';
-                                                                        customeridInput.name = 'customerId';
-                                                                        customeridInput.value = '${sessionScope.customer.id}';
-
-                                                                        form.appendChild(actionInput);
-                                                                        form.appendChild(idInput);
-                                                                        form.appendChild(customeridInput);
-                                                                        document.body.appendChild(form);
-                                                                        form.submit();
-                                                                    }
+                                                                    // Hiển thị modal
+                                                                    const modal = new bootstrap.Modal(document.getElementById('confirmDeleteAddressModal'));
+                                                                    modal.show();
                                                                 }
 
                                                                 // ===== TOGGLE FORMS =====

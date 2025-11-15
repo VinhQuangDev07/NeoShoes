@@ -623,43 +623,61 @@
             }
 
             // ✅ FIX 12: Enhanced delete with variant warning
-            function deleteProduct(productId, productName, variantCount) {
-                if (!productId || productId <= 0) {
-                    alert('Invalid product ID');
-                    return;
-                }
+         function deleteProduct(productId, productName, variantCount) {
+    if (!productId || productId <= 0) {
+        alert('Invalid product ID');
+        return;
+    }
 
-                let message = 'Are you sure you want to delete "' + productName + '"?';
+    // Build message
+    let message = 'Are you sure you want to delete <strong>"' + productName + '"</strong>?';
 
-                if (variantCount > 0) {
-                    message += '\n\nThis product has ' + variantCount + ' variant(s) that will also be deleted.';
-                }
+    if (variantCount > 0) {
+        message += '<br><br>This product has <strong>' + variantCount + ' variant(s)</strong> that will also be deleted.';
+    }
 
-                message += '\n\nThis action cannot be undone!';
+    // Set message and productId
+    document.getElementById('deleteProductMessage').innerHTML = message;
+    document.getElementById('deleteProductId').value = productId;
 
-                if (!confirm(message)) {
-                    return;
-                }
-
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '${pageContext.request.contextPath}/staff/product';
-
-                const actionInput = document.createElement('input');
-                actionInput.type = 'hidden';
-                actionInput.name = 'action';
-                actionInput.value = 'delete';
-                form.appendChild(actionInput);
-
-                const productIdInput = document.createElement('input');
-                productIdInput.type = 'hidden';
-                productIdInput.name = 'productId';
-                productIdInput.value = productId;
-                form.appendChild(productIdInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('confirmDeleteProductModal'));
+    modal.show();
+}
         </script>
+        <!-- Confirm Delete Product Modal -->
+<div class="modal fade" id="confirmDeleteProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-sm">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="fas fa-trash-alt me-2"></i> Delete Product
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p id="deleteProductMessage" class="mb-3">
+                    Are you sure you want to delete this product?
+                </p>
+                <div class="small text-muted">
+                    This action <strong>cannot be undone</strong>.
+                </div>
+            </div>
+            <form id="deleteProductForm" method="POST" action="${pageContext.request.contextPath}/staff/product">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="productId" id="deleteProductId">
+                <div class="modal-footer border-0 d-flex justify-content-center">
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>
