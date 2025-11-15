@@ -164,16 +164,18 @@
             }
             /* Success state: green border, white background */
             .input-icon.success input,
-            .input-icon.success select {
-                border: 1.5px solid #22c55e !important;
-                background-color: #fff !important;
-            }
+.input-icon.success select {
+    border-color: #e5e7eb !important;
+    background-color: #fff !important;
+}
+
+            
             /* Unified focus style for all inputs - Higher specificity */
             .input-icon input.form-control:focus,
             .input-icon input:focus,
             .form-control:focus {
-                border-color: #22c55e !important;
-                box-shadow: 0 0 0 0.25rem rgba(34,197,94,0.15) !important;
+                border-color: #1256dd !important;
+                box-shadow: 0 0 0 0.25rem rgba(30, 162, 228, 0.15) !important;
                 outline: 0 !important;
                 background-color: #fff !important;
                 -webkit-box-shadow: 0 0 0 1000px white inset !important;
@@ -193,8 +195,8 @@
             .input-icon select.form-select:focus,
             .input-icon select:focus,
             .form-select:focus {
-                border-color: #22c55e !important;
-                box-shadow: 0 0 0 0.25rem rgba(34,197,94,0.15) !important;
+                border-color: #1256dd !important;
+                box-shadow: 0 0 0 0.25rem rgba(30, 162, 228, 0.15) !important;
                 outline: 0 !important;
                 background-color: #fff !important;
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
