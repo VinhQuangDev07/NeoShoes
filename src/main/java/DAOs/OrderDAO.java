@@ -390,6 +390,56 @@ public class OrderDAO extends DB.DBContext {
 
             try {
                 // Update order timestamp
+                String updateOrderSql = "UPDATE [Order] SET UpdatedAt = ? WHERE OrderId = ?";
+                try ( PreparedStatement ps = con.prepareStatement(updateOrderSql)) {
+                    ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                    ps.setInt(2, orderId);
+                    ps.executeUpdate();
+                }
+
+                // Insert status history
+                String insertHistorySql = "INSERT INTO OrderStatusHistory (OrderId, ChangedBy, OrderStatus, ChangedAt) VALUES (?, ?, ?, ?)";
+                try ( PreparedStatement ps = con.prepareStatement(insertHistorySql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, staffId);
+                    ps.setString(3, status);
+                    ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                    ps.executeUpdate();
+                }
+
+                // If cancelling order, restore inventory and update payment status
+                if ("CANCELLED".equals(status)) {
+                    System.out.println("Cancelling order " + orderId + " - restoring inventory and updating payment status");
+                    restoreInventoryForCancelledOrder(con, orderId);
+                    updatePaymentStatusForCancelledOrder(con, orderId);
+                    System.out.println("Order " + orderId + " cancelled successfully with inventory restored and payment status updated");
+                }
+
+                // If completing order, update payment status to complete
+                if ("COMPLETED".equals(status)) {
+                    updatePaymentStatusForCompletedOrder(con, orderId);
+                }
+
+                con.commit();
+                return true;
+
+            } catch (SQLException e) {
+                con.rollback();
+                e.printStackTrace();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean updateOrderStatusForReturnRequest(int orderId, String status, int staffId) {
+        try ( Connection con = getConnection()) {
+            con.setAutoCommit(false);
+
+            try {
+                // Update order timestamp
                 String updateOrderSql = "UPDATE [Order] SET UpdatedAt = ?, PaymentStatusId = ? WHERE OrderId = ?";
                 try ( PreparedStatement ps = con.prepareStatement(updateOrderSql)) {
                     ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));

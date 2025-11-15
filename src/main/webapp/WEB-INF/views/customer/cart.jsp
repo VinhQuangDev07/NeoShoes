@@ -183,7 +183,7 @@
                                                     <div class="variant-modal" id="variantModal-${productId}">
                                                         <div class="variant-backdrop"></div>
                                                         <div class="variant-content">
-                                                            <h6 class="mb-3 fw-bold">Select variant for Product ${productId}</h6>
+                                                            <h6 class="mb-3 fw-bold">Select variant</h6>
 
                                                             <!-- Color -->
                                                             <div class="mb-3">

@@ -382,42 +382,6 @@
                             </c:if>
                         </div>
 
-                        <!-- Success/Error Messages -->
-                        <c:if test="${not empty successMessage}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle"></i>
-                                <c:out value="${successMessage}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        </c:if>
-                        
-                        <c:if test="${not empty errorMessage}">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <c:out value="${errorMessage}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        </c:if>
-
-                        <!-- Flash Messages from Session -->
-                        <c:if test="${not empty sessionScope.flash}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle"></i>
-                                <c:out value="${sessionScope.flash}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            <c:remove var="flash" scope="session"/>
-                        </c:if>
-                        
-                        <c:if test="${not empty sessionScope.flash_error}">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <c:out value="${sessionScope.flash_error}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            <c:remove var="flash_error" scope="session"/>
-                        </c:if>
-
                         <!-- Empty State -->
                         <c:if test="${empty orders}">
                             <div class="empty-state">

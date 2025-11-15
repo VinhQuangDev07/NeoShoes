@@ -281,6 +281,8 @@ public class ProductDAO extends DBContext {
                     if (up != null) {
                         product.setUpdatedAt(up.toLocalDateTime());
                     }
+                    
+                    product.setIsActive(rs.getBoolean("IsActive") ? "active" : "inactive");
 
                     return product;
                 }

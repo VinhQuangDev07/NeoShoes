@@ -450,7 +450,7 @@
                                                                 ${voucher.value}% OFF
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>$
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </div>
@@ -508,7 +508,7 @@
                                                                 ${voucher.value}% OFF
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>$
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </div>
@@ -563,7 +563,7 @@
                                                                 ${voucher.value}% OFF
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>$
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </div>
@@ -576,7 +576,7 @@
                                                         <c:if test="${voucher.minValue != null}">
                                                             <div class="voucher-detail">
                                                                 <span class="label"><i class="fas fa-shopping-cart"></i> Minimum order:</span>
-                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
+                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</span>
                                                             </div>
                                                         </c:if>
                                                     </div>
@@ -603,7 +603,7 @@
                                                                 ${voucher.value}% OFF
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>₫
+                                                                <fmt:formatNumber value="${voucher.value}" pattern="#,##0"/>$
                                                             </c:otherwise>
                                                         </c:choose>
                                                     </div>

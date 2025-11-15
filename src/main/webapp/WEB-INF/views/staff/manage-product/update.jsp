@@ -472,7 +472,7 @@
                                     <input type="checkbox" 
                                            name="isActive" 
                                            value="1"
-                                           ${product.isActive ? 'checked' : ''}
+                                           ${product.isActive eq 'active' ? 'checked' : ''}
                                            id="isActiveToggle">
                                     <span class="toggle-slider"></span>
                                 </label>

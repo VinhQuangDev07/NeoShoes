@@ -198,7 +198,7 @@ public class ManageCategoriesServlet extends HttpServlet {
 
             // Kiểm tra trùng tên trước khi upload
             if (categoryDAO.isCategoryNameExists(name.trim(), null)) {
-                request.setAttribute("error", "Category name already exists");
+                request.setAttribute("flash_error", "Category name already exists");
                 Category category = new Category();
                 category.setName(name.trim());
                 category.setIsActive(isActive);
