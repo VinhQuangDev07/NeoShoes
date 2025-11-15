@@ -33,31 +33,12 @@ public class OrderDAO extends DB.DBContext {
     public int getCompleteStatusId() {
         String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Complete'";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("PaymentStatusId");
-                }
+        try ( ResultSet rs = execSelectQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("PaymentStatusId");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-
-        return 2; // Default fallback
-    }
-
-    /**
-     * Get PaymentStatusId for Complete status using existing connection
-     */
-    private int getCompleteStatusId(Connection con) throws SQLException {
-        String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Complete'";
-
-        try ( PreparedStatement ps = con.prepareStatement(sql)) {
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("PaymentStatusId");
-                }
-            }
         }
 
         return 2; // Default fallback
@@ -68,12 +49,11 @@ public class OrderDAO extends DB.DBContext {
      */
     public String getPaymentStatusName(int statusId) {
         String sql = "SELECT Name FROM PaymentStatus WHERE PaymentStatusId = ?";
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, statusId);
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("Name");
-                }
+        Object[] params = {statusId};
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                return rs.getString("Name");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -93,27 +73,31 @@ public class OrderDAO extends DB.DBContext {
                 + "WHERE o.CustomerId = ? "
                 + "ORDER BY o.PlacedAt DESC";
 
+        Object[] params = {customerId};
         List<Order> orders = new ArrayList<>();
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, customerId);
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
-                    // Load address info
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
-                    // Load payment status name
-                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
-                    // Load order items
-                    order.setItems(getOrderItems(order.getOrderId()));
-                    orders.add(order);
-                }
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
+
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
+
+                // Load payment status name
+                order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+
+                // Load order items
+                order.setItems(getOrderItems(order.getOrderId()));
+
+                orders.add(order);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return orders;
     }
 
@@ -188,39 +172,39 @@ public class OrderDAO extends DB.DBContext {
                 + "LEFT JOIN PaymentStatus ps ON o.PaymentStatusId = ps.PaymentStatusId "
                 + "WHERE o.OrderId = ?";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, orderId);
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
-                    // Load payment info
-                    order.setPaymentMethodName(rs.getString("PaymentMethodName"));
-                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+        Object[] params = {orderId};
 
-                    // Load address info (try snapshot first, fallback to current address)
-                    Address orderAddressSnapshot = getOrderAddressSnapshot(orderId);
-                    if (orderAddressSnapshot != null) {
-                        // Use snapshot data - this preserves original order information
-                        order.setAddressName(orderAddressSnapshot.getAddressName());
-                        order.setAddressDetails(orderAddressSnapshot.getAddressDetails());
-                        order.setRecipientName(orderAddressSnapshot.getRecipientName());
-                        order.setRecipientPhone(orderAddressSnapshot.getRecipientPhone());
-                    } else {
-                        // Fallback to current address data - this will change if customer updates profile
-                        order.setAddressName(rs.getString("AddressName"));
-                        order.setAddressDetails(rs.getString("AddressDetails"));
-                        order.setRecipientName(rs.getString("RecipientName"));
-                        order.setRecipientPhone(rs.getString("RecipientPhone"));
-                    }
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
 
-                    // Load order items
-                    order.setItems(getOrderItems(order.getOrderId()));
-                    return order;
+                // Load payment info
+                order.setPaymentMethodName(rs.getString("PaymentMethodName"));
+                order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+
+                // Load address info (try snapshot first, fallback to current address)
+                Address orderAddressSnapshot = getOrderAddressSnapshot(orderId);
+                if (orderAddressSnapshot != null) {
+                    order.setAddressName(orderAddressSnapshot.getAddressName());
+                    order.setAddressDetails(orderAddressSnapshot.getAddressDetails());
+                    order.setRecipientName(orderAddressSnapshot.getRecipientName());
+                    order.setRecipientPhone(orderAddressSnapshot.getRecipientPhone());
+                } else {
+                    order.setAddressName(rs.getString("AddressName"));
+                    order.setAddressDetails(rs.getString("AddressDetails"));
+                    order.setRecipientName(rs.getString("RecipientName"));
+                    order.setRecipientPhone(rs.getString("RecipientPhone"));
                 }
+
+                // Load order items
+                order.setItems(getOrderItems(order.getOrderId()));
+
+                return order;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
@@ -235,26 +219,26 @@ public class OrderDAO extends DB.DBContext {
                 + "INNER JOIN Product p ON pv.ProductId = p.ProductId "
                 + "WHERE od.OrderId = ?";
 
+        Object[] params = {orderId};
         List<OrderDetail> items = new ArrayList<>();
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, orderId);
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    OrderDetail item = new OrderDetail();
-                    item.setOrderDetailId(rs.getInt("OrderDetailId"));
-                    item.setOrderId(rs.getInt("OrderId"));
-                    item.setProductVariantId(rs.getInt("ProductVariantId"));
-                    item.setDetailQuantity(rs.getInt("DetailQuantity"));
-                    item.setDetailPrice(rs.getBigDecimal("DetailPrice"));
-                    item.setAddressDetail(rs.getString("AddressDetail"));
-                    item.setProductName(rs.getString("ProductName"));
-                    item.setColor(rs.getString("Color"));
-                    items.add(item);
-                }
+
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                OrderDetail item = new OrderDetail();
+                item.setOrderDetailId(rs.getInt("OrderDetailId"));
+                item.setOrderId(rs.getInt("OrderId"));
+                item.setProductVariantId(rs.getInt("ProductVariantId"));
+                item.setDetailQuantity(rs.getInt("DetailQuantity"));
+                item.setDetailPrice(rs.getBigDecimal("DetailPrice"));
+                item.setAddressDetail(rs.getString("AddressDetail"));
+                item.setProductName(rs.getString("ProductName"));
+                item.setColor(rs.getString("Color"));
+                items.add(item);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return items;
     }
 
@@ -433,7 +417,7 @@ public class OrderDAO extends DB.DBContext {
             return false;
         }
     }
-    
+
     public boolean updateOrderStatusForReturnRequest(int orderId, String status, int staffId) {
         try ( Connection con = getConnection()) {
             con.setAutoCommit(false);
@@ -532,42 +516,6 @@ public class OrderDAO extends DB.DBContext {
     }
 
     /**
-     * Get PaymentStatusId for Cancelled status
-     */
-    private int getCancelledPaymentStatusId() {
-        String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Cancelled'";
-
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("PaymentStatusId");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return 4; // Default fallback for Cancelled
-    }
-
-    /**
-     * Get PaymentStatusId for Cancelled status using existing connection
-     */
-    private int getCancelledPaymentStatusId(Connection con) throws SQLException {
-        String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Cancelled'";
-
-        try ( PreparedStatement ps = con.prepareStatement(sql)) {
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("PaymentStatusId");
-                }
-            }
-        }
-
-        return 4; // Default fallback for Cancelled
-    }
-
-    /**
      * Update payment status when order is completed
      */
     private void updatePaymentStatusForCompletedOrder(Connection con, int orderId) throws SQLException {
@@ -587,7 +535,7 @@ public class OrderDAO extends DB.DBContext {
         // Only update payment status if it's not already complete
         if (currentPaymentStatusId != 2) { // 2 = Complete
             // Get the appropriate payment status ID for completed orders
-            int completedPaymentStatusId = getCompleteStatusId(con);
+            int completedPaymentStatusId = getCompleteStatusId();
 
             // Update payment status
             String updatePaymentStatusSql = "UPDATE [Order] SET PaymentStatusId = ? WHERE OrderId = ?";
@@ -912,50 +860,48 @@ public class OrderDAO extends DB.DBContext {
                 + "LEFT JOIN Voucher v ON o.VoucherId = v.VoucherId "
                 + "WHERE o.OrderId = ?";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        Object[] params = {orderId};
 
-            ps.setInt(1, orderId);
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                // Create order using existing method
+                Order order = createOrderFromResultSet(rs);
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    // Create order using existing method
-                    Order order = createOrderFromResultSet(rs);
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
 
-                    // Load address info
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
+                // Load voucher info if exists
+                Integer voucherId = order.getVoucherId();
+                if (voucherId != null) {
+                    String voucherCode = rs.getString("VoucherCode");
+                    if (voucherCode != null) {
+                        Models.Voucher voucher = new Models.Voucher();
+                        voucher.setVoucherId(voucherId);
+                        voucher.setVoucherCode(voucherCode);
+                        voucher.setType(rs.getString("VoucherType"));
+                        voucher.setValue(rs.getBigDecimal("VoucherValue"));
 
-                    // ✅ Load voucher info if exists
-                    Integer voucherId = order.getVoucherId();
-                    if (voucherId != null) {
-                        String voucherCode = rs.getString("VoucherCode");
-                        if (voucherCode != null) {
-                            Models.Voucher voucher = new Models.Voucher();
-                            voucher.setVoucherId(voucherId);
-                            voucher.setVoucherCode(voucherCode);
-                            voucher.setType(rs.getString("VoucherType"));
-                            voucher.setValue(rs.getBigDecimal("VoucherValue"));
-
-                            BigDecimal maxValue = rs.getBigDecimal("VoucherMaxValue");
-                            if (maxValue != null) {
-                                voucher.setMaxValue(maxValue);
-                            }
-
-                            order.setVoucher(voucher);
+                        BigDecimal maxValue = rs.getBigDecimal("VoucherMaxValue");
+                        if (maxValue != null) {
+                            voucher.setMaxValue(maxValue);
                         }
+
+                        order.setVoucher(voucher);
                     }
-
-                    // Load order items using existing method
-                    order.setItems(getOrderItems(order.getOrderId()));
-
-                    return order;
                 }
+
+                // Load order items using existing method
+                order.setItems(getOrderItems(order.getOrderId()));
+
+                return order;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
@@ -975,42 +921,38 @@ public class OrderDAO extends DB.DBContext {
                 + "WHERE o.CustomerId = ? "
                 + "ORDER BY o.PlacedAt DESC";
 
+        Object[] params = {customerId};
         List<Order> orders = new ArrayList<>();
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                // Create order using existing method
+                Order order = createOrderFromResultSet(rs);
 
-            ps.setInt(1, customerId);
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    // Create order using existing method
-                    Order order = createOrderFromResultSet(rs);
-
-                    // Load address info
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
-
-                    // ✅ Load voucher info if exists
-                    Integer voucherId = order.getVoucherId();
-                    if (voucherId != null) {
-                        String voucherCode = rs.getString("VoucherCode");
-                        if (voucherCode != null) {
-                            Models.Voucher voucher = new Models.Voucher();
-                            voucher.setVoucherId(voucherId);
-                            voucher.setVoucherCode(voucherCode);
-                            voucher.setType(rs.getString("VoucherType"));
-                            voucher.setValue(rs.getBigDecimal("VoucherValue"));
-                            order.setVoucher(voucher);
-                        }
+                // Load voucher info if exists
+                Integer voucherId = order.getVoucherId();
+                if (voucherId != null) {
+                    String voucherCode = rs.getString("VoucherCode");
+                    if (voucherCode != null) {
+                        Models.Voucher voucher = new Models.Voucher();
+                        voucher.setVoucherId(voucherId);
+                        voucher.setVoucherCode(voucherCode);
+                        voucher.setType(rs.getString("VoucherType"));
+                        voucher.setValue(rs.getBigDecimal("VoucherValue"));
+                        order.setVoucher(voucher);
                     }
-
-                    // Load order items using existing method
-                    order.setItems(getOrderItems(order.getOrderId()));
-
-                    orders.add(order);
                 }
+
+                // Load order items using existing method
+                order.setItems(getOrderItems(order.getOrderId()));
+
+                orders.add(order);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1051,28 +993,25 @@ public class OrderDAO extends DB.DBContext {
 
         List<Order> orders = new ArrayList<>();
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql)) {
+            while (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
+                // Load customer info
+                order.setCustomerName(rs.getString("CustomerName"));
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                order.setCustomerPhone(rs.getString("CustomerPhone"));
 
-                    // Load customer info
-                    order.setCustomerName(rs.getString("CustomerName"));
-                    order.setCustomerEmail(rs.getString("CustomerEmail"));
-                    order.setCustomerPhone(rs.getString("CustomerPhone"));
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
 
-                    // Load address info
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
+                // Load payment status name
+                order.setPaymentStatusName(rs.getString("PaymentStatusName"));
 
-                    // Load payment status name
-                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
-
-                    orders.add(order);
-                }
+                orders.add(order);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1085,12 +1024,11 @@ public class OrderDAO extends DB.DBContext {
      * Get total count of orders for staff (fast query)
      */
     public int getTotalOrdersCount() {
-        String sql = "SELECT COUNT(*) FROM [Order]";
+        String sql = "SELECT COUNT(*) AS Total FROM [Order]";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
-
+        try ( ResultSet rs = execSelectQuery(sql)) {
             if (rs.next()) {
-                return rs.getInt(1);
+                return rs.getInt("Total");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1129,40 +1067,35 @@ public class OrderDAO extends DB.DBContext {
                 + "ORDER BY o.PlacedAt DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
+        Object[] params = {offset, limit};
         List<Order> orders = new ArrayList<>();
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
 
-            ps.setInt(1, offset);
-            ps.setInt(2, limit);
+                // Load basic info
+                order.setCustomerName(rs.getString("CustomerName"));
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                order.setCustomerPhone(rs.getString("CustomerPhone"));
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
+                order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+                order.setStatus(rs.getString("OrderStatus"));
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
-
-                    // Load basic info
-                    order.setCustomerName(rs.getString("CustomerName"));
-                    order.setCustomerEmail(rs.getString("CustomerEmail"));
-                    order.setCustomerPhone(rs.getString("CustomerPhone"));
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
-                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
-                    order.setStatus(rs.getString("OrderStatus"));
-
-                    // Load voucher info if exists
-                    String voucherCode = rs.getString("VoucherCode");
-                    if (voucherCode != null) {
-                        Models.Voucher voucher = new Models.Voucher();
-                        voucher.setVoucherCode(voucherCode);
-                        voucher.setType(rs.getString("VoucherType"));
-                        voucher.setValue(rs.getBigDecimal("VoucherValue"));
-                        order.setVoucher(voucher);
-                    }
-
-                    orders.add(order);
+                // Load voucher info if exists
+                String voucherCode = rs.getString("VoucherCode");
+                if (voucherCode != null) {
+                    Models.Voucher voucher = new Models.Voucher();
+                    voucher.setVoucherCode(voucherCode);
+                    voucher.setType(rs.getString("VoucherType"));
+                    voucher.setValue(rs.getBigDecimal("VoucherValue"));
+                    order.setVoucher(voucher);
                 }
+
+                orders.add(order);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1198,54 +1131,45 @@ public class OrderDAO extends DB.DBContext {
                 + ") oh ON o.OrderId = oh.OrderId "
                 + "WHERE o.OrderId = ?";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        Object[] params = {orderId};
 
-            ps.setInt(1, orderId);
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Order order = createOrderFromResultSet(rs);
+                // Load customer info
+                order.setCustomerName(rs.getString("CustomerName"));
+                order.setCustomerEmail(rs.getString("CustomerEmail"));
+                order.setCustomerPhone(rs.getString("CustomerPhone"));
 
-                    // Load customer info
-                    order.setCustomerName(rs.getString("CustomerName"));
-                    order.setCustomerEmail(rs.getString("CustomerEmail"));
-                    order.setCustomerPhone(rs.getString("CustomerPhone"));
+                // Load address info
+                order.setAddressName(rs.getString("AddressName"));
+                order.setAddressDetails(rs.getString("AddressDetails"));
+                order.setRecipientName(rs.getString("RecipientName"));
+                order.setRecipientPhone(rs.getString("RecipientPhone"));
 
-                    // Load address info
-                    order.setAddressName(rs.getString("AddressName"));
-                    order.setAddressDetails(rs.getString("AddressDetails"));
-                    order.setRecipientName(rs.getString("RecipientName"));
-                    order.setRecipientPhone(rs.getString("RecipientPhone"));
+                // Load payment status name
+                order.setPaymentStatusName(rs.getString("PaymentStatusName"));
 
-                    // Load payment status name
-                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+                // Load order status
+                order.setStatus(rs.getString("OrderStatus"));
 
-                    // Load order status
-                    order.setStatus(rs.getString("OrderStatus"));
-
-                    // Load address info (try snapshot first, fallback to current address)
-                    Address orderAddressSnapshot = getOrderAddressSnapshot(orderId);
-                    if (orderAddressSnapshot != null) {
-                        // Use snapshot data - this preserves original order information
-                        order.setAddressName(orderAddressSnapshot.getAddressName());
-                        order.setAddressDetails(orderAddressSnapshot.getAddressDetails());
-                        order.setRecipientName(orderAddressSnapshot.getRecipientName());
-                        order.setRecipientPhone(orderAddressSnapshot.getRecipientPhone());
-                        System.out.println("Using OrderAddress snapshot for OrderId: " + orderId);
-                    } else {
-                        // Fallback to current address data - this will change if customer updates profile
-                        order.setAddressName(rs.getString("AddressName"));
-                        order.setAddressDetails(rs.getString("AddressDetails"));
-                        order.setRecipientName(rs.getString("RecipientName"));
-                        order.setRecipientPhone(rs.getString("RecipientPhone"));
-                        System.out.println("Using current Address data for OrderId: " + orderId + " (snapshot not found)");
-                    }
-
-                    // Load order items with full product details
-                    order.setItems(getOrderItemsForStaff(orderId));
-
-                    return order;
+                // Load address info (snapshot first, fallback to current address)
+                Address orderAddressSnapshot = getOrderAddressSnapshot(orderId);
+                if (orderAddressSnapshot != null) {
+                    order.setAddressName(orderAddressSnapshot.getAddressName());
+                    order.setAddressDetails(orderAddressSnapshot.getAddressDetails());
+                    order.setRecipientName(orderAddressSnapshot.getRecipientName());
+                    order.setRecipientPhone(orderAddressSnapshot.getRecipientPhone());
+                    System.out.println("Using OrderAddress snapshot for OrderId: " + orderId);
+                } else {
+                    System.out.println("Using current Address data for OrderId: " + orderId + " (snapshot not found)");
                 }
+
+                // Load order items with full product details
+                order.setItems(getOrderItemsForStaff(orderId));
+
+                return order;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1264,20 +1188,17 @@ public class OrderDAO extends DB.DBContext {
                 + "WHERE CustomerId = ? "
                 + "ORDER BY CreatedAt DESC";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        Object[] params = {customerId};
 
-            ps.setInt(1, customerId);
-
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Address address = new Address();
-                    address.setAddressId(rs.getInt("AddressId"));
-                    address.setAddressName(rs.getString("AddressName"));
-                    address.setAddressDetails(rs.getString("AddressDetails"));
-                    address.setRecipientName(rs.getString("RecipientName"));
-                    address.setRecipientPhone(rs.getString("RecipientPhone"));
-                    return address;
-                }
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Address address = new Address();
+                address.setAddressId(rs.getInt("AddressId"));
+                address.setAddressName(rs.getString("AddressName"));
+                address.setAddressDetails(rs.getString("AddressDetails"));
+                address.setRecipientName(rs.getString("RecipientName"));
+                address.setRecipientPhone(rs.getString("RecipientPhone"));
+                return address;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1295,20 +1216,17 @@ public class OrderDAO extends DB.DBContext {
                 + "FROM OrderAddress "
                 + "WHERE OrderId = ?";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        Object[] params = {orderId};
 
-            ps.setInt(1, orderId);
-
-            try ( ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    Address address = new Address();
-                    address.setAddressId(rs.getInt("OrderId")); // Using OrderId as identifier
-                    address.setAddressName(rs.getString("AddressName"));
-                    address.setAddressDetails(rs.getString("AddressDetails"));
-                    address.setRecipientName(rs.getString("RecipientName"));
-                    address.setRecipientPhone(rs.getString("RecipientPhone"));
-                    return address;
-                }
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            if (rs.next()) {
+                Address address = new Address();
+                address.setAddressId(rs.getInt("OrderId")); // Using OrderId as identifier
+                address.setAddressName(rs.getString("AddressName"));
+                address.setAddressDetails(rs.getString("AddressDetails"));
+                address.setRecipientName(rs.getString("RecipientName"));
+                address.setRecipientPhone(rs.getString("RecipientPhone"));
+                return address;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1326,15 +1244,11 @@ public class OrderDAO extends DB.DBContext {
         String sql = "INSERT INTO OrderAddress (OrderId, RecipientName, RecipientPhone, AddressName, AddressDetails) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        Object[] params = {orderId, recipientName, recipientPhone, addressName, addressDetails};
 
-            ps.setInt(1, orderId);
-            ps.setString(2, recipientName);
-            ps.setString(3, recipientPhone);
-            ps.setString(4, addressName);
-            ps.setString(5, addressDetails);
-
-            return ps.executeUpdate() > 0;
+        try {
+            int affectedRows = execQuery(sql, params);
+            return affectedRows > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -1358,33 +1272,29 @@ public class OrderDAO extends DB.DBContext {
                 + "LEFT JOIN Category c ON p.CategoryId = c.CategoryId "
                 + "WHERE od.OrderId = ?";
 
+        Object[] params = {orderId};
         List<OrderDetail> items = new ArrayList<>();
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                OrderDetail item = new OrderDetail();
+                item.setOrderDetailId(rs.getInt("OrderDetailId"));
+                item.setOrderId(rs.getInt("OrderId"));
+                item.setProductVariantId(rs.getInt("ProductVariantId"));
+                item.setDetailQuantity(rs.getInt("DetailQuantity"));
+                item.setDetailPrice(rs.getBigDecimal("DetailPrice"));
+                item.setAddressDetail(rs.getString("AddressDetail"));
+                item.setProductName(rs.getString("ProductName"));
+                item.setColor(rs.getString("Color"));
 
-            ps.setInt(1, orderId);
+                // Set additional product details for staff view
+                item.setProductDescription(rs.getString("ProductDescription"));
+                item.setSize(rs.getString("Size"));
+                item.setCurrentPrice(rs.getBigDecimal("CurrentPrice"));
+                item.setBrandName(rs.getString("BrandName"));
+                item.setCategoryName(rs.getString("CategoryName"));
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    OrderDetail item = new OrderDetail();
-                    item.setOrderDetailId(rs.getInt("OrderDetailId"));
-                    item.setOrderId(rs.getInt("OrderId"));
-                    item.setProductVariantId(rs.getInt("ProductVariantId"));
-                    item.setDetailQuantity(rs.getInt("DetailQuantity"));
-                    item.setDetailPrice(rs.getBigDecimal("DetailPrice"));
-                    item.setAddressDetail(rs.getString("AddressDetail"));
-                    item.setProductName(rs.getString("ProductName"));
-                    item.setColor(rs.getString("Color"));
-
-                    // Set additional product details for staff view
-                    item.setProductDescription(rs.getString("ProductDescription"));
-                    item.setSize(rs.getString("Size"));
-                    item.setCurrentPrice(rs.getBigDecimal("CurrentPrice"));
-                    item.setBrandName(rs.getString("BrandName"));
-                    item.setCategoryName(rs.getString("CategoryName"));
-
-                    items.add(item);
-                }
+                items.add(item);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -1406,28 +1316,24 @@ public class OrderDAO extends DB.DBContext {
                 + "WHERE osh.OrderId = ? "
                 + "ORDER BY osh.ChangedAt ASC";
 
+        Object[] params = {orderId};
         List<OrderStatusHistory> history = new ArrayList<>();
 
-        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                OrderStatusHistory statusHistory = new OrderStatusHistory();
+                statusHistory.setOrderStatusHistoryId(rs.getInt("OrderStatusHistoryId"));
+                statusHistory.setOrderId(rs.getInt("OrderId"));
+                statusHistory.setChangedBy(rs.getInt("ChangedBy"));
+                statusHistory.setOrderStatus(rs.getString("OrderStatus"));
 
-            ps.setInt(1, orderId);
+                Timestamp changedAt = rs.getTimestamp("ChangedAt");
+                statusHistory.setChangedAt(changedAt == null ? null : changedAt.toLocalDateTime());
 
-            try ( ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    OrderStatusHistory statusHistory = new OrderStatusHistory();
-                    statusHistory.setOrderStatusHistoryId(rs.getInt("OrderStatusHistoryId"));
-                    statusHistory.setOrderId(rs.getInt("OrderId"));
-                    statusHistory.setChangedBy(rs.getInt("ChangedBy"));
-                    statusHistory.setOrderStatus(rs.getString("OrderStatus"));
+                // Set staff/customer name for display
+                statusHistory.setChangedByName(rs.getString("ChangedByName"));
 
-                    Timestamp changedAt = rs.getTimestamp("ChangedAt");
-                    statusHistory.setChangedAt(changedAt == null ? null : changedAt.toLocalDateTime());
-
-                    // Set staff name for display
-                    statusHistory.setChangedByName(rs.getString("ChangedByName"));
-
-                    history.add(statusHistory);
-                }
+                history.add(statusHistory);
             }
         } catch (SQLException e) {
             e.printStackTrace();
