@@ -1,5 +1,6 @@
 package Models;
 
+import Utils.Utils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -269,6 +270,4 @@ public class Product {
     public void setTotalRevenue(BigDecimal totalRevenue) {
         this.totalRevenue = totalRevenue;
     }
-    
-    
 }

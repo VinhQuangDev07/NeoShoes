@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import Utils.EmailService;
+import Utils.Utils;
 
 /**
  * Customer Registration Servlet Handles customer account creation
@@ -74,8 +75,8 @@ public class RegisterServlet extends HttpServlet {
                 return;
             }
 
-            if (password.length() < 6) {
-                session.setAttribute("flash_error", "Password must be at least 6 characters!");
+            if (password.length() < 8) {
+                session.setAttribute("flash_error", "Password must be at least 8 characters!");
                 response.sendRedirect(request.getContextPath() + "/register");
                 return;
             }
@@ -91,7 +92,7 @@ public class RegisterServlet extends HttpServlet {
             // ========================================
             Customer customer = new Customer();
             customer.setEmail(email.trim());
-            customer.setPasswordHash(password); // TODO: Hash password with BCrypt later
+            customer.setPasswordHash(Utils.hashPassword(password)); 
             customer.setName(name.trim());
             customer.setPhoneNumber(phone != null ? phone.trim() : null);
             customer.setGender(gender);

@@ -29,8 +29,6 @@
                 margin: 0 auto;
                 /*background: white;*/
                 padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
 
             .page-header {
@@ -251,7 +249,7 @@
                 transition: all 0.2s;
                 margin: 0 2px;
             }
-            
+
             .btn-view {
                 background-color: #e3f2fd;
                 color: #1976d2;
@@ -284,6 +282,11 @@
                 color: white;
                 transform: scale(1.1);
             }
+            
+            .status-btn:hover{
+                cursor: pointer;
+                transform: scale(1.1);
+            }
         </style>
     </head>
     <body>
@@ -296,7 +299,7 @@
         <!-- Notification -->
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
 
-        <div class="container" style="margin-top: 80px; margin-left: 300px;">
+        <div class="container" style="margin-top: 64px; margin-left: 300px;">
             <div class="page-header">
                 <!-- Page Header -->
                 <div class="d-flex justify-content-between align-items-center">
@@ -372,29 +375,31 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <c:choose>
-                                                <c:when test="${empty order.status}">
-                                                    <span class="badge bg-secondary status-badge">No Status</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'PENDING'}">
-                                                    <span class="badge bg-warning status-badge">Pending</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'APPROVED'}">
-                                                    <span class="badge bg-info status-badge">Approved</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'SHIPPED'}">
-                                                    <span class="badge bg-primary status-badge">Shipping</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'COMPLETED'}">
-                                                    <span class="badge bg-success status-badge">Completed</span>
-                                                </c:when>
-                                                <c:when test="${order.status == 'CANCELLED'}">
-                                                    <span class="badge bg-danger status-badge">Cancelled</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-secondary status-badge">${order.status}</span>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            <div class="status-btn" onclick="updateStatus(${order.orderId}, '${order.status != null ? order.status : 'No Status'}')">
+                                                <c:choose>
+                                                    <c:when test="${empty order.status}">
+                                                        <span class="badge bg-secondary status-badge">No Status</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'PENDING'}">
+                                                        <span class="badge bg-warning status-badge">Pending</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'APPROVED'}">
+                                                        <span class="badge bg-info status-badge">Approved</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'SHIPPED'}">
+                                                        <span class="badge bg-primary status-badge">Shipping</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'COMPLETED'}">
+                                                        <span class="badge bg-success status-badge">Completed</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'CANCELLED'}">
+                                                        <span class="badge bg-danger status-badge">Cancelled</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary status-badge">${order.status}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
                                         </td>
                                         <td>
                                             <c:choose>
@@ -420,18 +425,6 @@
                                                 <button class="action-btn btn-view" style="padding: 4px 8px; font-size: 12px;" onclick="viewOrder(${order.orderId})">
                                                     <i data-lucide="eye" style="width: 18px; height: 18px;"></i>
                                                 </button>
-                                                <c:choose>
-                                                    <c:when test="${order.status == 'CANCELLED'}">
-                                                        <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" disabled title="Cannot update cancelled orders">
-                                                            <i class="fas fa-ban"></i> Cancelled
-                                                        </button>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <button class="action-btn btn-edit" style="padding: 4px 8px; font-size: 12px;" onclick="updateStatus(${order.orderId}, '${order.status != null ? order.status : 'No Status'}')">
-                                                            <i data-lucide="edit"></i>
-                                                        </button>
-                                                    </c:otherwise>
-                                                </c:choose>
                                             </div>
                                         </td>
                                     </tr>
@@ -499,113 +492,113 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-                                                            function viewOrder(orderId) {
-                                                                window.location.href = '${pageContext.request.contextPath}/staff/order-detail?orderId=' + orderId;
-                                                            }
+                                                    function viewOrder(orderId) {
+                                                        window.location.href = '${pageContext.request.contextPath}/staff/order-detail?orderId=' + orderId;
+                                                    }
 
-                                                            let currentOrderId, currentNextStatus;
+                                                    let currentOrderId, currentNextStatus;
 
-                                                            function updateStatus(orderId, currentStatus) {
-                                                                // Handle null/undefined/empty status
-                                                                if (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined' || currentStatus === '') {
-                                                                    currentStatus = 'No Status';
-                                                                }
+                                                    function updateStatus(orderId, currentStatus) {
+                                                        // Handle null/undefined/empty status
+                                                        if (!currentStatus || currentStatus === 'null' || currentStatus === 'undefined' || currentStatus === '') {
+                                                            currentStatus = 'No Status';
+                                                        }
 
-                                                                // Determine next status
-                                                                let nextStatus = 'PENDING'; // Default value
+                                                        // Determine next status
+                                                        let nextStatus = 'PENDING'; // Default value
 
-                                                                if (currentStatus === 'PENDING') {
-                                                                    nextStatus = 'APPROVED';
-                                                                } else if (currentStatus === 'APPROVED') {
-                                                                    nextStatus = 'SHIPPED';
-                                                                } else if (currentStatus === 'SHIPPED') {
-                                                                    nextStatus = 'COMPLETED';
-                                                                } else if (currentStatus === 'COMPLETED') {
-                                                                    alert('Order is already completed!');
-                                                                    return;
-                                                                } else if (currentStatus === 'CANCELLED') {
-                                                                    alert('Cannot update cancelled order!');
-                                                                    return;
-                                                                }
+                                                        if (currentStatus === 'PENDING') {
+                                                            nextStatus = 'APPROVED';
+                                                        } else if (currentStatus === 'APPROVED') {
+                                                            nextStatus = 'SHIPPED';
+                                                        } else if (currentStatus === 'SHIPPED') {
+                                                            nextStatus = 'COMPLETED';
+                                                        } else if (currentStatus === 'COMPLETED') {
+                                                            alert('Order is already completed!');
+                                                            return;
+                                                        } else if (currentStatus === 'CANCELLED') {
+                                                            alert('Cannot update cancelled order!');
+                                                            return;
+                                                        }
 
-                                                                // Store for later use
-                                                                currentOrderId = orderId;
-                                                                currentNextStatus = nextStatus;
+                                                        // Store for later use
+                                                        currentOrderId = orderId;
+                                                        currentNextStatus = nextStatus;
 
-                                                                // Show custom confirmation modal
-                                                                document.getElementById('confirmMessage').textContent = 'Update status?';
-                                                                const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
-                                                                confirmModal.show();
-                                                            }
+                                                        // Show custom confirmation modal
+                                                        document.getElementById('confirmMessage').textContent = 'Update status?';
+                                                        const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                                                        confirmModal.show();
+                                                    }
 
-                                                            function performUpdate() {
-                                                                // Create URL encoded data
-                                                                const params = new URLSearchParams();
-                                                                params.append('orderId', currentOrderId);
-                                                                params.append('newStatus', currentNextStatus);
+                                                    function performUpdate() {
+                                                        // Create URL encoded data
+                                                        const params = new URLSearchParams();
+                                                        params.append('orderId', currentOrderId);
+                                                        params.append('newStatus', currentNextStatus);
 
-                                                                // Submit via fetch
-                                                                fetch('${pageContext.request.contextPath}/staff/orders', {
-                                                                    method: 'POST',
-                                                                    headers: {
-                                                                        'Content-Type': 'application/x-www-form-urlencoded',
-                                                                    },
-                                                                    body: params.toString()
-                                                                })
-                                                                        .then(response => {
-                                                                            if (response.ok) {
-                                                                                return response.text();
-                                                                            } else {
-                                                                                throw new Error('Server returned: ' + response.status);
-                                                                            }
-                                                                        })
-                                                                        .then(data => {
-                                                                            showSuccessModal();
-                                                                        })
-                                                                        .catch(error => {
-                                                                            showErrorModal(error.message);
-                                                                        });
-                                                            }
-
-                                                            function showSuccessModal() {
-                                                                const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                                                                successModal.show();
-
-                                                                // Auto close after 2 seconds and reload
-                                                                setTimeout(() => {
-                                                                    successModal.hide();
-                                                                    location.reload();
-                                                                }, 2000);
-                                                            }
-
-                                                            function showErrorModal(message) {
-                                                                document.getElementById('errorMessage').textContent = message;
-                                                                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-                                                                errorModal.show();
-                                                            }
-
-                                                            // Format dates
-                                                            document.addEventListener('DOMContentLoaded', function () {
-                                                                const dateElements = document.querySelectorAll('.order-date');
-                                                                dateElements.forEach(function (element) {
-                                                                    const dateValue = element.getAttribute('data-date');
-                                                                    if (dateValue) {
-                                                                        try {
-                                                                            const date = new Date(dateValue);
-                                                                            element.textContent = date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
-                                                                        } catch (e) {
-                                                                            // Keep original value if parsing fails
-                                                                        }
+                                                        // Submit via fetch
+                                                        fetch('${pageContext.request.contextPath}/staff/orders', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                                            },
+                                                            body: params.toString()
+                                                        })
+                                                                .then(response => {
+                                                                    if (response.ok) {
+                                                                        return response.text();
+                                                                    } else {
+                                                                        throw new Error('Server returned: ' + response.status);
                                                                     }
+                                                                })
+                                                                .then(data => {
+                                                                    showSuccessModal();
+                                                                })
+                                                                .catch(error => {
+                                                                    showErrorModal(error.message);
                                                                 });
+                                                    }
 
-                                                                // Add event listener for confirm button
-                                                                document.getElementById('confirmUpdateBtn').addEventListener('click', function () {
-                                                                    const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-                                                                    confirmModal.hide();
-                                                                    performUpdate();
-                                                                });
-                                                            });
+                                                    function showSuccessModal() {
+                                                        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                                                        successModal.show();
+
+                                                        // Auto close after 2 seconds and reload
+                                                        setTimeout(() => {
+                                                            successModal.hide();
+                                                            location.reload();
+                                                        }, 2000);
+                                                    }
+
+                                                    function showErrorModal(message) {
+                                                        document.getElementById('errorMessage').textContent = message;
+                                                        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                                                        errorModal.show();
+                                                    }
+
+                                                    // Format dates
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        const dateElements = document.querySelectorAll('.order-date');
+                                                        dateElements.forEach(function (element) {
+                                                            const dateValue = element.getAttribute('data-date');
+                                                            if (dateValue) {
+                                                                try {
+                                                                    const date = new Date(dateValue);
+                                                                    element.textContent = date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'});
+                                                                } catch (e) {
+                                                                    // Keep original value if parsing fails
+                                                                }
+                                                            }
+                                                        });
+
+                                                        // Add event listener for confirm button
+                                                        document.getElementById('confirmUpdateBtn').addEventListener('click', function () {
+                                                            const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                                                            confirmModal.hide();
+                                                            performUpdate();
+                                                        });
+                                                    });
         </script>
     </body>
 </html>

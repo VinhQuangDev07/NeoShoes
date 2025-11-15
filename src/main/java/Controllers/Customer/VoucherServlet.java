@@ -8,6 +8,7 @@ import java.util.List;
 import DAOs.VoucherDAO;
 import Models.Customer;
 import Models.Voucher;
+import Utils.Utils;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -46,6 +47,9 @@ public class VoucherServlet extends HttpServlet {
 
         try {
             switch (action) {
+                case "details":  
+                showVoucherDetails(request, response, customerId);
+                break;
                 case "available":
                     listAvailableVouchers(request, response, customerId);
                     break;
@@ -112,14 +116,14 @@ public class VoucherServlet extends HttpServlet {
         List<Voucher> availableVouchers = voucherDAO.getAvailableVouchersForCustomer(customerId);
         List<Voucher> usedVouchers = voucherDAO.getUsedVouchersForCustomer(customerId);
 
-        // ✅ Không để null đẩy sang JSP
+        //Không để null đẩy sang JSP
         request.setAttribute("availableVouchers",
                 availableVouchers != null ? availableVouchers : Collections.emptyList());
         request.setAttribute("usedVouchers",
                 usedVouchers != null ? usedVouchers : Collections.emptyList());
         request.setAttribute("customerId", customerId);
 
-        // ✅ Forward bằng đường dẫn tuyệt đối
+        //Forward bằng đường dẫn tuyệt đối
         request.getRequestDispatcher("/WEB-INF/views/customer/voucher-list.jsp")
                 .forward(request, response);
     }
@@ -168,12 +172,12 @@ public class VoucherServlet extends HttpServlet {
         String voucherCode = request.getParameter("voucherCode");
         String orderTotalParam = request.getParameter("orderTotal");
 
-        // ✅ SET response type là JSON
+        //SET response type là JSON
         response.setContentType("application/json; charset=UTF-8");
         PrintWriter out = response.getWriter();
 
         try {
-            // ✅ THÊM LOG DEBUG
+            // THÊM LOG DEBUG
             System.out.println("=== APPLY VOUCHER DEBUG ===");
             System.out.println("Customer ID: " + customerId);
             System.out.println("Voucher Code: " + voucherCode);
@@ -202,7 +206,7 @@ public class VoucherServlet extends HttpServlet {
                 out.print("{\"success\": false, \"message\": \"You have used up all attempts for this voucher!\"}");
             } else {
                 // Calculate discount
-                double discount = calculateDiscount(voucher, orderTotal);
+                double discount = Utils.calculateDiscount(voucher, orderTotal);
                 double finalAmount = orderTotal - discount;
 
                 // Save to session
@@ -268,16 +272,37 @@ public class VoucherServlet extends HttpServlet {
         response.getWriter().write("{\"count\":" + count + "}");
     }
 
-    private double calculateDiscount(Voucher voucher, double orderTotal) {
-        if ("PERCENTAGE".equalsIgnoreCase(voucher.getType())) {
-            double discount = orderTotal * voucher.getValue().doubleValue() / 100;
-            if (voucher.getMaxValue() != null && discount > voucher.getMaxValue().doubleValue()) {
-                return voucher.getMaxValue().doubleValue();
-            }
-            return discount;
-        } else {
-            // Fixed amount
-            return voucher.getValue().doubleValue();
-        }
+    private void showVoucherDetails(HttpServletRequest request, HttpServletResponse response, int customerId)
+        throws ServletException, IOException {
+    
+    String voucherCodeParam = request.getParameter("code");
+    
+    if (voucherCodeParam == null || voucherCodeParam.isEmpty()) {
+        response.sendRedirect(request.getContextPath() + "/voucher");
+        return;
     }
+    
+    // Lấy thông tin voucher
+    Voucher voucher = voucherDAO.getVoucherByCode(voucherCodeParam, customerId);
+    
+    if (voucher == null) {
+        request.setAttribute("errorMessage", "Voucher not found!");
+        response.sendRedirect(request.getContextPath() + "/voucher");
+        return;
+    }
+    
+    // Lấy usage count
+    int usageCount = voucherDAO.getVoucherUsageCount(voucher.getVoucherId(), customerId);
+    voucher.setUsageCount(usageCount);
+    
+    // Check if usable
+    boolean isUsable = voucherDAO.isVoucherUsable(voucher.getVoucherId(), customerId);
+    
+    request.setAttribute("voucher", voucher);
+    request.setAttribute("isUsable", isUsable);
+    request.setAttribute("customerId", customerId);
+    
+    request.getRequestDispatcher("/WEB-INF/views/customer/voucher-details.jsp")
+           .forward(request, response);
+}
 }

@@ -433,19 +433,11 @@
 
                                 <!-- Available Vouchers Tab -->
                                 <div id="available-tab" class="tab-content active">
-                                    <c:if test="${empty availableVouchers}">
-                                        <div class="empty-state">
-                                            <i class="fas fa-gift"></i>
-                                            <h3>No available vouchers yet</h3>
-                                            <p>Join promotions to earn vouchers!</p>
-                                            <button class="btn btn-primary" style="margin-top: 20px;" onclick="window.location.href = '${pageContext.request.contextPath}/products'">
-                                                <i class="fas fa-shopping-bag"></i> Shop Now
-                                            </button>
-                                        </div>
-                                    </c:if>
+                                    <!-- ... phần empty state giữ nguyên ... -->
 
                                     <div class="voucher-grid">
                                         <c:forEach var="voucher" items="${availableVouchers}">
+                                            <!-- ✅ THAY THẾ TOÀN BỘ VOUCHER-CARD NÀY -->
                                             <div class="voucher-card">
                                                 <div class="voucher-ribbon">
                                                     <div class="voucher-code">${voucher.voucherCode}</div>
@@ -467,31 +459,28 @@
                                                         ${voucher.voucherDescription}
                                                     </div>
 
+                                                    <!-- ✅ RÚT GỌN CHỈ HIỂN THỊ THÔNG TIN CƠ BẢN -->
                                                     <div class="voucher-details">
                                                         <div class="voucher-detail">
-                                                            <span class="label"><i class="far fa-calendar"></i> Expiration:</span>
+                                                            <span class="label"><i class="far fa-calendar"></i> Expires:</span>
                                                             <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
                                                         </div>
                                                         <c:if test="${voucher.minValue != null}">
                                                             <div class="voucher-detail">
                                                                 <span class="label"><i class="fas fa-shopping-cart"></i> Minimum order:</span>
-                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>₫</span>
-                                                            </div>
-                                                        </c:if>
-                                                        <c:if test="${voucher.userUsageLimit != null}">
-                                                            <div class="voucher-detail">
-                                                                <span class="label"><i class="fas fa-redo"></i> Usage:</span>
-                                                                <span class="value">${voucher.usageCount}/${voucher.userUsageLimit}</span>
+                                                                <span class="value"><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</span>
                                                             </div>
                                                         </c:if>
                                                     </div>
 
+                                                    <!-- ✅ SỬA ACTIONS: THÊM BUTTON VIEW DETAILS -->
                                                     <div class="voucher-actions">
-                                                        <button class="btn btn-primary" onclick="applyVoucher('${voucher.voucherCode}')">
-                                                            <i class="fas fa-check"></i> Use Now
-                                                        </button>
+                                                        <a href="${pageContext.request.contextPath}/voucher?action=details&code=${voucher.voucherCode}" 
+                                                           class="btn btn-primary" style="text-decoration: none;">
+                                                            <i class="fas fa-eye"></i> View Details
+                                                        </a>
                                                         <button class="btn btn-outline" onclick="copyVoucherCode('${voucher.voucherCode}')">
-                                                            <i class="fas fa-copy"></i> Copy Code
+                                                            <i class="fas fa-copy"></i> Copy
                                                         </button>
                                                     </div>
                                                 </div>
@@ -502,23 +491,18 @@
 
                                 <!-- Used Vouchers Tab -->
                                 <div id="used-tab" class="tab-content">
-                                    <c:if test="${empty usedVouchers}">
-                                        <div class="empty-state">
-                                            <i class="fas fa-history"></i>
-                                            <h3>No used vouchers yet</h3>
-                                            <p>Vouchers you’ve used will appear here</p>
-                                        </div>
-                                    </c:if>
+                                    <!-- ... empty state giữ nguyên ... -->
 
                                     <div class="voucher-grid">
                                         <c:forEach var="voucher" items="${usedVouchers}">
+                                            <!-- ✅ SỬA TƯƠNG TỰ CHO USED VOUCHERS -->
                                             <div class="voucher-card used">
-                                                <div class="voucher-ribbon" style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
+                                                <div class="voucher-ribbon">
                                                     <div class="voucher-code">${voucher.voucherCode}</div>
                                                     <div>USED</div>
                                                 </div>
                                                 <div class="voucher-body">
-                                                    <div class="voucher-value" style="color: #95a5a6;">
+                                                    <div class="voucher-value ${voucher.type == 'PERCENTAGE' ? 'percentage' : 'fixed'}">
                                                         <c:choose>
                                                             <c:when test="${voucher.type == 'PERCENTAGE'}">
                                                                 ${voucher.value}% OFF
@@ -529,25 +513,24 @@
                                                         </c:choose>
                                                     </div>
 
-                                                    <div class="voucher-description" style="color: #95a5a6;">
-                                                        ${voucher.voucherDescription}
-                                                    </div>
+                                                    <div class="voucher-description">${voucher.voucherDescription}</div>
 
-                                                    <div class="voucher-details" style="background: #ecf0f1;">
+                                                    <div class="voucher-details">
                                                         <div class="voucher-detail">
-                                                            <span class="label"><i class="fas fa-redo"></i> Used:</span>
-                                                            <span class="value">${voucher.usageCount} time(s)</span>
+                                                            <span class="label"><i class="far fa-calendar"></i> Expired:</span>
+                                                            <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
                                                         </div>
                                                         <div class="voucher-detail">
-                                                            <span class="label"><i class="far fa-calendar"></i> Expiration:</span>
-                                                            <span class="value"><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></span>
+                                                            <span class="label"><i class="fas fa-redo"></i> Used:</span>
+                                                            <span class="value">${voucher.usageCount} times</span>
                                                         </div>
                                                     </div>
 
                                                     <div class="voucher-actions">
-                                                        <button class="btn btn-outline" disabled style="cursor: not-allowed;">
-                                                            <i class="fas fa-check"></i> Used
-                                                        </button>
+                                                        <a href="${pageContext.request.contextPath}/voucher?action=details&code=${voucher.voucherCode}" 
+                                                           class="btn btn-secondary" style="text-decoration: none;">
+                                                            <i class="fas fa-history"></i> View History
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>

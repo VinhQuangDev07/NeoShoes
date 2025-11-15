@@ -196,8 +196,8 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="supplierName" name="supplierName" placeholder="Supplier Name">
-                                    <label for="supplierName">Supplier Name (Optional)</label>
+                                    <input type="text" class="form-control" id="supplierName" name="supplierName" placeholder="Supplier Name" required>
+                                    <label for="supplierName">Supplier Name *</label>
                                 </div>
                             </div>
                             <div class="col-md-6">

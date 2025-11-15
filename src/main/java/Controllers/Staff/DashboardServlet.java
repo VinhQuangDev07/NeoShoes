@@ -148,7 +148,7 @@ public class DashboardServlet extends HttpServlet {
                 request.setAttribute("endYear", endYear);
                 break;
         }
-
+        
         // Set attributes for JSP
         request.setAttribute("dashboardData", dashboardData);
         request.setAttribute("totalCustomers", totalCustomers);
@@ -166,6 +166,8 @@ public class DashboardServlet extends HttpServlet {
         statusMap.put("Processing", orderStatus.getProcessing());
         statusMap.put("Shipped", orderStatus.getShipped());
         statusMap.put("Delivered", orderStatus.getDelivered());
+        statusMap.put("Returned", orderStatus.getReturned());
+        statusMap.put("Cancelled", orderStatus.getCancelled());
         request.setAttribute("orderStatus", gson.toJson(statusMap));
 
         // Forward to JSP

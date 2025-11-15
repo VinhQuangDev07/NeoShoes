@@ -59,7 +59,7 @@ public class CartServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
+
         int customerId = customer.getId();
         // Get cart items for the customer
         List<CartItem> cartItems = cartDAO.getItemsByCustomerId(customerId);
@@ -124,7 +124,6 @@ public class CartServlet extends HttpServlet {
             int variantId = Integer.parseInt(request.getParameter("variantId"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
 
-
             // Check variant exists and has quantity available
             ProductVariant variant = variantDAO.findById(variantId);
             if (variant == null) {
@@ -132,21 +131,39 @@ public class CartServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
                 return;
             }
-            
+
             if (quantity <= 0) {
                 session.setAttribute("flash_info", "Quantity must be greater than 0");
                 response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
                 return;
             }
 
+            // Check total quantity against available stock
+            if (quantity > variant.getQuantityAvailable()) {
+                session.setAttribute("flash_info", "Only " + variant.getQuantityAvailable() + " items available");
+                response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                return;
+            }
+            
             // Check if item already in cart
             CartItem existingItem = cartDAO.getExistItem(customerId, variantId);
-            int newQuantity = (existingItem != null) ? existingItem.getQuantity() + quantity : quantity;
 
-            // Check total quantity against available stock
-            if (newQuantity > variant.getQuantityAvailable()) {
-                session.setAttribute("flash_info", "Only " + variant.getQuantityAvailable() + " items available");
-                return;
+            if (existingItem != null) {
+                quantity = existingItem.getQuantity() + quantity;
+                boolean updateSuccess = cartDAO.updateQuantity(existingItem.getCartItemId(), quantity);
+                if (updateSuccess) {
+                    int itemCount = cartDAO.countItems(customerId);
+                    session.setAttribute("cartQuantity", itemCount);
+                    session.setAttribute("flash", "Added to cart successfully");
+                    // reload page (redirect)
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                } else {
+                    session.setAttribute("flash_error", "Error adding to cart");
+                    // reload page (redirect)
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                }
             }
 
             // Add to cart (DAO handles update if exists)
@@ -167,13 +184,17 @@ public class CartServlet extends HttpServlet {
             int quantity = Integer.parseInt(request.getParameter("quantity"));
 
             if (quantity <= 0) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Quantity must be greater than 0");
+                session.setAttribute("flash_error", "Quantity must be greater than 0");
+                // Redirect back to cart page
+                response.sendRedirect(request.getContextPath() + "/cart");
                 return;
             }
 
             CartItem cartItem = cartDAO.findCartItem(customerId, cartItemId);
             if (cartItem == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cart item not found");
+                session.setAttribute("flash_error", "Cart item not found");
+                // Redirect back to cart page
+                response.sendRedirect(request.getContextPath() + "/cart");
                 return;
             }
 
@@ -181,8 +202,9 @@ public class CartServlet extends HttpServlet {
 
             int available = variant.getQuantityAvailable();
             if (quantity > available) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Only " + available + " items available in stock");
+                session.setAttribute("flash_error", "Only " + available + " items available in stock");
+                // Redirect back to cart page
+                response.sendRedirect(request.getContextPath() + "/cart");
                 return;
             }
 
@@ -191,7 +213,9 @@ public class CartServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.getWriter().write("{\"status\":\"success\",\"available\":" + available + "}");
             } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating quantity");
+                session.setAttribute("flash_error", "Error updating quantity");
+                // Redirect back to cart page
+                response.sendRedirect(request.getContextPath() + "/cart");
             }
         } else if ("updateVariant".equals(action)) {
             int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));

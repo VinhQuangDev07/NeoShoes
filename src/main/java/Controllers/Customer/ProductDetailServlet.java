@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
+
 package Controllers.Customer;
 
 import java.io.IOException;
@@ -19,10 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 
-/**
- *
- * @author Le Huu Nghia - CE181052
- */
+
 @WebServlet(name = "ProductDetailServlet", urlPatterns = {"/product-detail"})
 public class ProductDetailServlet extends HttpServlet {
 
