@@ -331,27 +331,7 @@ public class ManageCategoriesServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/staff/manage-categories");
         }
     }
-
-//    private void toggleStatus(HttpServletRequest request, HttpServletResponse response, HttpSession session)
-//            throws SQLException, IOException {
-//        
-//        int id = Integer.parseInt(request.getParameter("id"));
-//        Category category = categoryDAO.getCategoryById(id);
-//        
-//        if (category != null) {
-//            category.setIsActive(!category.isActive());
-//            boolean success = categoryDAO.updateCategory(category);
-//            
-//            if (success) {
-//                String status = category.isActive() ? "activated" : "deactivated";
-//                session.setAttribute("flash", "Category " + status + " successfully!");
-//            } else {
-//                session.setAttribute("flash_error", "Failed to change status!");
-//            }
-//        }
-//        
-//        response.sendRedirect(request.getContextPath() + "/staff/manage-categories/list");
-//    }
+    
     // === HELPER METHODS ===
     private String getAction(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
