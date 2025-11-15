@@ -100,7 +100,14 @@
                                 <label class="form-label">Password</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
-                                    <input type="password" class="form-control" name="password" placeholder="••••••••" required />
+                                    <input type="password"
+                                           class="form-control"
+                                           name="password"
+                                           placeholder="••••••••"
+                                           required
+                                           minlength="8"
+                                           oninvalid="this.setCustomValidity('Mật khẩu phải có ít nhất 8 ký tự');"
+                                           oninput="this.setCustomValidity('');" />
                                 </div>
                             </div>
 
@@ -108,7 +115,7 @@
 
                         </form>
                         <div style="text-align: center; margin-top: 10px;">
-                            <a href="${pageContext.request.contextPath}/forget-password?type=staff" 
+                            <a href="${pageContext.request.contextPath}/forget-password?type=staff&email=${email}" 
                                style="color: #667eea; text-decoration: none; font-size: 14px;">
                                 Forgot Password?
                             </a>

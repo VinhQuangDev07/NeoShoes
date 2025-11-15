@@ -83,6 +83,7 @@ public class LoginServlet extends HttpServlet {
                 HttpSession session = request.getSession();
                 session.setAttribute("customer", customer);
                 session.setAttribute("role", "customer");
+                
                 CartDAO cartDAO = new CartDAO();
                 int itemCount = cartDAO.countItems(customer.getId());
                 session.setAttribute("cartQuantity", itemCount);
