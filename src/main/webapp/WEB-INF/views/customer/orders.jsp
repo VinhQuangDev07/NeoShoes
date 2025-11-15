@@ -416,7 +416,7 @@
                                                         <span class="badge bg-info status-badge">Approved</span>
                                                     </c:when>
                                                     <c:when test="${order.status == 'SHIPPED'}">
-                                                        <span class="badge bg-primary status-badge">Shipped</span>
+                                                        <span class="badge bg-primary status-badge">Shipping</span>
                                                     </c:when>
                                                     <c:when test="${order.status == 'COMPLETED'}">
                                                         <span class="badge bg-success status-badge">Completed</span>
