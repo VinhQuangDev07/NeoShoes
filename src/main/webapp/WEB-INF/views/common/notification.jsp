@@ -84,7 +84,7 @@
 
 <c:if test="${not empty requestScope.flash_error}">
     <div id="flash-request-error" style="display:none">${fn:escapeXml(requestScope.flash_error)}</div>
-<script>showIfPresent('flash-request-error', 'error');</script>
+    <script>showIfPresent('flash-request-error', 'error');</script>
     <c:remove var="flash_error" scope="request"/>
 </c:if>
 

@@ -290,7 +290,7 @@ public class CustomerDAO extends DB.DBContext {
                 return mapCustomer(rs);
             }
         } catch (SQLException e) {
-            System.err.println("❌ getCustomerByEmail: " + e.getMessage());
+            System.err.println("getCustomerByEmail: " + e.getMessage());
         }
         return null;
     }
@@ -301,7 +301,7 @@ public void deleteOldVerifyCode(int customerId) {
     try {
         this.execQuery(sql, new Object[]{customerId});
     } catch (SQLException e) {
-        System.err.println("❌ deleteOldVerifyCode: " + e.getMessage());
+        System.err.println("deleteOldVerifyCode: " + e.getMessage());
         e.printStackTrace();
     }
 }
@@ -313,7 +313,7 @@ public void saveVerifyCode(int customerId, String code, LocalDateTime expiredAt)
     try {
         this.execQuery(sql, new Object[]{customerId, code, Timestamp.valueOf(expiredAt)});
     } catch (SQLException e) {
-        System.err.println("❌ saveVerifyCode: " + e.getMessage());
+        System.err.println("saveVerifyCode: " + e.getMessage());
         e.printStackTrace();
     }
 }

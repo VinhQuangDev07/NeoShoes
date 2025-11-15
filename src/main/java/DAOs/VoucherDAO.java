@@ -384,7 +384,7 @@ public boolean incrementUsageCount(int voucherId) {
         int result = this.execQuery(query, new Object[]{voucherId});
         return result > 0;
     } catch (SQLException e) {
-        System.err.println("❌ Error in incrementUsageCount: " + e.getMessage());
+        System.err.println("Error in incrementUsageCount: " + e.getMessage());
         return false;
     }
 }

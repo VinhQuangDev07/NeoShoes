@@ -187,24 +187,43 @@ public class BrandServlet extends HttpServlet {
 
             // Validate tên rỗng
             if (name == null || name.trim().isEmpty()) {
-                session.setAttribute("flash_error", "Brand name is required.");
-                showAddForm(request, response);
+                request.setAttribute("flash_error", "Brand name is required.");
+                Brand brand = new Brand();
+                brand.setName("");
+                request.setAttribute("brand", brand);
+                request.setAttribute("formAction", "add");
+                request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp").forward(request, response);
+                return;
+            }
+
+
+            if (brandDAO.existsByName(name.trim())) {
+                request.setAttribute("flash_error", "The brand name already exists.");
+                Brand brand = new Brand();
+                brand.setName(name);
+                request.setAttribute("brand", brand);
+                request.setAttribute("formAction", "add");
+                request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp").forward(request, response);
                 return;
             }
 
             // Upload logo (nếu có)
             String logoUrl = null;
-            Part logoPart = request.getPart("logoFile");
-            if (logoPart != null && logoPart.getSize() > 0) {
-                try {
-                    logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    session.setAttribute("flash_error", "Logo upload failed!");
-                    showAddForm(request, response);
-                    return;
-                }
-            }
+    Part logoPart = request.getPart("logoFile");
+    if (logoPart != null && logoPart.getSize() > 0) {
+        try {
+            logoUrl = CloudinaryConfig.uploadSingleImage(logoPart);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("flash_error", "Logo upload failed!");
+            Brand brand = new Brand();
+            brand.setName(name);
+            request.setAttribute("brand", brand);
+            request.setAttribute("formAction", "add");
+            request.getRequestDispatcher("/WEB-INF/views/staff/brand-form.jsp").forward(request, response);
+            return;
+        }
+    }
 
             Brand brand = new Brand();
             brand.setName(name.trim());
