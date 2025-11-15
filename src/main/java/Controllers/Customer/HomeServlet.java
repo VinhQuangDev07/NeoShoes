@@ -81,8 +81,7 @@ public class HomeServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
         }
     }
-
-    private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
+private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         int categoryId = Integer.parseInt(request.getParameter("categoryId"));

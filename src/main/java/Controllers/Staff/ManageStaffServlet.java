@@ -86,7 +86,7 @@ public class ManageStaffServlet extends HttpServlet {
         String roleFilter = request.getParameter("roleFilter");
 
         List<Staff> staffList;
-        staffList = staffDAO.getAllStaff();
+        staffList = staffDAO.getStaffByRole(false);
         System.out.println("Get all staff → " + staffList.size() + " results");
 
         int currentPage = 1;

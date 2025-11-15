@@ -512,10 +512,10 @@
 
                             <div class="col-field field">
                                 <span class="label">Date of Birth</span>
-                                <div class="ctrl editable">
+                                <div class="ctrl editable" style="position:relative;">
                                     <i class="fa-regular fa-calendar"></i>
-                                    <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly>
-                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)"></i>
+                                    <input type="date" name="dateOfBirth" value="${staff.dateOfBirth}" readonly style="padding-right:44px;">
+                                    <i class="fa-solid fa-pen-to-square edit-icon" onclick="enableEdit(this)" style="position:absolute; right:20px; top:50%; transform:translateY(-50%);"></i>
                                 </div>
                             </div>
 
@@ -562,7 +562,7 @@
                                         <div class="ctrl password-field" id="ctrlCur">
                                             <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password"/>
                                             <button type="button" class="toggle-pass" onclick="togglePassword(this)">
-                                                <i class="fa-solid fa-eye-slash"></i>
+                                                <i class="fa-solid fa-eye"></i>
                                             </button>
                                             <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
                                         </div>
@@ -574,7 +574,7 @@
                                         <div class="ctrl password-field" id="ctrlNew">
                                             <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password"/>
                                             <button type="button" class="toggle-pass" onclick="togglePassword(this)">
-                                                <i class="fa-solid fa-eye-slash"></i>
+                                                <i class="fa-solid fa-eye"></i>
                                             </button>
                                             <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
                                         </div>
@@ -586,7 +586,7 @@
                                         <div class="ctrl password-field" id="ctrlConfirm">
                                             <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter new password"/>
                                             <button type="button" class="toggle-pass" onclick="togglePassword(this)">
-                                                <i class="fa-solid fa-eye-slash"></i>
+                                                <i class="fa-solid fa-eye"></i>
                                             </button>
                                             <i class="fa-solid fa-circle-exclamation error-icon hidden"></i>
                                         </div>
@@ -843,9 +843,17 @@
             const input = el.closest('.password-field').querySelector('input');
             if (!input) return;
             if (input.type === 'password'){
-            input.type = 'text'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); el.style.color = '#2563eb';
+            // show password -> change to eye-slash to indicate clicking will hide
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            el.style.color = '#2563eb';
             } else {
-            input.type = 'password'; icon.classList.add('fa-eye-slash'); icon.classList.remove('fa-eye'); el.style.color = '#6b7280';
+            // hide password -> show eye to indicate clicking will reveal
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            el.style.color = '#6b7280';
             }
             }
 
