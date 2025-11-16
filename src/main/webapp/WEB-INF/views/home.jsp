@@ -469,9 +469,10 @@
         </style>
     </head>
     <body>
-
+        <!-- Header -->
         <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
-
+        <!-- Notifications -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
 
         <!-- Video Banner Section -->
         <section class="video-banner">

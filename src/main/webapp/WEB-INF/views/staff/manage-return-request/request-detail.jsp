@@ -347,8 +347,6 @@
                                                 <th>Variant ID</th>
                                                 <th class="text-center">Quantity</th>
                                                 <th class="text-end">Amount</th>
-                                                <th>Note</th>
-                                                <th>Refund Date</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -366,19 +364,6 @@
                                                                 </c:when>
                                                                 <c:otherwise>
                                                                     $0.00
-                                                                </c:otherwise>
-                                                            </c:choose>
-                                                        </td>
-                                                        <td>
-                                                            <c:out value="${detail.note}" default="-"/>
-                                                        </td>
-                                                        <td>
-                                                            <c:choose>
-                                                                <c:when test="${detail.refundDate != null}">
-                                                                    <c:out value="${detail.formattedRefundDate}"/>
-                                                                </c:when>
-                                                                <c:otherwise>
-                                                                    <span class="text-muted">Not refunded</span>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </td>

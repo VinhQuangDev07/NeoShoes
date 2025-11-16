@@ -210,6 +210,8 @@ public class ManageOrderServlet extends HttpServlet {
                 String contentType = request.getContentType();
                 if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing required parameters");
+                    request.getSession().setAttribute("flash_error", "Internal server error!");
+                    response.sendRedirect(request.getContextPath() + "/staff/orders");
                     return;
                 }
                 
@@ -237,6 +239,8 @@ public class ManageOrderServlet extends HttpServlet {
                     response.getWriter().write("Status updated successfully");
                 } else {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update status");
+                    request.getSession().setAttribute("flash_error", "Failed to update status!");
+                    response.sendRedirect(request.getContextPath() + "/staff/orders");
                 }
             } else {
                 // Form response for detail page
@@ -261,6 +265,8 @@ public class ManageOrderServlet extends HttpServlet {
             
             if (isAjaxRequest) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID");
+                request.getSession().setAttribute("flash_error", "Invalid order ID!");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
             } else {
                 session.setAttribute("flash_error", "Invalid Order ID!");
                 response.sendRedirect(request.getContextPath() + "/staff/orders");
@@ -272,6 +278,8 @@ public class ManageOrderServlet extends HttpServlet {
             
             if (isAjaxRequest) {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
+                request.getSession().setAttribute("flash_error", "Internal server error!");
+                response.sendRedirect(request.getContextPath() + "/staff/dashboard");
             } else {
                 session.setAttribute("flash_error", "An error occurred while updating order status!");
                 response.sendRedirect(request.getContextPath() + "/staff/orders");

@@ -91,6 +91,8 @@ public class AddressServlet extends HttpServlet {
                 // Security: Check ownership
                 if (address == null || address.getCustomerId() != customerId) {
                     response.sendError(403, "Access denied");
+                    request.getSession().setAttribute("flash_error", "Access denied!");
+                    response.sendRedirect(request.getContextPath() + "/home");
                     return;
                 }
 
@@ -123,6 +125,8 @@ public class AddressServlet extends HttpServlet {
                 // Security: Check ownership
                 if (currentAddress == null || currentAddress.getCustomerId() != customerId) {
                     response.sendError(403, "Access denied");
+                    request.getSession().setAttribute("flash_error", "Access denied!");
+                    response.sendRedirect(request.getContextPath() + "/home");
                     return;
                 }
 

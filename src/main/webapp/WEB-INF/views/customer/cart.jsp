@@ -175,12 +175,12 @@
                                             <div class="col-md-6">
                                                 <div class="variant-btn-wrapper">
                                                     <button class="btn btn-outline-secondary btn-sm selectVariantBtn"
-                                                            data-product-id="${productId}">
+                                                            data-cartitem-id="${item.cartItemId}">
                                                         Select Variant
                                                     </button>
 
                                                     <!-- Modal select variant -->
-                                                    <div class="variant-modal" id="variantModal-${productId}">
+                                                    <div class="variant-modal" id="variantModal-${item.cartItemId}">
                                                         <div class="variant-backdrop"></div>
                                                         <div class="variant-content">
                                                             <h6 class="mb-3 fw-bold">Select variant</h6>
@@ -215,7 +215,7 @@
                                                             </div>
 
                                                             <script>
-                                                                var variants_${productId} = [
+                                                                var variants_${item.cartItemId} = [
                                                                 <c:forEach items="${item.variant.product.variants}" var="v" varStatus="loop">
                                                                 {
                                                                 variantId: ${v.productVariantId},
@@ -229,8 +229,7 @@
 
                                                             <!-- Buttons -->
                                                             <div class="text-end mt-3">
-                                                                <button class="btn btn-confirm confirmBtn" 
-                                                                        data-product-id="${productId}"
+                                                                <button class="btn btn-confirm confirmBtn"
                                                                         data-cartitem-id="${item.cartItemId}">
                                                                     Confirm
                                                                 </button>
@@ -247,7 +246,7 @@
                                                 </div>
 
                                                 <div class="mt-2">
-                                                    <span class="badge bg-success" id="selectedVariant-${productId}">
+                                                    <span class="badge bg-success" id="selectedVariant-${item.cartItemId}">
                                                         Size: ${item.variant.size} / Color: ${item.variant.color}
                                                     </span>
                                                     <p class="text-muted small mb-0"
@@ -337,86 +336,99 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script>
 
-                                                        function changeQuantity(cartItemId, delta) {
-                                                            const input = document.getElementById('quantityInput-' + cartItemId);
-                                                            const availableText = document.getElementById('quantityAvailableText-' + cartItemId);
-                                                            const maxQty = parseInt(input.max || '1');
-                                                            let value = parseInt(input.value || '1');
+                                function changeQuantity(cartItemId, delta) {
+                                    const input = document.getElementById('quantityInput-' + cartItemId);
+                                    const availableText = document.getElementById('quantityAvailableText-' + cartItemId);
+                                    const maxQty = parseInt(input.max || '1');
+                                    let value = parseInt(input.value || '1');
 
-                                                            if (isNaN(value))
-                                                                value = 1;
-                                                            value += delta;
+                                    if (isNaN(value))
+                                        value = 1;
 
-                                                            input.value = value;
+                                    const oldValue = value;
+                                    value += delta;
 
-                                                            // Gửi AJAX đến servlet để cập nhật DB mà không reload
-                                                            fetch(`${window.location.origin}${pageContext.request.contextPath}/cart`, {
-                                                                method: "POST",
-                                                                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                                                                body: new URLSearchParams({
-                                                                    action: "updateQuantity",
-                                                                    cartItemId: cartItemId,
-                                                                    quantity: value
-                                                                })
-                                                            })
-                                                                    .then(res => {
-                                                                        if (!res.ok)
-                                                                            return res.text().then(t => {
-                                                                                throw new Error(t);
-                                                                            });
-                                                                        return res.json();
-                                                                    })
-                                                                    .then(data => {
-                                                                        console.log("Quantity updated successfully:", data);
-                                                                        showNotification("Quantity updated!", "success");
+                                    input.value = value;
 
-                                                                        // Cập nhật subtotal cho item
-                                                                        const priceEl = document.getElementById('itemPrice-' + cartItemId);
-                                                                        const totalEl = document.getElementById('itemTotal-' + cartItemId);
+                                    fetch(`${window.location.origin}${pageContext.request.contextPath}/cart`, {
+                                        method: "POST",
+                                        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                                        body: new URLSearchParams({
+                                            action: "updateQuantity",
+                                            cartItemId: cartItemId,
+                                            quantity: value
+                                        })
+                                    })
+                                            .then(res => {
+                                                if (!res.ok) {
+                                                    return res.json().then(data => {
+                                                        throw new Error(data.message || 'Update failed');
+                                                    });
+                                                }
+                                                return res.json();
+                                            })
+                                            .then(data => {
+                                                if (data.status === 'success') {
+                                                    console.log("Quantity updated successfully:", data);
+                                                    showNotification("Quantity updated!", "success");
 
-                                                                        if (priceEl && totalEl) {
-                                                                            const price = parseFloat(priceEl.textContent.replace('$', '').trim());
-                                                                            const newTotal = price * value;
-                                                                            totalEl.textContent = '$' + newTotal.toFixed(2);
-                                                                        }
+                                                    const priceEl = document.getElementById('itemPrice-' + cartItemId);
+                                                    const totalEl = document.getElementById('itemTotal-' + cartItemId);
 
-                                                                        // Cập nhật tổng tạm tính
-                                                                        if (typeof window.updateSummary === "function") {
-                                                                            window.updateSummary();
-                                                                        }
-                                                                    })
-                                                                    .catch(err => {
-                                                                        console.error(" Update failed:", err);
-                                                                        // Nếu lỗi, khôi phục giá trị cũ
-                                                                        input.value = parseInt(input.defaultValue || 1);
-                                                                    });
-                                                        }
+                                                    if (priceEl && totalEl) {
+                                                        const price = parseFloat(priceEl.textContent.replace('$', '').trim());
+                                                        const newTotal = price * value;
+                                                        totalEl.textContent = '$' + newTotal.toFixed(2);
+                                                    }
 
-                                                        function openDeleteModal(cartItemId) {
-                                                            const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-                                                            const hiddenInput = document.getElementById('deleteCartItemId');
-                                                            hiddenInput.value = cartItemId;
-                                                            deleteModal.show();
-                                                        }
+                                                    if (data.available && availableText) {
+                                                        availableText.textContent = data.available + ' available';
+                                                        input.max = data.available;
+                                                    }
 
-                                                        function proceedToCheckout() {
-                                                            const selectedItems = document.querySelectorAll('.checkbox-black:checked');
-                                                            if (selectedItems.length === 0) {
-                                                                alert('Please select at least one product to checkout!\n\nInstructions:\n1. Check the box next to the product you want to buy\n2. Check the quantity and price\n3. Click the Buy button to checkout ');
-                                                                return;
-                                                            }
-                                                            
-                                                            // Get selected cart item IDs
-                                                            const cartItemIds = Array.from(selectedItems).map(checkbox => {
-                                                                return checkbox.id.replace('checkbox-', '');
-                                                            });
-                                                            
-                                                            // Redirect to purchase page with selected items
-                                                            const params = new URLSearchParams();
-                                                            cartItemIds.forEach(id => params.append('cartItemIds', id));
-                                                            
-                                                            window.location.href = '${pageContext.request.contextPath}/purchase?action=checkout&' + params.toString();
-                                                        }
+                                                    if (typeof window.updateSummary === "function") {
+                                                        window.updateSummary();
+                                                    }
+                                                } else if (data.reload) {
+                                                    window.location.reload();
+                                                }
+                                            })
+                                            .catch(err => {
+                                                console.error("Update failed:", err);
+
+                                                input.value = oldValue;
+
+                                                setTimeout(() => {
+                                                    window.location.reload();
+                                                }, 500);
+                                            });
+                                }
+
+                                function openDeleteModal(cartItemId) {
+                                    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                                    const hiddenInput = document.getElementById('deleteCartItemId');
+                                    hiddenInput.value = cartItemId;
+                                    deleteModal.show();
+                                }
+
+                                function proceedToCheckout() {
+                                    const selectedItems = document.querySelectorAll('.checkbox-black:checked');
+                                    if (selectedItems.length === 0) {
+                                        alert('Please select at least one product to checkout!\n\nInstructions:\n1. Check the box next to the product you want to buy\n2. Check the quantity and price\n3. Click the Buy button to checkout ');
+                                        return;
+                                    }
+
+                                    // Get selected cart item IDs
+                                    const cartItemIds = Array.from(selectedItems).map(checkbox => {
+                                        return checkbox.id.replace('checkbox-', '');
+                                    });
+
+                                    // Redirect to purchase page with selected items
+                                    const params = new URLSearchParams();
+                                    cartItemIds.forEach(id => params.append('cartItemIds', id));
+
+                                    window.location.href = '${pageContext.request.contextPath}/purchase?action=checkout&' + params.toString();
+                                }
         </script>
 
         <script>
@@ -454,7 +466,7 @@
                 }
 
                 checkboxes.forEach(chk => {
-                    chk.addEventListener('change', function() {
+                    chk.addEventListener('change', function () {
                         const card = chk.closest('.card');
                         if (chk.checked) {
                             card.classList.add('selected');
@@ -468,13 +480,6 @@
                 const qtyInputs = document.querySelectorAll('.qty-input');
                 qtyInputs.forEach(inp => {
                     inp.addEventListener('input', updateSummary);
-                });
-
-                // Auto-check all items by default
-                checkboxes.forEach(chk => {
-                    chk.checked = true;
-                    const card = chk.closest('.card');
-                    card.classList.add('selected');
                 });
 
                 // Initial summary update
@@ -497,16 +502,14 @@
 
                 // ✅ XỬ LÝ MODAL VARIANT - FIX HOÀN TOÀN
                 document.querySelectorAll('.selectVariantBtn').forEach(btn => {
-                    let productId = btn.dataset.productId; // ✅ dùng let để tạo scope riêng
-                    let modal = document.getElementById('variantModal-' + productId);
+                    const cartItemId = btn.dataset.cartitemId;
+                    let modal = document.getElementById('variantModal-' + cartItemId);
                     let backdrop = modal.querySelector('.variant-backdrop');
                     let variantContent = modal.querySelector('.variant-content');
                     let confirmBtn = modal.querySelector('.confirmBtn');
                     let colorOptions = modal.querySelectorAll('.color-option');
                     let sizeOptions = modal.querySelectorAll('.size-option');
-                    let variants = window['variants_' + productId] || [];
-
-                    const btnSelectVariant = document.querySelector('.selectVariantBtn[data-product-id="' + productId + '"]');
+                    const variants = window['variants_' + cartItemId] || [];
 
                     let selectedColor = null;
                     let selectedSize = null;
@@ -634,9 +637,6 @@
                             alert("Variant not available!");
                             return;
                         }
-
-                        // Lấy cartItemId từ nút Confirm
-                        const cartItemId = confirmBtn.dataset.cartitemId;
 
                         // Điền vào form ẩn
                         document.getElementById('hiddenCartItemId-' + cartItemId).value = cartItemId;

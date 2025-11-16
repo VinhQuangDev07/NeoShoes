@@ -515,7 +515,7 @@
                                         Defective Product
                                     </option>
                                     <option value="Wrong Item" ${returnRequest.reason == 'Wrong Item' ? 'selected' : ''}>
-                                        Wrong Item Received
+                                        Wrong Item
                                     </option>
                                     <option value="Not as Described" ${returnRequest.reason == 'Not as Described' ? 'selected' : ''}>
                                         Not as Described

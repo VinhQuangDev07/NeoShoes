@@ -78,6 +78,11 @@
                 color: #d32f2f;
             }
 
+            .status-returned {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+
             .action-btn {
                 width: 36px;
                 height: 36px;
@@ -186,7 +191,8 @@
                                                     <td>
                                                         <span class="badge-status
                                                               ${r.returnStatus eq 'APPROVED' ? 'status-approved' :
-                                                                r.returnStatus eq 'REJECTED' ? 'status-rejected' : 'status-pending'}">
+                                                                r.returnStatus eq 'REJECTED' ? 'status-rejected' :
+                                                                r.returnStatus eq 'RETURNED' ? 'status-returned' : 'status-pending'}">
                                                                   ${r.returnStatus}
                                                               </span>
                                                         </td>
@@ -222,59 +228,59 @@
                 </div>
             </div>
 
-<!--             Edit Modal 
-            <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel">
-                                <i class="fas fa-edit"></i> Edit Return Request #<span id="modalRequestId"></span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <form id="editForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
-                            <input type="hidden" name="action" value="updateStatus">
-                            <input type="hidden" name="requestId" id="editRequestId">
-                            <input type="hidden" name="currentStatus" id="currentStatus">
-
-                            <div class="modal-body">
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> Update the status for this return request.
-                                </div>
-
-                                <div class="alert alert-warning" id="statusWarning" style="display: none;">
-                                    <i class="fas fa-exclamation-triangle"></i> 
-                                    <strong>Warning:</strong> Changing status from PENDING to APPROVED/REJECTED is irreversible!
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="editStatus" class="form-label">
-                                        <i class="fas fa-tasks"></i> Return Status *
-                                    </label>
-                                    <select name="status" id="editStatus" class="form-select" required>
-                                        <option value="">-- Select Status --</option>
-                                        <option value="PENDING">Pending</option>
-                                        <option value="APPROVED">Approved</option>
-                                        <option value="REJECTED">Rejected</option>
-                                    </select>
-                                    <div class="invalid-feedback">
-                                        Please select a valid status.
+            <!--             Edit Modal 
+                        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">
+                                            <i class="fas fa-edit"></i> Edit Return Request #<span id="modalRequestId"></span>
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
+                                    <form id="editForm" action="${pageContext.request.contextPath}/staff/manage-return-request" method="POST">
+                                        <input type="hidden" name="action" value="updateStatus">
+                                        <input type="hidden" name="requestId" id="editRequestId">
+                                        <input type="hidden" name="currentStatus" id="currentStatus">
+            
+                                        <div class="modal-body">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle"></i> Update the status for this return request.
+                                            </div>
+            
+                                            <div class="alert alert-warning" id="statusWarning" style="display: none;">
+                                                <i class="fas fa-exclamation-triangle"></i> 
+                                                <strong>Warning:</strong> Changing status from PENDING to APPROVED/REJECTED is irreversible!
+                                            </div>
+            
+                                            <div class="mb-3">
+                                                <label for="editStatus" class="form-label">
+                                                    <i class="fas fa-tasks"></i> Return Status *
+                                                </label>
+                                                <select name="status" id="editStatus" class="form-select" required>
+                                                    <option value="">-- Select Status --</option>
+                                                    <option value="PENDING">Pending</option>
+                                                    <option value="APPROVED">Approved</option>
+                                                    <option value="REJECTED">Rejected</option>
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Please select a valid status.
+                                                </div>
+                                            </div>
+                                        </div>
+            
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" id="saveBtn">
+                                                <i class="fas fa-save"></i> Save Changes
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times"></i> Cancel
-                                </button>
-                                <button type="submit" class="btn btn-primary" id="saveBtn">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>-->
+                        </div>-->
 
             <!-- Delete Modal -->
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

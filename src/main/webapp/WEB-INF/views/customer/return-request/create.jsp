@@ -189,6 +189,10 @@
                 accent-color: #3b82f6;
             }
 
+            .products-table .checkbox-cell {
+                display: none;
+            }
+
             /* Quantity Input */
             .qty-input {
                 width: 80px;
@@ -210,6 +214,13 @@
                 background-color: #f1f5f9;
                 cursor: not-allowed;
                 color: #94a3b8;
+            }
+
+            .qty-input[readonly] {
+                background-color: #f1f5f9;
+                cursor: not-allowed;
+                color: #64748b;
+                border-color: #cbd5e1;
             }
 
             /* Form Group */
@@ -263,9 +274,9 @@
                 gap: 20px;
             }
 
-           
 
-           
+
+
 
             /* Form Actions */
             .form-actions {
@@ -463,7 +474,7 @@
                     </div>
 
 
-                  
+
 
                     <!-- Order Summary -->
                     <div class="order-summary">
@@ -478,7 +489,7 @@
                                 <div class="order-info-value">$<c:out value="${order.totalAmount}"/></div>
                             </div>
                             <div class="order-info-item">
-                                <div class="order-info-label">Status</div>
+                                <div class="order-info-label">Order Status</div>
                                 <div class="order-info-value">
                                     <span class="badge badge-success"><c:out value="${order.status}"/></span>
                                 </div>
@@ -496,7 +507,7 @@
 
                             <!-- Select Items Section -->
                             <div class="form-section">
-                                <h2 class="section-title">Select Items to Return</h2>
+                                <h2 class="section-title">Items to Return</h2>
                                 <table class="products-table">
                                     <thead>
                                         <tr>
@@ -515,6 +526,8 @@
                                                            name="productId" 
                                                            value="${item.productVariantId}"
                                                            data-max="${item.detailQuantity}"
+                                                           checked
+                                                           style="display:none;"
                                                            onchange="toggleQty(this, ${item.productVariantId})">
                                                 </td>
                                                 <td>
@@ -534,13 +547,12 @@
                                                            min="1"
                                                            max="${item.detailQuantity}"
                                                            class="qty-input"
-                                                           disabled>
+                                                           readonly>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
                                 </table>
-                                <div class="helper-text">* Select products you want to return and adjust quantities if needed</div>
                             </div>
 
                             <!-- Return Information Section -->
@@ -667,198 +679,199 @@
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-            // Global variables
-            let formSubmitting = false;
+                        // Global variables
+                        let formSubmitting = false;
 
-            /**
-             * Toggle quantity input based on checkbox state
-             */
-            function toggleQty(checkbox, variantId) {
-                const qtyInput = document.getElementById('qty_' + variantId);
-                qtyInput.disabled = !checkbox.checked;
+                        /**
+                         * Toggle quantity input based on checkbox state
+                         */
+                        function toggleQty(checkbox, variantId) {
+                            const qtyInput = document.getElementById('qty_' + variantId);
+                            qtyInput.disabled = !checkbox.checked;
 
-                // Reset to max value when enabled
-                if (checkbox.checked) {
-                    qtyInput.value = qtyInput.max;
-                }
-            }
+                            // Reset to max value when enabled
+                            if (checkbox.checked) {
+                                qtyInput.value = qtyInput.max;
+                            }
+                        }
 
-            /**
-             * Validate form before submission
-             */
-            function validateForm() {
-                // 1. Check if at least one product is selected
-                const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
+                        /**
+                         * Validate form before submission
+                         */
+                        function validateForm() {
+                            // 1. Check if at least one product is selected
+//                            const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
+//
+//                            if (checkedBoxes.length === 0) {
+//                                alert('⚠️ Please select at least one product to return');
+//                                return false;
+//                            }
+                            const checkedBoxes = document.querySelectorAll('input[name="productId"]');
 
-                if (checkedBoxes.length === 0) {
-                    alert('⚠️ Please select at least one product to return');
-                    return false;
-                }
+                            // 2. Validate quantities for selected products
+                            for (let checkbox of checkedBoxes) {
+                                const variantId = checkbox.value;
+                                const qtyInput = document.getElementById('qty_' + variantId);
+                                const qty = parseInt(qtyInput.value);
+                                const max = parseInt(qtyInput.max);
 
-                // 2. Validate quantities for selected products
-                for (let checkbox of checkedBoxes) {
-                    const variantId = checkbox.value;
-                    const qtyInput = document.getElementById('qty_' + variantId);
-                    const qty = parseInt(qtyInput.value);
-                    const max = parseInt(qtyInput.max);
+                                if (isNaN(qty) || qty < 1 || qty > max) {
+                                    alert('⚠️ Invalid return quantity for selected product. Must be between 1 and ' + max);
+                                    qtyInput.focus();
+                                    return false;
+                                }
+                            }
 
-                    if (isNaN(qty) || qty < 1 || qty > max) {
-                        alert(`⚠️ Invalid return quantity for selected product. Must be between 1 and ${max}`);
-                        qtyInput.focus();
-                        return false;
-                    }
-                }
+                            // 3. Validate required fields
+                            const reason = document.getElementById('reason').value.trim();
+                            if (!reason) {
+                                alert('⚠️ Please select a return reason');
+                                document.getElementById('reason').focus();
+                                return false;
+                            }
 
-                // 3. Validate required fields
-                const reason = document.getElementById('reason').value.trim();
-                if (!reason) {
-                    alert('⚠️ Please select a return reason');
-                    document.getElementById('reason').focus();
-                    return false;
-                }
+                            const bankName = document.getElementById('bankName').value.trim();
+                            if (!bankName) {
+                                alert('⚠️ Please select a bank name');
+                                document.getElementById('bankName').focus();
+                                return false;
+                            }
 
-                const bankName = document.getElementById('bankName').value.trim();
-                if (!bankName) {
-                    alert('⚠️ Please select a bank name');
-                    document.getElementById('bankName').focus();
-                    return false;
-                }
+                            const accountNumber = document.getElementById('accountNumber').value.trim();
+                            if (!accountNumber) {
+                                alert('⚠️ Please enter account number');
+                                document.getElementById('accountNumber').focus();
+                                return false;
+                            }
 
-                const accountNumber = document.getElementById('accountNumber').value.trim();
-                if (!accountNumber) {
-                    alert('⚠️ Please enter account number');
-                    document.getElementById('accountNumber').focus();
-                    return false;
-                }
+                            // 4. Validate account number format
+                            if (!/^\d{6,}$/.test(accountNumber)) {
+                                alert('⚠️ Account number must be at least 6 digits and contain only numbers');
+                                document.getElementById('accountNumber').focus();
+                                return false;
+                            }
 
-                // 4. Validate account number format
-                if (!/^\d{6,}$/.test(accountNumber)) {
-                    alert('⚠️ Account number must be at least 6 digits and contain only numbers');
-                    document.getElementById('accountNumber').focus();
-                    return false;
-                }
+                            const accountHolder = document.getElementById('accountHolder').value.trim();
+                            if (!accountHolder) {
+                                alert('⚠️ Please enter account holder name');
+                                document.getElementById('accountHolder').focus();
+                                return false;
+                            }
 
-                const accountHolder = document.getElementById('accountHolder').value.trim();
-                if (!accountHolder) {
-                    alert('⚠️ Please enter account holder name');
-                    document.getElementById('accountHolder').focus();
-                    return false;
-                }
+                            return true;
+                        }
 
-                return true;
-            }
+                        /**
+                         * Show confirmation modal
+                         */
+                        function showConfirmModal() {
+                            const allProducts = document.querySelectorAll('input[name="productId"]');
+                            const count = allProducts.length;
+                            const message = 'You are about to submit a return request for ALL ' + count + ' product(s) in this order. Are you sure you want to continue?';
 
-            /**
-             * Show confirmation modal
-             */
-            function showConfirmModal() {
-                const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
-                const count = checkedBoxes.length;
-                const message = `You are about to submit a return request for ${count} product(s). Are you sure you want to continue?`;
+                            document.getElementById('confirmMessage').textContent = message;
+                            document.getElementById('confirmModal').classList.add('active');
+                        }
 
-                document.getElementById('confirmMessage').textContent = message;
-                document.getElementById('confirmModal').classList.add('active');
-            }
+                        /**
+                         * Close confirmation modal
+                         */
+                        function closeConfirmModal() {
+                            document.getElementById('confirmModal').classList.remove('active');
+                        }
 
-            /**
-             * Close confirmation modal
-             */
-            function closeConfirmModal() {
-                document.getElementById('confirmModal').classList.remove('active');
-            }
+                        /**
+                         * Confirm and submit form
+                         */
+                        function confirmSubmit() {
+                            closeConfirmModal();
 
-            /**
-             * Confirm and submit form
-             */
-            function confirmSubmit() {
-                closeConfirmModal();
+                            // Disable submit button to prevent double submission
+                            const submitBtn = document.getElementById('submitBtn');
+                            const submitBtnText = document.getElementById('submitBtnText');
+                            const submitSpinner = document.getElementById('submitSpinner');
 
-                // Disable submit button to prevent double submission
-                const submitBtn = document.getElementById('submitBtn');
-                const submitBtnText = document.getElementById('submitBtnText');
-                const submitSpinner = document.getElementById('submitSpinner');
+                            submitBtn.disabled = true;
+                            submitBtnText.textContent = 'Processing...';
+                            submitSpinner.style.display = 'inline-block';
 
-                submitBtn.disabled = true;
-                submitBtnText.textContent = 'Processing...';
-                submitSpinner.style.display = 'inline-block';
+                            // Mark as submitting
+                            formSubmitting = true;
 
-                // Mark as submitting
-                formSubmitting = true;
+                            // Submit form
+                            document.getElementById('returnRequestForm').submit();
+                        }
 
-                // Submit form
-                document.getElementById('returnRequestForm').submit();
-            }
+                        /**
+                         * Handle form submission
+                         */
+                        document.getElementById('returnRequestForm').addEventListener('submit', function (e) {
+                            e.preventDefault();
 
-            /**
-             * Handle form submission
-             */
-            document.getElementById('returnRequestForm').addEventListener('submit', function (e) {
-                e.preventDefault();
+                            // Prevent double submission
+                            if (formSubmitting) {
+                                return false;
+                            }
 
-                // Prevent double submission
-                if (formSubmitting) {
-                    return false;
-                }
+                            // Validate form
+                            if (!validateForm()) {
+                                return false;
+                            }
 
-                // Validate form
-                if (!validateForm()) {
-                    return false;
-                }
+                            // Show confirmation modal
+                            showConfirmModal();
+                        });
 
-                // Show confirmation modal
-                showConfirmModal();
-            });
+                        /**
+                         * Close modal when clicking outside
+                         */
+                        document.getElementById('confirmModal').addEventListener('click', function (e) {
+                            if (e.target === this) {
+                                closeConfirmModal();
+                            }
+                        });
 
-            /**
-             * Close modal when clicking outside
-             */
-            document.getElementById('confirmModal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    closeConfirmModal();
-                }
-            });
 
-           
 
-            /**
-             * Character counter for note textarea
-             */
-            const noteTextarea = document.getElementById('note');
-            if (noteTextarea) {
-                const maxLength = noteTextarea.getAttribute('maxlength') || 500;
-                const helperText = noteTextarea.nextElementSibling;
+                        /**
+                         * Character counter for note textarea
+                         */
+                        const noteTextarea = document.getElementById('note');
+                        if (noteTextarea) {
+                            const maxLength = noteTextarea.getAttribute('maxlength') || 500;
+                            const helperText = noteTextarea.nextElementSibling;
 
-                noteTextarea.addEventListener('input', function () {
-                    const remaining = maxLength - this.value.length;
-                    if (this.value.length > 0) {
-                        helperText.textContent = `${remaining} characters remaining`;
-                    } else {
-                        helperText.textContent = `Optional: Add any relevant information about your return (max ${maxLength} characters)`;
-                    }
-                });
-            }
+                            noteTextarea.addEventListener('input', function () {
+                                const remaining = maxLength - this.value.length;
+                                if (this.value.length > 0) {
+                                    helperText.textContent = remaining + ' characters remaining';
+                                } else {
+                                    helperText.textContent = 'Optional: Add any relevant information about your return (max ' + maxLength + ' characters)';
+                                }
+                            });
+                        }
 
-            /**
-             * Real-time validation for account number
-             */
-            const accountNumberInput = document.getElementById('accountNumber');
-            if (accountNumberInput) {
-                accountNumberInput.addEventListener('input', function () {
-                    // Remove non-digit characters
-                    this.value = this.value.replace(/\D/g, '');
-                });
+                        /**
+                         * Real-time validation for account number
+                         */
+                        const accountNumberInput = document.getElementById('accountNumber');
+                        if (accountNumberInput) {
+                            accountNumberInput.addEventListener('input', function () {
+                                // Remove non-digit characters
+                                this.value = this.value.replace(/\D/g, '');
+                            });
 
-                accountNumberInput.addEventListener('blur', function () {
-                    const value = this.value.trim();
-                    if (value && !/^\d{6,}$/.test(value)) {
-                        this.setCustomValidity('Account number must be at least 6 digits');
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                });
-            }
+                            accountNumberInput.addEventListener('blur', function () {
+                                const value = this.value.trim();
+                                if (value && !/^\d{6,}$/.test(value)) {
+                                    this.setCustomValidity('Account number must be at least 6 digits');
+                                } else {
+                                    this.setCustomValidity('');
+                                }
+                            });
+                        }
 
-         
+
         </script>
     </body>
 </html>

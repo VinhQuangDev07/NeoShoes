@@ -79,9 +79,12 @@ public class HomeServlet extends HttpServlet {
             System.out.println(" Error in listProducts: " + e.getMessage());
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
+            request.getSession().setAttribute("flash_error", "Error in listProducts!");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
     }
-private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
+
+    private void listProductsByCategory(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         int categoryId = Integer.parseInt(request.getParameter("categoryId"));
@@ -108,7 +111,7 @@ private void listProductsByCategory(HttpServletRequest request, HttpServletRespo
         BrandDAO brandDAO = new BrandDAO();
         List<Brand> brands = brandDAO.getAllBrands();
         request.setAttribute("brands", brands);
-        
+
         // Lấy danh sách categories
         List<Category> categories = categoryDAO.getAllActiveCategories();
         request.setAttribute("categories", categories);
