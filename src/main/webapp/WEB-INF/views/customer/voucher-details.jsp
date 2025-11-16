@@ -392,20 +392,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Terms & Conditions -->
-                                    <div class="details-card">
-                                        <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
-                                        <ul class="terms-list">
-                                            <li>This voucher is valid for online purchases only</li>
-                                            <li>Cannot be combined with other promotional vouchers</li>
-                                            <li>Non-transferable and non-refundable</li>
-                                            <li>NeoShoes reserves the right to cancel this voucher at any time</li>
-                                            <c:if test="${voucher.minValue != null}"><li>Minimum order value required: <strong><fmt:formatNumber value="${voucher.minValue}" pattern="#,##0"/>$</strong></li></c:if>
-                                            <c:if test="${voucher.maxValue != null && voucher.type == 'PERCENTAGE'}"><li>Maximum discount capped at: <strong><fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0"/>$</strong></li></c:if>
-                                            <li>Valid until: <strong><fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/></strong></li>
-                                        </ul>
-                                    </div>
-
                                     <!-- Action Buttons -->
                                     <div class="action-buttons">
                                         <c:if test="${isUsable}">

@@ -87,7 +87,7 @@ public class ForgetPasswordServlet extends HttpServlet {
 
             if (customer != null) {
                 request.getSession().setAttribute("resetEmail", email);
-                String otp = generateOTP();
+                String otp =  EmailService.generateVerificationCode();
                 LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
 
                 customerDAO.deleteOldVerifyCode(customer.getId());
@@ -135,7 +135,7 @@ public class ForgetPasswordServlet extends HttpServlet {
 
             if (staff != null) {
                 request.getSession().setAttribute("resetEmail", email);
-                String otp = generateOTP();
+                String otp =  EmailService.generateVerificationCode();
                 LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
 
                 staffDAO.deleteOldVerifyCode(staff.getStaffId());
@@ -173,12 +173,6 @@ public class ForgetPasswordServlet extends HttpServlet {
             request.setAttribute("userType", "staff");
             forwardToForgetPassword(request, response, "staff");
         }
-    }
-
-    private String generateOTP() {
-        Random random = new Random();
-        int otp = 100000 + random.nextInt(900000);
-        return String.valueOf(otp);
     }
 
     private void forwardToForgetPassword(HttpServletRequest request, HttpServletResponse response, String userType)

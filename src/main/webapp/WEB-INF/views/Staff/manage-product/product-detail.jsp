@@ -909,9 +909,11 @@
                     <div class="card variants-section">
                         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                             <h2 class="card-title">Variant List</h2>
-                            <button class="btn btn-primary" onclick="addVariant()">
-                                ➕ Add Variant
-                            </button>
+                            <c:if test="${sessionScope.role eq 'admin'}">
+                                <button class="btn btn-primary" onclick="addVariant()">
+                                    ➕ Add Variant
+                                </button>
+                            </c:if>
                         </div>
                         <div class="card-body" style="padding: 0;">
                             <c:choose>
@@ -925,7 +927,9 @@
                                                 <th>Price</th>
                                                 <th>Quantity</th>
                                                 <th>Status</th>
-                                                <th>Actions</th>
+                                                    <c:if test="${sessionScope.role eq 'admin'}">
+                                                    <th>Actions</th>
+                                                    </c:if>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1002,23 +1006,25 @@
                                                     </td>
 
                                                     <!-- Actions - SỬA: Dùng data attribute thay vì truyền string trực tiếp -->
-                                                    <td>
-                                                        <div class="variant-actions">
-                                                            <button class="icon-btn edit" 
-                                                                    onclick="editVariant(${variant.productVariantId})" 
-                                                                    title="Edit Variant">
-                                                                <i class="fas fa-edit"></i>
-                                                            </button>
-                                                            <button class="icon-btn delete" 
-                                                                    data-variant-id="${variant.productVariantId}"
-                                                                    data-variant-size="${variant.size}"
-                                                                    data-variant-color="${variant.color}"
-                                                                    onclick="deleteVariant(this)" 
-                                                                    title="Delete Variant">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                                    <c:if test="${sessionScope.role eq 'admin'}">
+                                                        <td>
+                                                            <div class="variant-actions">
+                                                                <button class="icon-btn edit" 
+                                                                        onclick="editVariant(${variant.productVariantId})" 
+                                                                        title="Edit Variant">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="icon-btn delete" 
+                                                                        data-variant-id="${variant.productVariantId}"
+                                                                        data-variant-size="${variant.size}"
+                                                                        data-variant-color="${variant.color}"
+                                                                        onclick="deleteVariant(this)" 
+                                                                        title="Delete Variant">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </c:if>
                                                 </tr>
                                             </c:forEach>
 
@@ -1372,7 +1378,7 @@
                                     <option value="Maroon" data-hex="#7C2D12">Maroon</option>
                                 </select>
                                 <div class="invalid-feedback">Please select a color</div>
-                                <div id="edit_colorPreview" class="modal-color-preview"></div>
+                                <!--<div id="edit_colorPreview" class="modal-color-preview"></div>-->
                             </div>
 
                             <div class="modal-form-group">
@@ -1433,11 +1439,12 @@
                         <h4 class="modal-section-title">Variant Image</h4>
 
                         <div class="modal-form-group">
-                            <label class="form-label">Upload Image <span class="required">*</span></label>
+                            <label class="form-label">Upload Image <span class="required"></span></label>
                             <div class="modal-image-upload" id="editVariantImageUpload">
-                                <img src="https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png"
+                                <img src=""
                                      id="editVariantImagePreview" 
-                                     alt="Variant Image Preview" />
+                                     alt="Variant Image Preview" 
+                                     onerror="this.src='https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png'"/>
                                 <div class="text-muted small">Click or drag & drop an image</div>
                                 <input type="file" 
                                        name="imageFile" 
@@ -1496,28 +1503,6 @@
             </div>
         </div>
         <script>
-            // Color preview for edit modal
-            document.getElementById('edit_color').addEventListener('change', function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const colorName = selectedOption.value;
-                const colorHex = selectedOption.getAttribute('data-hex');
-                const preview = document.getElementById('edit_colorPreview');
-
-                if (colorName && colorHex) {
-                    preview.innerHTML = `
-                    <div class="modal-color-preview-badge">
-                        <div class="color-dot" style="background-color: ${colorHex};"></div>
-                        <span class="color-name">${colorName}</span>
-                    </div>
-                `;
-                } else {
-                    preview.innerHTML = '';
-                }
-
-                if (colorName) {
-                    this.classList.remove('is-invalid');
-                }
-            });
 
             // Size validation
             document.getElementById('edit_size').addEventListener('change', function () {
@@ -1664,7 +1649,10 @@
                 const colorTag = row.querySelector('.tag.blue');
                 const sizeTag = row.querySelector('.tag.purple');
                 const priceText = row.querySelector('td:nth-child(4) strong').textContent.replace(/[^0-9.]/g, '');
-                const image = row.querySelector('img').src;
+
+                // Get image from the first column (td:first-child)
+                const imageElement = row.querySelector('td:first-child img');
+                const imageSrc = imageElement ? imageElement.src : 'https://res.cloudinary.com/drqip0exk/image/upload/v1762335624/image-not-found_0221202211372462137974b6c1a_wgc1rc.png';
 
                 const color = colorTag ? colorTag.textContent.replace('Color: ', '').trim() : '';
                 const size = sizeTag ? sizeTag.textContent.replace('Size: ', '').trim() : '';
@@ -1674,7 +1662,12 @@
                 document.getElementById('edit_color').value = color;
                 document.getElementById('edit_size').value = size;
                 document.getElementById('edit_price').value = priceText;
-                document.getElementById('editVariantImagePreview').src = image;
+
+                // Set image preview
+                const imagePreview = document.getElementById('editVariantImagePreview');
+                if (imagePreview) {
+                    imagePreview.src = imageSrc;
+                }
 
                 // Trigger color preview
                 document.getElementById('edit_color').dispatchEvent(new Event('change'));
@@ -1722,29 +1715,7 @@
                 window.location.href = '${pageContext.request.contextPath}/staff/variant?view=create&productId=' + productId;
             }
 
-            // Open Edit Modal with data
-            function editVariant(variantId) {
-                // Get data from table row
-                const row = event.target.closest('tr');
-                const colorTag = row.querySelector('.tag.blue');
-                const sizeTag = row.querySelector('.tag.purple');
-                const price = row.querySelector('td:nth-child(4) strong').textContent.replace(/[^0-9.]/g, '');
-
-                const image = row.querySelector('img').src;
-                // Extract color and size from tags
-                const color = colorTag ? colorTag.textContent.replace('Color: ', '').trim() : '';
-                const size = sizeTag ? sizeTag.textContent.replace('Size: ', '').trim() : '';
-                // Fill form
-                document.getElementById('edit_variantId').value = variantId;
-                document.getElementById('edit_color').value = color;
-                document.getElementById('edit_size').value = size;
-                document.getElementById('edit_price').value = price;
-
-                // Show modal
-                document.getElementById('editModalOverlay').classList.add('active');
-                document.getElementById('editModal').classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
+            
 
             // Close Edit Modal
             function closeEditModal() {

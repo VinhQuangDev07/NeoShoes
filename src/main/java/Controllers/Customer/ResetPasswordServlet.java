@@ -70,6 +70,10 @@ public class ResetPasswordServlet extends HttpServlet {
             boolean updated = customerDAO.updatePassword(email, Utils.hashPassword(newPassword));
 
             if (updated) {
+                int customerId = customerDAO.getCustomerIdByEmail(email);
+                if (customerId > 0) {
+                    customerDAO.updateVerifiedStatus(customerId, true);
+                }
                 customerDAO.clearResetOTP(email);
 
                 //XÓA session email sau khi reset thành công

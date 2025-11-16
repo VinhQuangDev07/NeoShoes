@@ -190,6 +190,8 @@ public class OrdersServlet extends HttpServlet {
             System.err.println("Error loading order detail: " + e.getMessage());
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
+            request.getSession().setAttribute("flash_error", "Internal server error!");
+            response.sendRedirect(request.getContextPath() + "/orders");
         }
     }
 

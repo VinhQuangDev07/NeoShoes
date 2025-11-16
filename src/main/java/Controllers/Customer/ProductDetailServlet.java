@@ -38,6 +38,8 @@ public class ProductDetailServlet extends HttpServlet {
         String productIdParam = request.getParameter("id");
         if (productIdParam == null || productIdParam.trim().isEmpty()) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Product ID is required");
+            request.getSession().setAttribute("flash_error", "Product ID is required!");
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         try {
@@ -143,10 +145,14 @@ public class ProductDetailServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format");
+            request.getSession().setAttribute("flash_error", "Invalid product ID format!");
+            response.sendRedirect(request.getContextPath() + "/home");
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "An error occurred while loading product details");
+            request.getSession().setAttribute("flash_error", "Internal server error!");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
     }
 

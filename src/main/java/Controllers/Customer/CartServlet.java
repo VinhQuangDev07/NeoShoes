@@ -117,7 +117,7 @@ public class CartServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        
+
         int customerId = customer.getId();
 
         if ("add".equals(action)) {
@@ -144,7 +144,7 @@ public class CartServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
                 return;
             }
-            
+
             // Check if item already in cart
             CartItem existingItem = cartDAO.getExistItem(customerId, variantId);
 
@@ -180,42 +180,59 @@ public class CartServlet extends HttpServlet {
             // reload page (redirect)
             response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
         } else if ("updateQuantity".equals(action)) {
-            int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));
-            int quantity = Integer.parseInt(request.getParameter("quantity"));
+            try {
+                int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
 
-            if (quantity <= 0) {
-                session.setAttribute("flash_error", "Quantity must be greater than 0");
-                // Redirect back to cart page
-                response.sendRedirect(request.getContextPath() + "/cart");
-                return;
-            }
+                if (quantity <= 0) {
+                    session.setAttribute("flash_error", "Quantity must be greater than 0");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Quantity must be greater than 0\",\"reload\":true}");
+                    return;
+                }
 
-            CartItem cartItem = cartDAO.findCartItem(customerId, cartItemId);
-            if (cartItem == null) {
-                session.setAttribute("flash_error", "Cart item not found");
-                // Redirect back to cart page
-                response.sendRedirect(request.getContextPath() + "/cart");
-                return;
-            }
+                CartItem cartItem = cartDAO.findCartItem(customerId, cartItemId);
+                if (cartItem == null) {
+                    session.setAttribute("flash_error", "Cart item not found");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND); // 404
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Cart item not found\",\"reload\":true}");
+                    return;
+                }
 
-            ProductVariant variant = variantDAO.findById(cartItem.getProductVariantId());
+                ProductVariant variant = variantDAO.findById(cartItem.getProductVariantId());
 
-            int available = variant.getQuantityAvailable();
-            if (quantity > available) {
-                session.setAttribute("flash_error", "Only " + available + " items available in stock");
-                // Redirect back to cart page
-                response.sendRedirect(request.getContextPath() + "/cart");
-                return;
-            }
+                int available = variant.getQuantityAvailable();
+                if (quantity > available) {
+                    session.setAttribute("flash_error", "Only " + available + " items available in stock");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Only " + available + " items available in stock\",\"reload\":true}");
+                    return;
+                }
 
-            boolean success = cartDAO.updateQuantity(cartItemId, quantity);
-            if (success) {
+                boolean success = cartDAO.updateQuantity(cartItemId, quantity);
+                if (success) {
+                    response.setStatus(HttpServletResponse.SC_OK); // 200
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"success\",\"available\":" + available + ",\"quantity\":" + quantity + "}");
+                } else {
+                    session.setAttribute("flash_error", "Error updating quantity");
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Error updating quantity\",\"reload\":true}");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("flash_error", "Invalid input");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"status\":\"success\",\"available\":" + available + "}");
-            } else {
-                session.setAttribute("flash_error", "Error updating quantity");
-                // Redirect back to cart page
-                response.sendRedirect(request.getContextPath() + "/cart");
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid input\",\"reload\":true}");
+            } catch (Exception e) {
+                session.setAttribute("flash_error", "An error occurred");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"An error occurred\",\"reload\":true}");
             }
         } else if ("updateVariant".equals(action)) {
             int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));

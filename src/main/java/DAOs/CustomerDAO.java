@@ -80,7 +80,7 @@ public class CustomerDAO extends DB.DBContext {
     }
 
     public Customer login(String email, String password) {
-        String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0";
+        String sql = "SELECT * FROM Customer WHERE Email=? AND IsDeleted=0 AND IsVerified=1";
         try ( ResultSet rs = this.execSelectQuery(sql, new Object[]{email})) {
             if (rs == null || !rs.next()) {
                 System.err.println("Customer not found: " + email);
@@ -109,6 +109,18 @@ public class CustomerDAO extends DB.DBContext {
             return result > 0;
         } catch (SQLException e) {
             System.err.println("updateLastLogin: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean updateVerifiedStatus(int customerId, boolean verified) {
+        String sql = "UPDATE Customer SET IsVerified = ?, UpdatedAt = GETDATE() "
+                + "WHERE CustomerId = ? AND IsDeleted = 0";
+        try {
+            int rows = this.execQuery(sql, new Object[]{verified, customerId});
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("updateVerifiedStatus: " + e.getMessage());
             return false;
         }
     }

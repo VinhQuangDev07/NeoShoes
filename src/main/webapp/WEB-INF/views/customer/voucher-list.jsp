@@ -279,7 +279,6 @@
             }
 
             .btn-primary:hover {
-                background: #ff5252;
                 transform: translateY(-2px);
             }
 
@@ -300,8 +299,7 @@
             }
 
             .btn-outline:hover {
-                border-color: var(--primary-color);
-                color: var(--primary-color);
+                transform: translateY(-2px);
             }
 
             .empty-state {
@@ -397,22 +395,6 @@
                                 <div class="card-body">
                                     <h3 class="mb-3">My Voucher Wallet</h3>
                                     <p>Explore special offers and discounts made just for you</p>
-                                </div>
-
-                                <!-- Stats -->
-                                <div class="voucher-stats">
-                                    <div class="stat-card available">
-                                        <div class="number">${fn:length(availableVouchers)}</div>
-                                        <div class="label">Available Vouchers</div>
-                                    </div>
-                                    <div class="stat-card used">
-                                        <div class="number">${fn:length(usedVouchers)}</div>
-                                        <div class="label">Used Vouchers</div>
-                                    </div>
-                                    <div class="stat-card total">
-                                        <div class="number">${fn:length(availableVouchers) + fn:length(usedVouchers)}</div>
-                                        <div class="label">Total Vouchers</div>
-                                    </div>
                                 </div>
 
                                 <!-- Tabs -->

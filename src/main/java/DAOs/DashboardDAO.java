@@ -24,7 +24,7 @@ public class DashboardDAO extends DB.DBContext {
      * Get total revenue from all completed orders
      */
     public BigDecimal getTotalRevenue() {
-        String sql = "SELECT ISNULL(SUM(o.TotalAmount), 0) AS TotalRevenue "
+        String sql = "SELECT ISNULL(SUM(o.TotalAmount - o.ShippingFee), 0) AS TotalRevenue "
                 + "FROM [Order] o "
                 + "JOIN OrderStatusHistory osh ON o.OrderId = osh.OrderId "
                 + "WHERE osh.OrderStatus = 'COMPLETED' "
@@ -96,7 +96,7 @@ public class DashboardDAO extends DB.DBContext {
     public List<Revenue> getRevenueByDay(String startDate, String endDate) {
         List<Revenue> list = new ArrayList<>();
         String sql = "SELECT CONVERT(VARCHAR, o.PlacedAt, 23) AS Period, "
-                + "SUM(o.TotalAmount) AS Revenue "
+                + "SUM(o.TotalAmount - o.ShippingFee) AS Revenue "
                 + "FROM [Order] o "
                 + "JOIN OrderStatusHistory osh ON o.OrderId = osh.OrderId "
                 + "WHERE osh.OrderStatus = 'COMPLETED' "
@@ -129,7 +129,7 @@ public class DashboardDAO extends DB.DBContext {
     public List<Revenue> getRevenueByMonth(String startMonth, String endMonth) {
         List<Revenue> list = new ArrayList<>();
         String sql = "SELECT FORMAT(o.PlacedAt, 'yyyy-MM') AS Period, "
-                + "SUM(o.TotalAmount) AS Revenue "
+                + "SUM(o.TotalAmount - o.ShippingFee) AS Revenue "
                 + "FROM [Order] o "
                 + "JOIN OrderStatusHistory osh ON o.OrderId = osh.OrderId "
                 + "WHERE osh.OrderStatus = 'COMPLETED' "
@@ -162,7 +162,7 @@ public class DashboardDAO extends DB.DBContext {
     public List<Revenue> getRevenueByYear(int startYear, int endYear) {
         List<Revenue> list = new ArrayList<>();
         String sql = "SELECT YEAR(o.PlacedAt) AS Period, "
-                + "SUM(o.TotalAmount) AS Revenue "
+                + "SUM(o.TotalAmount - o.ShippingFee) AS Revenue "
                 + "FROM [Order] o "
                 + "JOIN OrderStatusHistory osh ON o.OrderId = osh.OrderId "
                 + "WHERE osh.OrderStatus = 'COMPLETED' "
@@ -199,7 +199,7 @@ public class DashboardDAO extends DB.DBContext {
                 + "p.Name AS ProductTitle, "
                 + "p.DefaultImageUrl AS ImageUrl, "
                 + "SUM(od.DetailQuantity) AS TotalSold, "
-                + "SUM(o.TotalAmount) AS TotalRevenue "
+                + "SUM(o.TotalAmount - o.ShippingFee) AS TotalRevenue "
                 + "FROM OrderDetail od "
                 + "JOIN ProductVariant pv ON od.ProductVariantId = pv.ProductVariantId "
                 + "JOIN Product p ON pv.ProductId = p.ProductId "

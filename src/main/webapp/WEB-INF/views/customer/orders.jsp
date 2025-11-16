@@ -557,23 +557,6 @@
                                         </c:choose>
                                     </div>
 
-                                    <!-- Delivery Information -->
-                                    <div class="delivery-info">
-                                        <i class="fas fa-truck"></i>
-                                        <c:choose>
-                                            <c:when test="${not empty order.recipientName}">
-                                                Delivery to: <c:out value="${order.recipientName}"/>, 
-                                                <c:out value="${order.addressDetails}"/> | 
-                                                <c:out value="${order.recipientPhone}"/>
-                                            </c:when>
-                                            <c:when test="${not empty order.addressDetails}">
-                                                Delivery to: <c:out value="${order.addressDetails}"/>
-                                            </c:when>
-                                            <c:otherwise>
-                                                Delivery to: Default Address
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
                                 </div>
                             </c:forEach>
                         </c:if>

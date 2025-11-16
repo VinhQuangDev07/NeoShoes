@@ -458,7 +458,7 @@
                                         <option value="Maroon" data-hex="#7C2D12">Maroon</option>
                                     </select>
                                     <div class="invalid-feedback">Please select a color</div>
-                                    <div id="colorPreview"></div>
+                                    <!--<div id="colorPreview"></div>-->
                                 </div>
 
                                 <div class="form-group">
@@ -561,30 +561,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('variantImageInput');
     const preview = document.getElementById('variantImagePreview');
     const submitBtn = document.getElementById('submitBtn');
-
-    // ===== COLOR PREVIEW =====
-    const colorPreview = document.getElementById('colorPreview');
-    
-    colorSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const colorName = selectedOption.value;
-        const colorHex = selectedOption.getAttribute('data-hex');
-        
-        if (colorName && colorHex) {
-            colorPreview.innerHTML = `
-                <div class="color-preview-badge">
-                    <div class="color-dot" style="background-color: ${colorHex};"></div>
-                    <span class="color-name">${colorName}</span>
-                </div>
-            `;
-        } else {
-            colorPreview.innerHTML = '';
-        }
-        
-        if (colorName) {
-            this.classList.remove('is-invalid');
-        }
-    });
 
     // ===== SIZE VALIDATION =====
     sizeSelect.addEventListener('change', function() {

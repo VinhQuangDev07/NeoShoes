@@ -80,6 +80,8 @@ public class ProductListServlet extends HttpServlet {
             System.err.println("Error in ProductListServlet: " + e.getMessage());
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error: " + e.getMessage());
+            request.getSession().setAttribute("flash_error", "Internal server error!");
+            response.sendRedirect(request.getContextPath() + "/home");
         }
     }
 

@@ -634,7 +634,7 @@
                     <div class="summary-section">
                         <h6>Payment</h6>
                         <c:choose>
-                            <c:when test="${order.status == 'CANCELLED'}">
+                            <c:when test="${order.paymentStatusName == 'Cancelled'}">
                                 <div class="mb-3">
                                     <span class="payment-badge payment-cancelled">
                                         <i class="fas fa-times-circle"></i>
@@ -642,11 +642,11 @@
                                     </span>
                                 </div>
                             </c:when>
-                            <c:when test="${order.status == 'RETURNED'}">
+                            <c:when test="${order.paymentStatusName == 'Failed'}">
                                 <div class="mb-3">
                                     <span class="payment-badge payment-cancelled">
                                         <i class="fas fa-times-circle"></i>
-                                        Returned
+                                        Failed
                                     </span>
                                 </div>
                             </c:when>

@@ -93,6 +93,8 @@ public class ImportProductServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
+            request.getSession().setAttribute("flash_error", "Internal server error!");
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
         }
     }
 
@@ -130,6 +132,8 @@ public class ImportProductServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error: " + e.getMessage());
+            request.getSession().setAttribute("flash_error", "Internal server error!");
+            response.sendRedirect(request.getContextPath() + "/staff/import-records");
         }
     }
 
@@ -211,6 +215,8 @@ public class ImportProductServlet extends HttpServlet {
 
             if (importRecord == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                request.getSession().setAttribute("flash_error", "Import record not found!");
+                response.sendRedirect(request.getContextPath() + "/staff/import-records");
                 return;
             }
 
