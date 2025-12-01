@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
+
 package Controllers.Customer;
 
 import DAOs.AddressDAO;
@@ -18,48 +15,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Nguyen Huynh Thien An - CE190979
- */
+
 @WebServlet(name = "AddressServlet", urlPatterns = {"/address"})
 public class AddressServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet AddressServlet</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet AddressServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -99,8 +61,8 @@ public class AddressServlet extends HttpServlet {
         String addressAction = request.getParameter("addressAction");
         if ("addAddress".equals(addressAction)) {
             try {
-//              int customerId = Integer.parseInt(request.getParameter("customerId"));
-                int customerId = 2;
+             int customerId = Integer.parseInt(request.getParameter("customerId"));
+//                int customerId = 2;
                 String addressName = request.getParameter("addressName");
                 String addressDetails = request.getParameter("addressDetails");
                 String recipientName = request.getParameter("recipientName");
@@ -126,7 +88,7 @@ public class AddressServlet extends HttpServlet {
                 addressDAO.addAddress(customerId, addressName, addressDetails,
                         recipientName, recipientPhone, isDefault, isDeleted);
 
-                response.sendRedirect(request.getContextPath() + "/profile");
+                response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.sendError(500, "Error adding address");
@@ -134,15 +96,15 @@ public class AddressServlet extends HttpServlet {
         }
         if ("deleteAddress".equals(addressAction)) {
             try {
-
+                int customerId = Integer.parseInt(request.getParameter("customerId"));
                 int addressId = Integer.parseInt(request.getParameter("addressId"));
                 Address address = addressDAO.getAddressById(addressId);
                 if (address.isIsDefault()) {
                     request.setAttribute("erroMassage", "Can not delete default address!");
-                    response.sendRedirect(request.getContextPath() + "/profile");
+                    response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
                 } else {
                     addressDAO.delete(addressId);
-                    response.sendRedirect(request.getContextPath() + "/profile");
+                    response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -150,10 +112,10 @@ public class AddressServlet extends HttpServlet {
         }
         if ("updateAddress".equals(addressAction)) {
             try {
-
+                int customerId = Integer.parseInt(request.getParameter("customerId"));
                 int addressId = Integer.parseInt(request.getParameter("addressId"));
 //               int customerId = Integer.parseInt(request.getParameter("customerId"));
-                int customerId = 2;
+                //int customerId = 2;
                 String addressName = request.getParameter("addressName");
                 String addressDetails = request.getParameter("addressDetails");
                 String recipientName = request.getParameter("recipientName");
@@ -167,21 +129,13 @@ public class AddressServlet extends HttpServlet {
                     addressDAO.clearDefaultAddress(customerId);
                 }
                 addressDAO.updateAddress(addressId, addressName, addressDetails, recipientName, recipientPhone, isDefault);
-                response.sendRedirect(request.getContextPath() + "/profile");
+                response.sendRedirect(request.getContextPath() + "/profile?id="+customerId);
             } catch (SQLException ex) {
                 Logger.getLogger(AddressServlet.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+   
 
 }

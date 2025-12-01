@@ -4,301 +4,564 @@
  */
 package DAOs;
 
-import DB.DBContext;
 import Models.Order;
-import Models.OrderItem;
-import java.math.BigDecimal;
+import Models.OrderDetail;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * Data access for customer orders
+ *
+ * @author Chau Gia Huy - CE190386
  */
-public class OrderDAO extends DBContext {
+public class OrderDAO extends DB.DBContext {
 
-    public List<Order> listByCustomer(int customerId) {
-        String sql = "SELECT o.OrderId, o.CustomerId, o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, " +
-                    "osh.OrderStatus " +
-                    "FROM dbo.[Order] o " +
-                    "LEFT JOIN dbo.OrderStatusHistory osh ON o.OrderId = osh.OrderId " +
-                    "WHERE o.CustomerId = ? " +
-                    "ORDER BY o.PlacedAt DESC";
-        List<Order> orders = new ArrayList<>();
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                System.out.println("❌ Database connection failed");
-                return new ArrayList<>();
-            }
-            System.out.println("✅ Database connected successfully");
-            
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setInt(1, customerId);
-            System.out.println("🔍 Querying orders for customer ID: " + customerId);
-            
-            try (ResultSet rs = ps.executeQuery()) {
-                int count = 0;
-                while (rs.next()) {
-                    count++;
-                    Order o = new Order();
-                    o.setId(rs.getInt("OrderId"));
-                    o.setCustomerId(rs.getInt("CustomerId"));
-                    o.setTotalAmount(rs.getBigDecimal("TotalAmount"));
-                    o.setShippingFee(rs.getBigDecimal("ShippingFee"));
-                    LocalDateTime placedAt = rs.getTimestamp("PlacedAt").toLocalDateTime();
-                    LocalDateTime updatedAt = rs.getTimestamp("UpdatedAt").toLocalDateTime();
-                    o.setCreatedAt(placedAt);
-                    o.setUpdatedAt(updatedAt);
-                    
-                    // Get status from OrderStatusHistory
-                    String status = rs.getString("OrderStatus");
-                    if (status != null) {
-                        o.setStatus(status);
-                    } else {
-                        o.setStatus("PENDING"); // Default status
-                    }
-                    
-                    // Load order items
-                    List<OrderItem> items = getOrderItems(o.getId());
-                    o.setItems(items);
-                    
-                    System.out.println("📦 Found order: " + o.getId() + " - " + o.getStatus() + " - $" + o.getTotalAmount() + " - Items: " + items.size());
-                    orders.add(o);
+    /**
+     * Get PaymentStatusId for Complete status
+     */
+    public int getCompleteStatusId() {
+        String sql = "SELECT PaymentStatusId FROM PaymentStatus WHERE Name = 'Complete'";
+
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("PaymentStatusId");
                 }
-                System.out.println("📊 Total orders found: " + count);
             }
         } catch (SQLException e) {
-            System.out.println("❌ SQL Error: " + e.getMessage());
             e.printStackTrace();
-            return new ArrayList<>();
         }
-        
-        // If no orders found, return empty list
-        if (orders.isEmpty()) {
-            System.out.println("⚠️ No orders found in database");
+
+        return 2; // Default fallback
+    }
+
+    /**
+     * Get PaymentStatus name by ID
+     */
+    public String getPaymentStatusName(int statusId) {
+        String sql = "SELECT Name FROM PaymentStatus WHERE PaymentStatusId = ?";
+
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, statusId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Name");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        
+
+        return "Unknown"; // Default fallback
+    }
+
+    public List<Order> listByCustomerHaveAddress(int customerId) {
+        String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, "
+                + "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, "
+                + "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone, "
+                + "ps.Name as PaymentStatusName "
+                + "FROM [Order] o "
+                + "LEFT JOIN Address a ON o.AddressId = a.AddressId "
+                + "LEFT JOIN PaymentStatus ps ON o.PaymentStatusId = ps.PaymentStatusId "
+                + "WHERE o.CustomerId = ? "
+                + "ORDER BY o.PlacedAt DESC";
+
+        List<Order> orders = new ArrayList<>();
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = createOrderFromResultSet(rs);
+                    // Load address info
+                    order.setAddressName(rs.getString("AddressName"));
+                    order.setAddressDetails(rs.getString("AddressDetails"));
+                    order.setRecipientName(rs.getString("RecipientName"));
+                    order.setRecipientPhone(rs.getString("RecipientPhone"));
+                    // Load payment status name
+                    order.setPaymentStatusName(rs.getString("PaymentStatusName"));
+                    // Load order items
+                    order.setItems(getOrderItems(order.getOrderId()));
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return orders;
     }
-    
-    private List<OrderItem> getOrderItems(int orderId) {
-        String sql = "SELECT od.OrderDetailId, od.ProductVariantId, pv.Color, od.DetailQuantity, od.DetailPrice, p.Name AS ProductName "
-                + "FROM dbo.OrderDetail od "
-                + "JOIN dbo.ProductVariant pv ON pv.ProductVariantId = od.ProductVariantId "
-                + "JOIN dbo.Product p ON p.ProductId = pv.ProductId "
-                + "WHERE od.OrderId = ?";
-        List<OrderItem> items = new ArrayList<>();
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                return new ArrayList<>();
+
+    // /**
+    //  * Get all orders for a customer
+    //  */
+    // public List<Order> listByCustomer(int customerId) throws SQLException {
+    //     List<Order> orders = new ArrayList<>();
+    //     String sql = "SELECT o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, "
+    //             + "o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, "
+    //             + "o.PlacedAt, o.UpdatedAt, oh.OrderStatus "
+    //             + "FROM [NeoShoes].[dbo].[Order] o "
+    //             + "INNER JOIN (SELECT OrderId, OrderStatus, "
+    //             + "           ROW_NUMBER() OVER (PARTITION BY OrderId ORDER BY ChangedAt DESC) as rn "
+    //             + "           FROM OrderStatusHistory) oh "
+    //             + "ON o.OrderId = oh.OrderId AND oh.rn = 1 "
+    //             + "WHERE o.CustomerId = ? "
+    //             + "ORDER BY o.PlacedAt DESC";
+    //     Object[] params = {customerId};
+    //     try ( ResultSet rs = execSelectQuery(sql, params)) {
+    //         while (rs.next()) {
+    //             Order order = createOrderFromResultSet(rs);
+    //             // Load order items
+    //             order.setItems(getOrderItems(order.getOrderId()));
+    //             orders.add(order);
+    //         }
+    //     }
+    //     return orders;
+    // }
+    /**
+     * Get all orders for a customer
+     */
+    public List<Order> listByCustomer(int customerId) throws SQLException {
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT "
+                + "o.OrderId, "
+                + "o.CustomerId, "
+                + "o.AddressId, "
+                + "o.PaymentMethodId, "
+                + "o.PaymentStatusId, "
+                + "o.VoucherId, "
+                + "o.TotalAmount, "
+                + "o.ShippingFee, "
+                + "o.PlacedAt, "
+                + "o.UpdatedAt, "
+                + "oh.OrderStatus, "
+                + "a.AddressName, "
+                + "a.AddressDetails, "
+                + "a.RecipientName, "
+                + "a.RecipientPhone, "
+                + "ps.Name AS PaymentStatusName "
+                + "FROM [NeoShoes].[dbo].[Order] o "
+                + "LEFT JOIN ( "
+                + "    SELECT OrderId, OrderStatus "
+                + "    FROM ( "
+                + "        SELECT OrderId, OrderStatus, "
+                + "        ROW_NUMBER() OVER (PARTITION BY OrderId ORDER BY ChangedAt DESC) AS rn "
+                + "        FROM OrderStatusHistory "
+                + "    ) t "
+                + "    WHERE rn = 1 "
+                + ") oh ON o.OrderId = oh.OrderId "
+                + "LEFT JOIN Address a ON o.AddressId = a.AddressId "
+                + "LEFT JOIN PaymentStatus ps ON o.PaymentStatusId = ps.PaymentStatusId "
+                + "WHERE o.CustomerId = ? "
+                + "ORDER BY o.PlacedAt DESC";
+
+        Object[] params = {customerId};
+        try ( ResultSet rs = execSelectQuery(sql, params)) {
+            while (rs.next()) {
+                Order order = createOrderFromResultSet(rs);
+                // Load order items
+                order.setItems(getOrderItems(order.getOrderId()));
+                orders.add(order);
             }
-            PreparedStatement ps = con.prepareStatement(sql);
+        }
+        return orders;
+    }
+
+    // /**
+    //  * Get a specific order with its items
+    //  */
+    // public Order findWithItems(int orderId) throws SQLException {
+    //     Order order = null;
+    //     String sql = "SELECT TOP 1 o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, oh.OrderStatus FROM [NeoShoes].[dbo].[Order] o INNER JOIN OrderStatusHistory oh ON o.OrderId = oh.OrderId WHERE o.OrderId = ? ORDER BY oh.ChangedAt DESC";
+    //     Object[] params = {orderId};
+    //     try ( ResultSet rs = execSelectQuery(sql, params)) {
+    //         if (rs.next()) {
+    //             order = createOrderFromResultSet(rs);
+    //             // Load order items
+    //             order.setItems(getOrderItems(order.getOrderId()));
+    //         }
+    //     }
+    //     return order;
+    // }
+    public Order findWithItems(int orderId) {
+        String sql = "SELECT "
+                + "o.OrderId, o.CustomerId, o.AddressId, o.PaymentMethodId, o.PaymentStatusId, o.VoucherId, "
+                + "o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, oh.OrderStatus, "
+                + "a.AddressName, a.AddressDetails, a.RecipientName, a.RecipientPhone "
+                + "FROM [NeoShoes].[dbo].[Order] o "
+                + "LEFT JOIN ( "
+                + "  SELECT OrderId, OrderStatus FROM ( "
+                + "    SELECT OrderId, OrderStatus, ROW_NUMBER() OVER (PARTITION BY OrderId ORDER BY ChangedAt DESC) AS rn "
+                + "    FROM OrderStatusHistory "
+                + "  ) t WHERE rn = 1 "
+                + ") oh ON o.OrderId = oh.OrderId "
+                + "LEFT JOIN Address a ON o.AddressId = a.AddressId "
+                + "WHERE o.OrderId = ?";
+
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);
-            try (ResultSet rs = ps.executeQuery()) {
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Order order = createOrderFromResultSet(rs);
+                    // Load address info
+                    order.setAddressName(rs.getString("AddressName"));
+                    order.setAddressDetails(rs.getString("AddressDetails"));
+                    order.setRecipientName(rs.getString("RecipientName"));
+                    order.setRecipientPhone(rs.getString("RecipientPhone"));
+                    // Load order items
+                    order.setItems(getOrderItems(order.getOrderId()));
+                    return order;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Get order items for a specific order
+     */
+    public List<OrderDetail> getOrderItems(int orderId) {
+        String sql = "SELECT od.OrderDetailId, od.OrderId, od.ProductVariantId, od.DetailQuantity, od.DetailPrice, od.AddressDetail, "
+                + "p.Name as ProductName, pv.Color "
+                + "FROM OrderDetail od "
+                + "INNER JOIN ProductVariant pv ON od.ProductVariantId = pv.ProductVariantId "
+                + "INNER JOIN Product p ON pv.ProductId = p.ProductId "
+                + "WHERE od.OrderId = ?";
+
+        List<OrderDetail> items = new ArrayList<>();
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try ( ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    OrderItem item = new OrderItem();
-                    item.setId(rs.getInt("OrderDetailId"));
-                    item.setOrderId(orderId);
-                    item.setProductId(rs.getInt("ProductVariantId"));
+                    OrderDetail item = new OrderDetail();
+                    item.setOrderDetailId(rs.getInt("OrderDetailId"));
+                    item.setOrderId(rs.getInt("OrderId"));
+                    item.setProductVariantId(rs.getInt("ProductVariantId"));
+                    item.setDetailQuantity(rs.getInt("DetailQuantity"));
+                    item.setDetailPrice(rs.getBigDecimal("DetailPrice"));
+                    item.setAddressDetail(rs.getString("AddressDetail"));
                     item.setProductName(rs.getString("ProductName"));
                     item.setColor(rs.getString("Color"));
-                    item.setQuantity(rs.getInt("DetailQuantity"));
-                    BigDecimal unitPrice = rs.getBigDecimal("DetailPrice");
-                    item.setUnitPrice(unitPrice);
-                    item.setLineTotal(unitPrice.multiply(new BigDecimal(item.getQuantity())));
                     items.add(item);
                 }
             }
         } catch (SQLException e) {
-            System.out.println("❌ Error loading order items: " + e.getMessage());
-            return new ArrayList<>();
+            e.printStackTrace();
         }
-        
-        // If no items found, return empty list
-        if (items.isEmpty()) {
-            System.out.println("⚠️ No items found for order: " + orderId);
-        }
-        
         return items;
     }
-    
-    
-    public int createOrder(Order order) {
-        String sql = "INSERT INTO [Order] (CustomerId, Status, SubtotalAmount, DiscountAmount, ShippingFee, TotalAmount, VoucherCode, PlacedAt, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                return -1;
-            }
-            
-            PreparedStatement ps = con.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, order.getCustomerId());
-            ps.setString(2, order.getStatus());
-            ps.setBigDecimal(3, order.getSubtotalAmount());
-            ps.setBigDecimal(4, order.getDiscountAmount());
-            ps.setBigDecimal(5, order.getShippingFee());
-            ps.setBigDecimal(6, order.getTotalAmount());
-            ps.setString(7, order.getVoucherCode());
-            ps.setTimestamp(8, java.sql.Timestamp.valueOf(order.getCreatedAt()));
-            ps.setTimestamp(9, java.sql.Timestamp.valueOf(order.getUpdatedAt()));
-            
-            int result = ps.executeUpdate();
-            if (result > 0) {
-                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int orderId = generatedKeys.getInt(1);
-                        
-                        // Insert order items
-                        insertOrderItems(orderId, order.getItems());
-                        
-                        return orderId;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
+
+    /**
+     * Create Order object from ResultSet
+     */
+    private Order createOrderFromResultSet(ResultSet rs) throws SQLException {
+        Order order = new Order();
+        order.setOrderId(rs.getInt("OrderId"));
+        order.setCustomerId(rs.getInt("CustomerId"));
+        order.setAddressId(rs.getInt("AddressId"));
+        order.setPaymentMethodId(rs.getInt("PaymentMethodId"));
+        order.setPaymentStatusId(rs.getInt("PaymentStatusId"));
+        order.setVoucherId(rs.getObject("VoucherId", Integer.class));
+        order.setTotalAmount(rs.getBigDecimal("TotalAmount"));
+        order.setShippingFee(rs.getBigDecimal("ShippingFee"));
+        order.setStatus(rs.getString("OrderStatus"));
+        Timestamp placedAt = rs.getTimestamp("PlacedAt");
+        Timestamp updatedAt = rs.getTimestamp("UpdatedAt");
+        order.setPlacedAt(placedAt == null ? null : placedAt.toLocalDateTime());
+        order.setUpdatedAt(updatedAt == null ? null : updatedAt.toLocalDateTime());
+        return order;
     }
-    
-    private void insertOrderItems(int orderId, List<OrderItem> items) {
-        String sql = "INSERT INTO OrderDetail (OrderId, ProductVariantId, DetailQuantity, DetailPrice) VALUES (?, ?, ?, ?)";
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                return;
-            }
-            
-            PreparedStatement ps = con.prepareStatement(sql);
-            for (OrderItem item : items) {
-                ps.setInt(1, orderId);
-                ps.setInt(2, item.getProductId()); // Assuming ProductVariantId
-                ps.setInt(3, item.getQuantity());
-                ps.setBigDecimal(4, item.getUnitPrice());
-                ps.addBatch();
-            }
-            ps.executeBatch();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
+
+    /**
+     * Update order status
+     */
     public boolean updateOrderStatus(int orderId, String status) {
-        String sql = "UPDATE [Order] SET Status = ?, UpdatedAt = ? WHERE OrderId = ?";
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                return false;
-            }
-            
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, status);
-            ps.setTimestamp(2, java.sql.Timestamp.valueOf(LocalDateTime.now()));
-            ps.setInt(3, orderId);
-            
-            int result = ps.executeUpdate();
-            return result > 0;
+        String sql = "UPDATE [Order] SET UpdatedAt = ? WHERE OrderId = ?";
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-    
 
-    public Order findWithItems(int orderId) {
-        System.out.println("🔍 OrderDAO.findWithItems() called for Order ID: " + orderId);
-        
-        String sqlOrder = "SELECT o.OrderId, o.CustomerId, o.TotalAmount, o.ShippingFee, o.PlacedAt, o.UpdatedAt, " +
-                         "osh.OrderStatus " +
-                         "FROM dbo.[Order] o " +
-                         "LEFT JOIN dbo.OrderStatusHistory osh ON o.OrderId = osh.OrderId " +
-                         "WHERE o.OrderId = ?";
-        String sqlItems = "SELECT od.OrderDetailId, od.ProductVariantId, pv.Color, od.DetailQuantity, od.DetailPrice, p.Name AS ProductName "
-                + "FROM dbo.OrderDetail od "
-                + "JOIN dbo.ProductVariant pv ON pv.ProductVariantId = od.ProductVariantId "
-                + "JOIN dbo.Product p ON p.ProductId = pv.ProductId "
-                + "WHERE od.OrderId=?";
-        try {
-            Connection con = getConnection();
-            if (con == null) {
-                System.out.println("❌ Database connection failed");
-                return null;
-            }
-            System.out.println("✅ Database connected successfully for order detail");
-            PreparedStatement ps = con.prepareStatement(sqlOrder);
-            ps.setInt(1, orderId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) {
-                    System.out.println("⚠️ Order not found in database");
-                    return null;
-                }
-                System.out.println("📦 Found order in database: " + orderId);
-                
-                Order o = new Order();
-                o.setId(rs.getInt("OrderId"));
-                o.setCustomerId(rs.getInt("CustomerId"));
-                o.setTotalAmount(rs.getBigDecimal("TotalAmount"));
-                o.setShippingFee(rs.getBigDecimal("ShippingFee"));
-                LocalDateTime placedAt = rs.getTimestamp("PlacedAt").toLocalDateTime();
-                LocalDateTime updatedAt = rs.getTimestamp("UpdatedAt").toLocalDateTime();
-                o.setCreatedAt(placedAt);
-                o.setUpdatedAt(updatedAt);
-                
-                // Get status from OrderStatusHistory
-                String status = rs.getString("OrderStatus");
-                if (status != null) {
-                    o.setStatus(status);
-                } else {
-                    o.setStatus("PENDING"); // Default status
-                }
-                
-                System.out.println("📦 Order details: ID=" + o.getId() + ", Customer=" + o.getCustomerId() + 
-                                 ", Total=$" + o.getTotalAmount() + ", Status=" + o.getStatus());
+    /**
+     * Create a new order from cart items
+     *
+     * @param customerId the customer ID
+     * @param addressId the delivery address ID
+     * @param voucherId the voucher ID (nullable)
+     * @param cartItemIds array of cart item IDs to include in order
+     * @return the created order ID, or -1 if failed
+     */
+    public int createOrderFromCart(int customerId, int addressId, Integer voucherId, int[] cartItemIds) {
+        try ( Connection con = getConnection()) {
+            con.setAutoCommit(false); // Start transaction
 
-                try (PreparedStatement ips = con.prepareStatement(sqlItems)) {
-                    ips.setInt(1, orderId);
-                    try (ResultSet irs = ips.executeQuery()) {
-                        List<OrderItem> items = new ArrayList<>();
-                        int itemCount = 0;
-                        while (irs.next()) {
-                            itemCount++;
-                            OrderItem it = new OrderItem();
-                            it.setId(irs.getInt("OrderDetailId"));
-                            it.setOrderId(orderId);
-                            it.setProductId(irs.getInt("ProductVariantId"));
-                            it.setProductName(irs.getString("ProductName"));
-                            it.setColor(irs.getString("Color"));
-                            it.setQuantity(irs.getInt("DetailQuantity"));
-                            BigDecimal unit = irs.getBigDecimal("DetailPrice");
-                            it.setUnitPrice(unit);
-                            it.setLineTotal(unit.multiply(new BigDecimal(it.getQuantity())));
-                            items.add(it);
-                            
-                            System.out.println("📦 Item " + itemCount + ": " + it.getProductName() + 
-                                             " x" + it.getQuantity() + " - $" + it.getUnitPrice());
+            try {
+                // Calculate total amount from cart items
+                BigDecimal totalAmount = calculateCartTotal(customerId, cartItemIds);
+                BigDecimal shippingFee = new BigDecimal("10.00"); // Fixed shipping fee
+
+                // Apply voucher discount if provided
+                if (voucherId != null) {
+                    BigDecimal discount = calculateVoucherDiscount(voucherId, totalAmount);
+                    totalAmount = totalAmount.subtract(discount);
+                }
+
+                // Create order
+                String insertOrderSql = "INSERT INTO [Order] (CustomerId, AddressId, PaymentMethodId, PaymentStatusId, VoucherId, TotalAmount, ShippingFee, PlacedAt, UpdatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                int orderId;
+
+                try ( PreparedStatement ps = con.prepareStatement(insertOrderSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, customerId);
+                    ps.setInt(2, addressId);
+                    ps.setInt(3, 1); // Default payment method (Cash on Delivery)
+                    ps.setInt(4, 1); // Default payment status (Pending)
+                    ps.setObject(5, voucherId);
+                    ps.setBigDecimal(6, totalAmount);
+                    ps.setBigDecimal(7, shippingFee);
+
+                    Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+                    ps.setTimestamp(8, now);
+                    ps.setTimestamp(9, now);
+
+                    int rowsAffected = ps.executeUpdate();
+                    if (rowsAffected <= 0) {
+                        con.rollback();
+                        return -1;
+                    }
+
+                    try ( ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            orderId = generatedKeys.getInt(1);
+                        } else {
+                            con.rollback();
+                            return -1;
                         }
-                        o.setItems(items);
-                        System.out.println("📊 Total items loaded: " + items.size());
                     }
                 }
 
-                System.out.println("✅ Order detail loaded successfully from database");
-                return o;
+                // Create order details from cart items
+                if (!createOrderDetailsFromCart(con, orderId, customerId, cartItemIds)) {
+                    con.rollback();
+                    return -1;
+                }
+
+                // Clear cart items after successful order creation
+                if (!clearCartItems(con, cartItemIds)) {
+                    con.rollback();
+                    return -1;
+                }
+
+                con.commit(); // Commit transaction
+                return orderId;
+
+            } catch (SQLException e) {
+                con.rollback(); // Rollback on error
+                e.printStackTrace();
+                return -1;
             }
         } catch (SQLException e) {
-            System.out.println("❌ SQL Error in findWithItems: " + e.getMessage());
             e.printStackTrace();
-            return null;
+            return -1;
         }
     }
-    
+
+    /**
+     * Calculate total amount from cart items
+     */
+    private BigDecimal calculateCartTotal(int customerId, int[] cartItemIds) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT SUM(ci.Quantity * pv.Price) as Total "
+                + "FROM CartItem ci "
+                + "INNER JOIN ProductVariant pv ON ci.ProductVariantId = pv.ProductVariantId "
+                + "WHERE ci.CustomerId = ? AND ci.CartItemId IN (");
+
+        for (int i = 0; i < cartItemIds.length; i++) {
+            sql.append(i == 0 ? "?" : ",?");
+        }
+        sql.append(")");
+
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql.toString())) {
+            ps.setInt(1, customerId);
+            for (int i = 0; i < cartItemIds.length; i++) {
+                ps.setInt(i + 2, cartItemIds[i]);
+            }
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBigDecimal("Total");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
+//    private BigDecimal calculateCartTotal(int customerId, int[] cartItemIds) {
+//    StringBuilder sql = new StringBuilder(
+//        "SELECT SUM(ci.Quantity * pv.Price) as Total " +
+//        "FROM CartItem ci " +
+//        "INNER JOIN ProductVariant pv ON ci.ProductVariantId = pv.ProductVariantId " +
+//        "WHERE ci.CustomerId = ? AND ci.CartItemId IN (");
+//    
+//    for (int i = 0; i < cartItemIds.length; i++) {
+//        sql.append(i == 0 ? "?" : ",?");
+//    }
+//    sql.append(")");
+//    
+//    try (Connection con = getConnection(); 
+//         PreparedStatement ps = con.prepareStatement(sql.toString())) {
+//        ps.setInt(1, customerId);
+//        for (int i = 0; i < cartItemIds.length; i++) {
+//            ps.setInt(i + 2, cartItemIds[i]);
+//        }
+//        try (ResultSet rs = ps.executeQuery()) {
+//            if (rs.next()) {
+//                return rs.getBigDecimal("Total");
+//            }
+//        }
+//    } catch (SQLException e) {
+//        e.printStackTrace();
+//    }
+//    return BigDecimal.ZERO;
+//}
+    /**
+     * Calculate voucher discount amount
+     */
+    private BigDecimal calculateVoucherDiscount(int voucherId, BigDecimal totalAmount) {
+        String sql = "SELECT Type, Value, MaxValue FROM Voucher WHERE VoucherId = ? AND IsActive = 1";
+        try ( Connection con = getConnection();  PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, voucherId);
+            try ( ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String type = rs.getString("Type");
+                    BigDecimal value = rs.getBigDecimal("Value");
+                    BigDecimal maxValue = rs.getBigDecimal("MaxValue");
+
+                    if ("PERCENTAGE".equalsIgnoreCase(type)) {
+                        BigDecimal discount = totalAmount.multiply(value).divide(new BigDecimal("100"));
+                        return maxValue != null && discount.compareTo(maxValue) > 0 ? maxValue : discount;
+                    } else {
+                        return maxValue != null && value.compareTo(maxValue) > 0 ? maxValue : value;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Create order details from cart items
+     */
+    private boolean createOrderDetailsFromCart(Connection con, int orderId, int customerId, int[] cartItemIds) {
+        String sql = "INSERT INTO OrderDetail (OrderId, ProductVariantId, DetailQuantity, DetailPrice, AddressDetail) "
+                + "SELECT ?, ci.ProductVariantId, ci.Quantity, pv.Price, "
+                + "CONCAT(a.RecipientName, ', ', a.AddressDetails, ' | ', a.RecipientPhone) "
+                + "FROM CartItem ci "
+                + "INNER JOIN ProductVariant pv ON ci.ProductVariantId = pv.ProductVariantId "
+                + "INNER JOIN Address a ON a.AddressId = (SELECT AddressId FROM [Order] WHERE OrderId = ?) "
+                + "WHERE ci.CustomerId = ? AND ci.CartItemId = ?";
+
+        try {
+            for (int cartItemId : cartItemIds) {
+                try ( PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, customerId);
+                    ps.setInt(4, cartItemId);
+
+                    if (ps.executeUpdate() <= 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Clear cart items after successful order creation
+     */
+    private boolean clearCartItems(Connection con, int[] cartItemIds) {
+        String sql = "DELETE FROM CartItem WHERE CartItemId = ?";
+        try {
+            for (int cartItemId : cartItemIds) {
+                try ( PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setInt(1, cartItemId);
+                    ps.executeUpdate();
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Delete an order and all its related data
+     *
+     * @param orderId the order ID to delete
+     * @return true if deletion successful, false otherwise
+     */
+    public boolean deleteOrder(int orderId) {
+        try ( Connection con = getConnection()) {
+            con.setAutoCommit(false); // Start transaction
+
+            try {
+                // Delete OrderStatusHistory first (foreign key constraint)
+                String deleteStatusHistorySql = "DELETE FROM OrderStatusHistory WHERE OrderId = ?";
+                try ( PreparedStatement ps = con.prepareStatement(deleteStatusHistorySql)) {
+                    ps.setInt(1, orderId);
+                    ps.executeUpdate();
+                }
+
+                // Delete OrderDetail
+                String deleteOrderDetailSql = "DELETE FROM OrderDetail WHERE OrderId = ?";
+                try ( PreparedStatement ps = con.prepareStatement(deleteOrderDetailSql)) {
+                    ps.setInt(1, orderId);
+                    ps.executeUpdate();
+                }
+
+                // Delete Order
+                String deleteOrderSql = "DELETE FROM [Order] WHERE OrderId = ?";
+                try ( PreparedStatement ps = con.prepareStatement(deleteOrderSql)) {
+                    ps.setInt(1, orderId);
+                    int rowsAffected = ps.executeUpdate();
+
+                    if (rowsAffected > 0) {
+                        con.commit(); // Commit transaction
+                        return true;
+                    } else {
+                        con.rollback(); // Rollback if no rows affected
+                        return false;
+                    }
+                }
+            } catch (SQLException e) {
+                con.rollback(); // Rollback on error
+                e.printStackTrace();
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
-
-
-

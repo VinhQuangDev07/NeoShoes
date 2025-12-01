@@ -1,72 +1,56 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Models;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-/**
- *
- * @author Le Huu Nghia - CE181052
- */
 public class Product {
 
     private int productId;
-    private String productName;
-    private String description;
-    private int categoryId;
     private int brandId;
-    private String imageUrl;
-    private boolean isDeleted;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    private int categoryId;
+    private String name;
+    private String description;
+    private String defaultImageUrl;
+    private String material;
+    private double minPrice;
+    private double maxPrice;
+    private int totalQuantity;
+    private String availableColors;
+    private String availableSizes;
+    private String brandName;
+    private String categoryName;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+   
 
-    // Constructors
     public Product() {
     }
 
-    public Product(int productId, String productName, String description, 
-                  int categoryId, int brandId, String imageUrl) {
+    public Product(int productId, int brandId, int categoryId, String name, String description, String defaultImageUrl, String material, double minPrice, double maxPrice, int totalQuantity, String availableColors, String availableSizes, String brandName, String categoryName, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.productId = productId;
-        this.productName = productName;
-        this.description = description;
-        this.categoryId = categoryId;
         this.brandId = brandId;
-        this.imageUrl = imageUrl;
+        this.categoryId = categoryId;
+        this.name = name;
+        this.description = description;
+        this.defaultImageUrl = defaultImageUrl;
+        this.material = material;
+        this.minPrice = minPrice;
+        this.maxPrice = maxPrice;
+        this.totalQuantity = totalQuantity;
+        this.availableColors = availableColors;
+        this.availableSizes = availableSizes;
+        this.brandName = brandName;
+        this.categoryName = categoryName;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
     public int getProductId() {
         return productId;
     }
 
     public void setProductId(int productId) {
         this.productId = productId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
     }
 
     public int getBrandId() {
@@ -77,49 +61,129 @@ public class Product {
         this.brandId = brandId;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public int getCategoryId() {
+        return categoryId;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public boolean isDeleted() {
-        return isDeleted;
+    public String getName() {
+        return name;
     }
 
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Timestamp getCreatedAt() {
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getDefaultImageUrl() {
+        return defaultImageUrl;
+    }
+
+    public void setDefaultImageUrl(String defaultImageUrl) {
+        this.defaultImageUrl = defaultImageUrl;
+    }
+
+    public String getMaterial() {
+        return material;
+    }
+
+    public void setMaterial(String material) {
+        this.material = material;
+    }
+
+    public double getMinPrice() {
+        return minPrice;
+    }
+
+    public void setMinPrice(double minPrice) {
+        this.minPrice = minPrice;
+    }
+
+    public double getMaxPrice() {
+        return maxPrice;
+    }
+
+    public void setMaxPrice(double maxPrice) {
+        this.maxPrice = maxPrice;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
+    public String getAvailableColors() {
+        return availableColors;
+    }
+
+    public void setAvailableColors(String availableColors) {
+        this.availableColors = availableColors;
+    }
+
+    public String getAvailableSizes() {
+        return availableSizes;
+    }
+
+    public void setAvailableSizes(String availableSizes) {
+        this.availableSizes = availableSizes;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "productId=" + productId +
-                ", productName='" + productName + '\'' +
-                ", description='" + description + '\'' +
-                ", categoryId=" + categoryId +
-                ", brandId=" + brandId +
-                ", imageUrl='" + imageUrl + '\'' +
-                ", isDeleted=" + isDeleted +
-                '}';
+    public String getFormattedCreatedAt() {
+        if (createdAt != null) {
+            return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
     }
 
+    public String getFormattedUpdatedAt() {
+        if (updatedAt != null) {
+            return updatedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        }
+        return "N/A";
+    }
 }

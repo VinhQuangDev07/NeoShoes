@@ -1,4 +1,4 @@
-package controller.Staff;
+package Controllers.Staff;
 
 import DAOs.BrandDAO;
 import Models.Brand;
