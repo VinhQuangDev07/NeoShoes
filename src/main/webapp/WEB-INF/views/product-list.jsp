@@ -6,6 +6,8 @@
 <html>
     <head>
         <title>NeoShoes - All Products</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <style>
             * {
                 margin: 0;
@@ -16,86 +18,6 @@
                 font-family: 'Arial', sans-serif;
                 background-color: #f8f9fa;
                 line-height: 1.6;
-            }
-
-            /* Header */
-            .header{
-                background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
-                color:#fff;
-                padding:1rem 0;
-                box-shadow:0 2px 10px rgba(0,0,0,.25);
-            }
-
-            .header-container {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 20px;
-            }
-            .logo {
-                font-size: 2rem;
-                font-weight: bold;
-                text-decoration: none;
-                color: white;
-            }
-            /* container của form – căn cho đẹp */
-            .search-form{
-                display:flex;
-                gap:10px;
-                flex:0 1 560px; /* rộng hơn một chút */
-                justify-content:flex-end;
-            }
-
-            /* INPUT hiện đại trên nền đen */
-            /* Search input — light theme on black header */
-            .header .search-input{
-                flex:1;
-                padding:12px 16px;
-                border-radius:999px;
-                background:#ffffff;              /* NỀN TRẮNG */
-                color:#111827;                   /* chữ đen */
-                border:1px solid #e5e7eb;        /* viền xám nhạt */
-                outline:none;
-                font-size:15px;
-                box-shadow:0 2px 8px rgba(0,0,0,.06); /* nhẹ nhàng */
-                transition:border-color .2s, box-shadow .2s;
-            }
-            .header .search-input::placeholder{
-                color:#9aa0a6;
-            }  /* placeholder xám */
-            .header .search-input:focus{
-                border-color:#22c55e;                         /* xanh lá khi focus */
-                box-shadow:0 0 0 4px rgba(34,197,94,.20);
-            }
-
-            /* BUTTON xanh lá hiện đại */
-            .search-button{
-                background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); /* xanh lá */
-                color:#fff;
-                border:none;
-                padding:12px 22px;
-                border-radius:999px;
-                cursor:pointer;
-                font-size:15px;
-                font-weight:700;
-                letter-spacing:.2px;
-                transition:transform .18s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
-                box-shadow:0 10px 24px rgba(22,163,74,.28);
-            }
-            .search-button:hover{
-                transform:translateY(-1px);
-                box-shadow:0 14px 28px rgba(22,163,74,.35);
-                filter:saturate(1.05);
-            }
-            .search-button:active{
-                transform:translateY(0);
-                box-shadow:0 8px 18px rgba(22,163,74,.25);
-            }
-            .search-button:focus-visible{
-                outline:3px solid rgba(34,197,94,.35);
-                outline-offset:2px;
             }
 
 
@@ -127,7 +49,7 @@
                 margin-bottom: 1rem;
                 color: #333;
                 padding-bottom: 0.5rem;
-                border-bottom: 2px solid #667eea;
+                border-bottom: 2px solid rgba(15, 23, 42, 0.9);
             }
             .categories-list {
                 list-style: none;
@@ -146,7 +68,7 @@
                 transition: all 0.2s;
             }
             .category-link:hover, .category-link.active {
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: #fff;
             }
             .category-thumb {
@@ -302,14 +224,15 @@
             }
             .page-link {
                 padding: 8px 16px;
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: white;
                 text-decoration: none;
                 border-radius: 5px;
                 transition: background 0.3s;
             }
             .page-link:hover {
-                background: #5a6fd8;
+                background: rgba(15, 23, 42, 0.7);
+                color: white;
             }
             .page-link.disabled {
                 background: #ccc;
@@ -328,11 +251,12 @@
                 transition: all 0.3s;
             }
             .page-number:hover, .page-number.active {
-                background: #667eea;
+                background: rgba(15, 23, 42, 0.9);
                 color: white;
             }
 
             .no-products {
+                width: 53.5rem;
                 text-align: center;
                 color: #666;
                 font-size: 1.1rem;
@@ -407,9 +331,7 @@
 
             /* --- Buttons (base) --- */
             .btn{
-                --btn-bg:#fff;
-                --btn-fg:#e11d48;
-                --btn-bd:#fecaca;
+
                 display:inline-flex;
                 align-items:center;
                 justify-content:center;
@@ -462,20 +384,6 @@
                 --btn-bg:#ffe4e6;
             }
 
-            /* (Tuỳ chọn) Variant B: Gradient nổi bật
-            .btn-danger-grad{
-              --btn-bg:linear-gradient(135deg, #ff6b6b 0%, #f43f5e 100%);
-              --btn-fg:#fff; --btn-bd:transparent;
-              color:#fff; border:0; box-shadow:0 10px 22px rgba(244,63,94,.25);
-            }
-            .btn-danger-grad:hover{ box-shadow:0 14px 26px rgba(244,63,94,.32); }
-            */
-
-            /* (Tuỳ chọn) Variant C: Outline tối giản
-            .btn-danger-outline{ --btn-bg:#fff; --btn-fg:#dc2626; --btn-bd:#fca5a5; }
-            .btn-danger-outline:hover{ --btn-bg:#fff5f5; border-color:#f87171; }
-            */
-
             /* Push footer button to the bottom of the sidebar card */
             .sidebar-footer {
                 margin-top: auto;
@@ -485,19 +393,13 @@
     </head>
     <body>
         <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <form action="${pageContext.request.contextPath}/products" method="get" class="search-form">
-                    <input type="hidden" name="action" value="search">
-                    <input type="text" name="searchTerm" placeholder="Search products..." value="${param.searchTerm}" class="search-input">
-                    <button type="submit" class="search-button">Search</button>
-                </form>
-            </div>
-        </header>
+        <jsp:include page="/WEB-INF/views/customer/common/header.jsp"/>
+        <!-- Notifications -->
+        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
 
         <!-- Main Content -->
         <div class="main-container">
+
             <!-- Sidebar -->
             <aside class="sidebar">
                 <h3 class="sidebar-title">Categories</h3>
@@ -506,17 +408,17 @@
                         <c:choose>
                             <c:when test="${not empty param.brandId}">
                                 <!-- When a brand is selected, 'All' goes back to the brand page -->
-                                <a href="${pageContext.request.contextPath}/products?action=brand&brandId=${param.brandId}"
-                                   class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                <a href="${pageContext.request.contextPath}/products?action=filter&type=brand&brandId=${param.brandId}"
+                                   class="category-link ${empty selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
                                     <span>All Categories</span>
                                 </a>
                             </c:when>
                             <c:otherwise>
                                 <!-- When no brand is selected, 'All' goes to all products -->
                                 <a href="${pageContext.request.contextPath}/products"
-                                   class="category-link ${empty param.selectedCategory ? 'active' : ''}">
-                                    <img class="category-thumb" src="https://via.placeholder.com/52?text=All" alt="All">
+                                   class="category-link ${empty selectedCategory ? 'active' : ''}">
+                                    <img class="category-thumb" src="https://media.gq.com/photos/6813a873625bf4cbda4cb50c/16:9/w_1280,c_limit/sneaker%20lede%20v1.png" alt="All">
                                     <span>All Products</span>
                                 </a>
                             </c:otherwise>
@@ -528,23 +430,23 @@
                             <c:choose>
                                 <c:when test="${not empty param.brandId}">
                                     <!-- Always pass brandId when clicking category on a brand page -->
-                                    <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
-                                       class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
+                                    <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}&brandId=${param.brandId}"
+                                       class="category-link ${selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
-                                             src="${empty category.image ? 'https://via.placeholder.com/52?text=Cat' : category.image}"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
                                              alt="${category.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Cat'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                         <span>${category.name}</span>
                                     </a>
                                 </c:when>
                                 <c:otherwise>
                                     <!-- Normal category link when no brand is selected -->
-                                    <a href="${pageContext.request.contextPath}/products?action=category&categoryId=${category.categoryId}"
-                                       class="category-link ${param.selectedCategory == category.categoryId ? 'active' : ''}">
+                                    <a href="${pageContext.request.contextPath}/products?action=filter&type=category&categoryId=${category.categoryId}"
+                                       class="category-link ${selectedCategory == category.categoryId ? 'active' : ''}">
                                         <img class="category-thumb"
-                                             src="${empty category.image ? 'https://via.placeholder.com/52?text=Cat' : category.image}"
+                                             src="${empty category.image ? 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png' : category.image}"
                                              alt="${category.name}"
-                                             onerror="this.src='https://via.placeholder.com/52?text=Cat'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                         <span>${category.name}</span>
                                     </a>
                                 </c:otherwise>
@@ -560,7 +462,6 @@
                            class="btn btn-success-soft btn-lg btn-block no-ic">
                             Clear Brand Filter
                         </a>
-
                     </div>
                 </c:if>
 
@@ -600,7 +501,7 @@
                                         </c:if>
                                     </c:forEach>
                                 </c:when>
-                                <c:otherwise>All Products</c:otherwise>
+                                <c:otherwise>Products</c:otherwise>
                             </c:choose>
                         </h2>
                         <p class="products-count">
@@ -624,24 +525,16 @@
                                 <div class="product-card">
                                     <div class="product-media">
                                         <img src="${product.defaultImageUrl}" alt="${product.name}" class="product-image"
-                                             onerror="this.src='https://via.placeholder.com/360x270?text=No+Image'">
+                                             onerror="this.src='https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-high-by-you-shoes.png'">
                                     </div>
                                     <div class="product-info">
                                         <h3 class="product-name">${product.name}</h3>
                                         <p class="product-brand">${product.brandName} • ${product.categoryName}</p>
 
-                                        <c:if test="${product.availableColors != null}">
-                                            <div class="color-previews">
-                                                <c:forTokens items="${product.availableColors}" delims="," var="color" end="3">
-                                                    <span class="color-dot" style="background-color: ${color}" title="${color}"></span>
-                                                </c:forTokens>
-                                                <c:if test="${fn:length(fn:split(product.availableColors, ',')) > 3}">
-                                                    <span class="color-more">+${fn:length(fn:split(product.availableColors, ',')) - 3}</span>
-                                                </c:if>
-                                            </div>
-                                        </c:if>
-
                                         <c:choose>
+                                            <c:when test="${empty product.minPrice or empty product.maxPrice}">
+                                                <div id="priceText" class="price">Discontinue</div>
+                                            </c:when>
                                             <c:when test="${product.minPrice != product.maxPrice}">
                                                 <div class="price-range">$${product.minPrice} - $${product.maxPrice}</div>
                                             </c:when>
@@ -727,5 +620,9 @@
                 </c:choose>
             </main>
         </div>
+        <jsp:include page="/WEB-INF/views/customer/common/footer.jsp"/>
+
+        <!-- JS -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

@@ -71,11 +71,11 @@
             <div class="col-12 col-md-6 col-lg-4 text-md-center">
                 <h3 class="footer-heading h6 mb-3">Member</h3>
                 <ul class="list-unstyled footer-text small mb-0">
-                    <li class="mb-2">CE18____ - Tang Minh Vinh Quang</li>
-                    <li class="mb-2">CE18____ - Tran Hien Dieu</li>
-                    <li class="mb-2">CE19____ - Nguyen Huynh Thien An</li>
                     <li class="mb-2">CE190386 - Chau Gia Huy</li>
                     <li class="mb-2">CE181052 - Le Huu Nghia</li>
+                    <li class="mb-2">CE181532 - Tran Hien Dieu</li>
+                    <li class="mb-2">CE182078 - Tang Minh Vinh Quang</li>
+                    <li class="mb-2">CE190979 - Nguyen Huynh Thien An</li>
                 </ul>
             </div>
 

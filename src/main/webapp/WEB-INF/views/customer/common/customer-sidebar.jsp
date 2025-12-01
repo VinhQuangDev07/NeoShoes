@@ -1,6 +1,6 @@
 
 
-<div class="customer-sidebar bg-white mt-2">
+<div class="customer-sidebar bg-white" style="height: 350px; overflow: hidden;">
     <div class="d-flex flex-column">
 
         <!-- Navigation Menu -->
@@ -21,7 +21,7 @@
                 </a>
 
                 <!-- Orders Link -->
-                <a href="${pageContext.request.contextPath}/orders?id=2" 
+                <a href="${pageContext.request.contextPath}/orders" 
                    id="order" 
                    data-page="order" 
                    class="nav-link-item">

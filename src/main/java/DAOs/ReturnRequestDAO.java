@@ -52,7 +52,7 @@ public class ReturnRequestDAO extends DB.DBContext {
 
     public List<ReturnRequest> getAllReturnRequests() {
         List<ReturnRequest> list = new ArrayList<>();
-        String sql = "SELECT * FROM ReturnRequest";
+        String sql = "SELECT * FROM ReturnRequest ORDER BY RequestDate DESC";
 
         try ( ResultSet rs = execSelectQuery(sql)) {
             while (rs.next()) {

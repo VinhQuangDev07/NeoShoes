@@ -5,95 +5,84 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Voucher Management</title>
+        <title>Voucher Management - NeoShoes</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/lucide@latest"></script>
         <style>
-            /* ========== BASE STYLES ========== */
+            :root{
+                --header-h: 74px;
+                --sidebar-w: 300px;
+            }
+
             * {
                 box-sizing: border-box;
                 font-family: Arial, Helvetica, sans-serif;
             }
-            body {
-                margin: 0;
-                padding: 0;
-                background: #f5f6f8;
-                color: #111827;
+            body{
+                margin:0;
+                background:#f5f6f8;
+                color:#111827;
+                padding-top: var(--header-h);
             }
 
-            /* ========== PAGE HEADER ========== */
-            .page-head {
-                background: #000;
-                color: #fff;
+            .wrap{
                 padding: 20px 24px;
-            }
-            .page-head h1 {
-                margin: 0;
-                font-size: 22px;
-                font-weight: 700;
-                letter-spacing: .2px;
+                margin-left: var(--sidebar-w);
+                width: calc(100% - var(--sidebar-w));
+                max-width: none;
             }
 
-            /* ========== CONTAINER ========== */
-            .wrap {
-                padding: 20px 24px;
-                max-width: 1400px;
-                margin: 0 auto;
-            }
-
-            /* ========== ROLE SWITCHER ========== */
-            .role-switcher {
-                margin-bottom: 12px;
-                padding: 10px 12px;
-                background: #f3f4f6;
-                border: 1px solid #e5e7eb;
-                border-radius: 10px;
-            }
-            .role-switcher a {
-                margin-right: 12px;
-                text-decoration: none;
-                color: #2563eb;
-                font-weight: 600;
-            }
-
-            /* ========== ALERTS ========== */
-            .alert {
-                padding: 12px 16px;
-                margin-bottom: 16px;
-                border-radius: 8px;
-                font-weight: 600;
-            }
+            /* Alert messages */
             .alert-success {
                 background: #dcfce7;
                 color: #166534;
                 border: 1px solid #86efac;
             }
-            .alert-error {
+            .alert-danger {
                 background: #fee2e2;
                 color: #991b1b;
                 border: 1px solid #fecaca;
             }
 
-            /* ========== ADD BUTTON ========== */
+            /* Page header */
+            .page-header {
+                background: white;
+                padding: 24px;
+                border-radius: 8px;
+                margin-bottom: 24px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .page-header h2 {
+                margin: 0;
+                font-weight: 700;
+            }
+
+            /* Toolbar */
             .toolbar {
                 margin: 14px 0 18px;
             }
             .btn-add {
                 display: inline-block;
-                padding: 10px 16px;
+                padding: 10px 14px;
                 border-radius: 10px;
-                background: #111827;
                 color: #fff;
                 text-decoration: none;
                 font-weight: 700;
-                transition: 0.2s;
+                transition: .15s;
+                background: #3b82f6;
             }
             .btn-add:hover {
-                background: #1f2937;
+                filter: brightness(.9);
                 transform: translateY(-1px);
+                color: #fff;
             }
 
-            /* ========== TABLE ========== */
+            /* Table */
             .table-card {
                 background: #fff;
                 border: 1px solid #e5e7eb;
@@ -101,338 +90,381 @@
                 overflow-x: auto;
                 box-shadow: 0 10px 20px rgba(17,24,39,.04);
             }
+
             table {
                 width: 100%;
                 border-collapse: collapse;
-                min-width: 1000px;
                 table-layout: fixed;
+                min-width: 1200px;
             }
+
+            colgroup col.col-id {
+                width: 60px;
+            }
+            colgroup col.col-code {
+                width: 150px;
+            }
+            colgroup col.col-value {
+                width: 110px;
+            }
+            colgroup col.col-min {
+                width: 100px;
+            }
+            colgroup col.col-max {
+                width: 100px;
+            }
+            colgroup col.col-start {
+                width: 110px;
+            }
+            colgroup col.col-end {
+                width: 110px;
+            }
+            colgroup col.col-usage {
+                width: 100px;
+            }
+            colgroup col.col-status {
+                width: 90px;
+            }
+            colgroup col.col-actions {
+                width: auto;
+            }
+
             thead th {
-                background: #111827;
-                color: #fff;
-                padding: 12px 14px;
+                background-color: #f8f9fa;
+                color: #6c757d;
+                padding: 14px 12px;
                 text-align: left;
                 font-weight: 700;
-                letter-spacing: .2px;
+                letter-spacing: .3px;
+                font-size: 13px;
                 white-space: nowrap;
+                position: sticky;
+                top: 0;
+                z-index: 10;
             }
+
             tbody td {
-                padding: 12px 14px;
+                padding: 14px 12px;
                 border-top: 1px solid #f1f5f9;
                 vertical-align: middle;
+                font-size: 13px;
             }
 
-            /* ========== BADGES ========== */
-            .badge {
-                display: inline-block;
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 12px;
-                font-weight: 700;
-                white-space: nowrap;
-            }
-            .badge-active {
-                background: #dcfce7;
-                color: #166534;
-            }
-            .badge-inactive {
-                background: #fee2e2;
-                color: #991b1b;
-            }
-            .badge-percentage {
-                background: #dbeafe;
-                color: #1e40af;
-            }
-            .badge-fixed {
-                background: #fef3c7;
-                color: #92400e;
-            }
-            .badge-expired {
-                background: #f3f4f6;
-                color: #6b7280;
+            tbody tr:hover {
+                background: #f9fafb;
             }
 
-            /* ========== CODE COLUMN ========== */
             .voucher-code {
                 font-family: 'Courier New', monospace;
                 font-weight: 700;
                 color: #111827;
-                font-size: 14px;
+                font-size: 13px;
             }
 
-            /* ========== ACTIONS COLUMN (FINAL) ========== */
-
-            /* Khóa cột cố định & căn phải */
-            thead th:last-child,
-            tbody td:last-child {
-                width: 180px;
-                text-align: right;
-                white-space: nowrap;
+            .badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
             }
 
-            /* Container */
+            .badge-active {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .badge-inactive {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .badge-percentage {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            .badge-fixed {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            /* Actions */
             .actions {
-                display: inline-flex;
-                justify-content: flex-end;
-                align-items: center;
-                gap: 12px;
+                display: flex;
+                gap: 8px;
+                justify-content: center;
             }
 
-            /* Icon buttons */
-            .icon-btn {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
+            .btn {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                border: 1px solid transparent;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
                 text-decoration: none;
-                font-size: 18px;
-                line-height: 1;
-                transition: all 0.25s ease;
+                transition: all 0.2s;
+                border: none;
                 cursor: pointer;
             }
-            .icon-btn i {
-                pointer-events: none;
+
+            .btn-view {
+                background: #e0edff;
+                color: #2563eb;
             }
 
-            /* Màu theo chức năng */
-            .icon-btn.edit {
-                background: #eef2ff;
-                color: #3730a3;
-                border-color: #c7d2fe;
-            }
-            .icon-btn.toggle {
-                background: #ecfdf5;
-                color: #065f46;
-                border-color: #bbf7d0;
-            }
-            .icon-btn.delete {
-                background: #fef2f2;
-                color: #991b1b;
-                border-color: #fecaca;
+            .btn-view:hover {
+                background: #4338ca;
+                color: white;
             }
 
-            /* Hover effect */
-            .icon-btn:hover {
-                transform: scale(1.08);
-                box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            }
-            .icon-btn.edit:hover {
-                background: #e0e7ff;
-                color: #1e3a8a;
-            }
-            .icon-btn.toggle:hover {
-                background: #d1fae5;
-                color: #064e3b;
-            }
-            .icon-btn.delete:hover {
-                background: #fee2e2;
-                color: #7f1d1d;
+            .btn-edit {
+                background: #fff7e0;          /* nền vàng nhạt */
+                color: #f59e0b;
             }
 
-            /* ========== EMPTY STATE ========== */
-            .empty {
-                padding: 32px 16px;
+            .btn-edit:hover {
+                background: #1e40af;
+                color: white;
+            }
+
+            .btn-toggle {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .btn-toggle:hover {
+                background: #92400e;
+                color: white;
+            }
+
+            .btn-delete {
+                background: #fee2e2;          /* nền đỏ nhạt */
+                color: #dc2626;
+            }
+
+            .btn-delete:hover {
+                background: #991b1b;
+                color: white;
+            }
+
+            .empty-message {
                 text-align: center;
+                padding: 40px;
                 color: #6b7280;
-                font-size: 14px;
             }
-
-            /* ========== RESPONSIVE ========== */
-            @media (max-width: 768px) {
-                .wrap {
-                    padding: 12px;
-                }
-                .table-card {
-                    border-radius: 8px;
-                }
-                thead th:last-child, tbody td:last-child {
-                    width: 1%;
-                    text-align: left;
-                }
-                .actions {
-                    justify-content: flex-start;
-                    gap: 10px;
-                }
-                .icon-btn {
-                    width: 36px;
-                    height: 36px;
-                    font-size: 16px;
-                }
-            }
-
-
-
-
-
         </style>
     </head>
     <body>
-        <!-- PAGE HEADER -->
-        <div class="page-head">
-            <h1>Voucher Management</h1>
-        </div>
+        <!-- Header & Sidebar -->
+        <jsp:include page="/WEB-INF/views/staff/common/staff-header.jsp"/>
+        <jsp:include page="/WEB-INF/views/staff/common/staff-sidebar.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp"/>
 
         <div class="wrap">
-            <!-- Role switch -->
-            <div class="role-switcher">
-                <strong>Current Role:</strong> <code>${userRole}</code> &nbsp;|&nbsp;
-                <a href="<c:url value='/vouchermanage'><c:param name='role' value='admin'/></c:url>">Set as Admin</a>
-                <a href="<c:url value='/vouchermanage'><c:param name='role' value='staff'/></c:url>">Set as Staff</a>
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h2>Voucher Management</h2>
+                    <p class="text-muted mb-0 mt-1">Manage discount vouchers</p>
                 </div>
+                <!-- Chỉ admin mới thấy nút Add -->
+                <c:if test="${canModify}">
+                    <a href="${pageContext.request.contextPath}/staff/manage-voucher/add" class="btn-add" >
+                        <i class="fas fa-plus"></i> New Voucher
+                    </a>
+                </c:if>
+            </div>
 
-                <!-- Success/Error messages -->
-            <c:if test="${param.success eq 'added'}">
-                <div class="alert alert-success">✅ Voucher added successfully!</div>
-            </c:if>
-            <c:if test="${param.success eq 'updated'}">
-                <div class="alert alert-success">✅ Voucher updated successfully!</div>
-            </c:if>
-            <c:if test="${param.success eq 'deleted'}">
-                <div class="alert alert-success">✅ Voucher deleted successfully!</div>
-            </c:if>
-            <c:if test="${param.success eq 'toggled'}">
-                <div class="alert alert-success">✅ Voucher status toggled successfully!</div>
-            </c:if>
-            <c:if test="${param.error eq 'delete_failed'}">
-                <div class="alert alert-error">❌ Failed to delete voucher!</div>
-            </c:if>
-            <c:if test="${param.error eq 'toggle_failed'}">
-                <div class="alert alert-error">❌ Failed to toggle voucher status!</div>
-            </c:if>
-
-            <!-- Add button (Admin only) -->
-            <c:if test="${canModify}">
-                <div class="toolbar">
-                    <a class="btn-add" href="<c:url value='/vouchermanage/add'><c:param name='role' value='${userRole}'/></c:url>">+ Add New Voucher</a>
-                    </div>
-            </c:if>
-
-            <!-- Table -->
+            <!-- Voucher Table -->
             <div class="table-card">
                 <table>
+                    <colgroup>
+                        <col class="col-id">
+                        <col class="col-code">
+                        <col class="col-value">
+                        <col class="col-min">
+                        <col class="col-max">
+                        <col class="col-start">
+                        <col class="col-end">
+                        <col class="col-usage">
+                        <col class="col-status">
+                        <col class="col-actions">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Code</th>
-                            <th>Value</th>
-                            <th>Min Order</th>
-                            <th>Max Discount</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Usage</th>
-                            <th>Status</th>
-                                <c:if test="${canModify}">
-                                <th>Actions</th>
-                                </c:if>
+                            <th>CODE</th>
+                            <th>TYPE/VALUE</th>
+                            <th>MIN ORDER</th>
+                            <th>MAX DISC</th>
+                            <th>START</th>
+                            <th>END</th>
+                            <th>USAGE</th>
+                            <th>STATUS</th>
+                            <th style="text-align: center;">ACTIONS</th>
                         </tr>
                     </thead>
-
                     <tbody>
-                        <c:forEach var="voucher" items="${vouchers}">
-                            <tr>
-                                <td>${voucher.voucherId}</td> 
-                                <td><span class="voucher-code">${voucher.voucherCode}</span></td>
-
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${voucher.type eq 'PERCENTAGE'}">
-                                            <strong>${voucher.value}%</strong>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <strong>$<fmt:formatNumber value="${voucher.value}" pattern="#,##0.00"/></strong>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${not empty voucher.minValue}">
-                                            $<fmt:formatNumber value="${voucher.minValue}" pattern="#,##0.00"/>
-                                        </c:when>
-                                        <c:otherwise>-</c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${not empty voucher.maxValue}">
-                                            $<fmt:formatNumber value="${voucher.maxValue}" pattern="#,##0.00"/>
-                                        </c:when>
-                                        <c:otherwise>-</c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <fmt:formatDate value="${voucher.startDateAsDate}" pattern="dd/MM/yyyy"/>
-                                </td>
-                                <td>
-                                    <fmt:formatDate value="${voucher.endDateAsDate}" pattern="dd/MM/yyyy"/>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${not empty voucher.usageCount && not empty voucher.totalUsageLimit}">
-                                            ${voucher.usageCount} / ${voucher.totalUsageLimit}
-                                        </c:when>
-                                        <c:otherwise>-</c:otherwise>
-                                    </c:choose>
-                                </td>
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${voucher.expired}">
-                                            <span class="badge badge-expired">Expired</span>
-                                        </c:when>
-                                        <c:when test="${voucher.active}">
-                                            <span class="badge badge-active">Active</span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="badge badge-inactive">Inactive</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-
-                                <c:if test="${canModify}">
-                                    <td>
-                                        <div class="actions">
-                                            <!-- Edit -->
-                                            <a class="icon-btn edit" title="Edit"
-                                               href="<c:url value='/vouchermanage/edit'>
-                                                   <c:param name='id' value='${voucher.voucherId}'/>
-                                                   <c:param name='role' value='${userRole}'/>
-                                               </c:url>">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-
-                                            <!-- Toggle -->
-                                            <a class="icon-btn toggle" title="${voucher.active ? 'Deactivate' : 'Activate'}"
-                                               href="<c:url value='/vouchermanage/toggle'>
-                                                   <c:param name='id' value='${voucher.voucherId}'/>
-                                                   <c:param name='role' value='${userRole}'/>
-                                               </c:url>">
-                                                <i class="fas ${voucher.active ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
-                                            </a>
-
-                                            <!-- Delete -->
-                                            <a class="icon-btn delete" title="Delete"
-                                               href="<c:url value='/vouchermanage/delete'>
-                                                   <c:param name='id' value='${voucher.voucherId}'/>
-                                                   <c:param name='role' value='${userRole}'/>
-                                               </c:url>"
-                                               onclick="return confirm('Are you sure you want to delete this voucher?');">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </a>
-                                        </div>
+                        <c:choose>
+                            <c:when test="${empty vouchers}">
+                                <tr>
+                                    <td colspan="10" class="empty-message">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p>No vouchers found</p>
                                     </td>
-                                </c:if>
-                            </tr>
-                        </c:forEach>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="voucher" items="${vouchers}">
+                                    <tr>
+                                        <td>${voucher.voucherId}</td>
+                                        <td>
+                                            <span class="voucher-code">${voucher.voucherCode}</span>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${voucher.type eq 'PERCENTAGE'}">
+                                                    <span class="badge badge-percentage">${voucher.value}%</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge badge-fixed">$${voucher.value}</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty voucher.minValue}">
+                                                    $${voucher.minValue}
+                                                </c:when>
+                                                <c:otherwise>-</c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty voucher.maxValue}">
+                                                    $${voucher.maxValue}
+                                                </c:when>
+                                                <c:otherwise>-</c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <fmt:formatDate value="${voucher.startDateAsDate}" pattern="yyyy-MM-dd"/>
+                                        </td>
+                                        <td>
+                                            <fmt:formatDate value="${voucher.endDateAsDate}" pattern="yyyy-MM-dd"/>
+                                        </td>
+                                        <td>
+                                            ${voucher.usageCount != null ? voucher.usageCount : 0}
+                                            <c:if test="${voucher.totalUsageLimit != null}">
+                                                / ${voucher.totalUsageLimit}
+                                            </c:if>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${voucher.active}">
+                                                    <span class="badge badge-active">Active</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="badge badge-inactive">Inactive</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                        <td>
+                                            <div class="actions">
+                                                <!-- View - Cả admin và staff đều xem được -->
+                                                <a class="btn btn-view"
+                                                   href="${pageContext.request.contextPath}/staff/manage-voucher/detail?id=${voucher.voucherId}"
+                                                   title="View">
+                                                    <i data-lucide="eye"></i>
+                                                </a>
+
+                                                <!-- Edit, Toggle, Delete - Chỉ admin -->
+                                                <c:if test="${canModify}">
+                                                    <a class="btn btn-edit"
+                                                       href="${pageContext.request.contextPath}/staff/manage-voucher/edit?id=${voucher.voucherId}"
+                                                       title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    <button type="button" class="btn btn-delete"
+                                                            data-id="${voucher.voucherId}"
+                                                            data-code="${voucher.voucherCode}"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#confirmDeleteModal"
+                                                            title="Delete">
+                                                        <i data-lucide="trash-2"></i>
+                                                    </button>
+
+                                                </c:if>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
                     </tbody>
                 </table>
-
-                <c:if test="${empty vouchers}">
-                    <div class="empty">No vouchers found.</div>
-                </c:if>
             </div>
         </div>
-    </body>
 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            lucide.createIcons();
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const deleteModal = document.getElementById("confirmDeleteModal");
+                const deleteMessage = document.getElementById("deleteMessage");
+                const deleteForm = document.getElementById("deleteForm");
+
+                deleteModal.addEventListener("show.bs.modal", (event) => {
+                    const button = event.relatedTarget; // nút được bấm
+                    const id = button.getAttribute("data-id");
+                    const code = button.getAttribute("data-code");
+
+                    // Cập nhật nội dung modal
+                    deleteMessage.textContent = 'Are you sure you want to delete voucher "' + code + '"?';
+                    deleteForm.action = `${window.contextPath || '${pageContext.request.contextPath}'}/staff/manage-voucher/delete?id=${id}`;
+                            });
+
+                            // Render icon lại khi modal hiển thị
+                            deleteModal.addEventListener("shown.bs.modal", () => lucide.createIcons());
+                        });
+        </script>
+
+        <!-- Confirm Delete Modal -->
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-sm rounded-3">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold text-danger">
+                            <i data-lucide="trash-2" class="me-1"></i> Delete Voucher
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <p id="deleteMessage" class="mb-2">Are you sure you want to delete this voucher?</p>
+                        <p class="text-muted small mb-0">This action cannot be undone.</p>
+                    </div>
+
+                    <div class="modal-footer border-0 d-flex justify-content-center gap-2">
+                        <form id="deleteForm" method="post" action="">
+                            <button type="submit" class="btn btn-danger px-4">
+                                <i data-lucide="trash-2" class="me-1"></i> Delete
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
 </html>

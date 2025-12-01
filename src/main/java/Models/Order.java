@@ -52,12 +52,28 @@ public class Order {
     private String recipientName;
     private String recipientPhone;
     
-    // Payment status name for display
+    // Payment information for display
+    private String paymentMethodName;
     private String paymentStatusName;
+    
+    // Customer information for staff view
+    private String customerName;
+    private String customerEmail;
+    private String customerPhone;
+
+    private transient Voucher voucher;
+
+    public Voucher getVoucher() {
+        return voucher;
+    }
+    public void setVoucher(Voucher voucher) {
+        this.voucher = voucher;
+    }
 
     public int getOrderId() {
         return orderId;
     }
+
 
     public void setOrderId(int orderId) {
         this.orderId = orderId;
@@ -185,11 +201,81 @@ public class Order {
         this.recipientPhone = recipientPhone;
     }
 
+    /**
+ * Calculate discount amount from order data
+ * Formula: (Subtotal + Shipping) - Total
+ */
+public BigDecimal getDiscount() {
+    if (voucherId == null || items == null || items.isEmpty()) {
+        return BigDecimal.ZERO;
+    }
+    
+    try {
+        BigDecimal subtotal = getSubtotal();
+        BigDecimal beforeDiscount = subtotal.add(shippingFee != null ? shippingFee : BigDecimal.ZERO);
+        BigDecimal discount = beforeDiscount.subtract(totalAmount);
+        
+        return discount.compareTo(BigDecimal.ZERO) > 0 ? discount : BigDecimal.ZERO;
+    } catch (Exception e) {
+        return BigDecimal.ZERO;
+    }
+}
+
+/**
+ * Calculate subtotal from order items
+ */
+public BigDecimal getSubtotal() {
+    if (items == null || items.isEmpty()) {
+        return BigDecimal.ZERO;
+    }
+    
+    BigDecimal subtotal = BigDecimal.ZERO;
+    for (OrderDetail item : items) {
+        if (item != null && item.getDetailPrice() != null) {
+            BigDecimal itemTotal = item.getDetailPrice()
+                .multiply(new BigDecimal(item.getDetailQuantity()));
+            subtotal = subtotal.add(itemTotal);
+        }
+    }
+    return subtotal;
+}
+    public String getPaymentMethodName() {
+        return paymentMethodName;
+    }
+
+    public void setPaymentMethodName(String paymentMethodName) {
+        this.paymentMethodName = paymentMethodName;
+    }
+
     public String getPaymentStatusName() {
         return paymentStatusName;
     }
 
     public void setPaymentStatusName(String paymentStatusName) {
         this.paymentStatusName = paymentStatusName;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
     }
 }

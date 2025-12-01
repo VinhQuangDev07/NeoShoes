@@ -20,6 +20,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <!-- Custom CSS -->
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+        
+        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
 
         <style>
             /* Orders-specific sidebar adjustments */
@@ -110,29 +112,15 @@
                 text-transform: capitalize;
             }
             
-            .status-APPROVED, .status-delivered {
-                background: #d4edda;
-                color: #155724;
+            
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
             }
             
-            .status-PENDING {
-                background: #fff3cd;
-                color: #856404;
-            }
-            
-            .status-processing {
-                background: #d1ecf1;
-                color: #0c5460;
-            }
-            
-            .status-shipped, .status-shipping {
-                background: #cce7ff;
-                color: #004085;
-            }
-            
-            .status-canceled, .status-cancelled {
-                background: #f8d7da;
-                color: #721c24;
+            .badge.bg-secondary {
+                background-color: #6c757d !important;
+                color: white;
             }
             
             .order-actions {
@@ -236,6 +224,13 @@
                 font-weight: 600;
                 color: #333;
                 margin-right: 15px;
+            }
+            
+            .item-review-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: auto;
             }
             
             .delivery-info {
@@ -365,6 +360,7 @@
     <body>
         <!-- Header -->
         <jsp:include page="common/header.jsp"/>
+        <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         
         <div class="orders-container">
             <div class="container">
@@ -379,51 +375,12 @@
                         <!-- Page Header -->
                         <div class="orders-header">
                             <h1 class="orders-title">
-                                <div class="orders-icon">
-                                    <i class="fas fa-shopping-bag"></i>
-                                </div>
                                 Your Orders
                             </h1>
                             <c:if test="${not empty orders}">
                                 <small class="text-muted">Found ${fn:length(orders)} orders</small>
                             </c:if>
                         </div>
-
-                        <!-- Success/Error Messages -->
-                        <c:if test="${not empty successMessage}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle"></i>
-                                <c:out value="${successMessage}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        </c:if>
-                        
-                        <c:if test="${not empty errorMessage}">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <c:out value="${errorMessage}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        </c:if>
-
-                        <!-- Flash Messages from Session -->
-                        <c:if test="${not empty sessionScope.flash}">
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle"></i>
-                                <c:out value="${sessionScope.flash}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            <c:remove var="flash" scope="session"/>
-                        </c:if>
-                        
-                        <c:if test="${not empty sessionScope.flash_error}">
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <c:out value="${sessionScope.flash_error}"/>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            <c:remove var="flash_error" scope="session"/>
-                        </c:if>
 
                         <!-- Empty State -->
                         <c:if test="${empty orders}">
@@ -446,57 +403,36 @@
                                     <div class="order-header">
                                         <div class="order-info">
                                             <span class="order-number">Order: #<c:out value="${order.orderId}"/></span>
-                                            <span class="order-date"><c:out value="${order.placedAt}"/></span>
-                                            <span class="order-status status-${order.status}">
-                                                <c:out value="${order.status}"/>
+                                            <span class="order-date" data-date="${order.placedAt}"></span>
+                                            <span class="order-status">
+                                                <c:choose>
+                                                    <c:when test="${empty order.status}">
+                                                        <span class="badge bg-secondary status-badge">No Status</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'PENDING'}">
+                                                        <span class="badge bg-warning status-badge">Pending</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'APPROVED'}">
+                                                        <span class="badge bg-info status-badge">Approved</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'SHIPPED'}">
+                                                        <span class="badge bg-primary status-badge">Shipping</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'COMPLETED'}">
+                                                        <span class="badge bg-success status-badge">Completed</span>
+                                                    </c:when>
+                                                    <c:when test="${order.status == 'CANCELLED'}">
+                                                        <span class="badge bg-danger status-badge">Cancelled</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge bg-secondary status-badge">${order.status}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </span>
                                         </div>
                                         <div class="order-actions">
                                             <span class="order-total">$<c:out value="${order.totalAmount}"/></span>
                                             <div class="action-buttons">
-                                                <c:choose>
-                                                    <c:when test="${order.paymentStatusId == completeStatusId && not empty order.items}">
-                                                        <!-- Order is completed/delivered -->
-                                                        <c:choose>
-                                                            <c:when test="${order.items[0].review != null}">
-                                                                <!-- Review exists -->
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-warning"
-                                                                        data-action="edit"
-                                                                        data-review-id="${order.items[0].review.reviewId}"
-                                                                        data-star="${order.items[0].review.star}"
-                                                                        data-content="${fn:escapeXml(order.items[0].review.reviewContent)}"
-                                                                        data-variant-id="${order.items[0].productVariantId}"
-                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
-                                                                    <i class="fas fa-edit"></i> Edit Review
-                                                                </button>
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-danger"
-                                                                        data-action="delete"
-                                                                        data-review-id="${order.items[0].review.reviewId}">
-                                                                    <i class="fas fa-trash"></i> Delete
-                                                                </button>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <!-- No review -->
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-primary"
-                                                                        data-action="create"
-                                                                        data-variant-id="${order.items[0].productVariantId}"
-                                                                        data-product-name="${fn:escapeXml(order.items[0].productName)}">
-                                                                    <i class="fas fa-star"></i> Write Review
-                                                                </button>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <!-- Order not completed -->
-                                                        <button type="button" class="btn btn-sm btn-secondary" disabled 
-                                                                title="You can only review products after delivery">
-                                                            <i class="fas fa-star"></i> Review
-                                                        </button>
-                                                    </c:otherwise>
-                                                </c:choose>
                                                 <a href="${pageContext.request.contextPath}/orders/detail?id=${order.orderId}" 
                                                    class="details-btn">
                                                     <i class="fas fa-eye"></i>
@@ -544,6 +480,68 @@
                                                             <div class="item-name"><c:out value="${item.productName}"/></div>
                                                             <div class="item-quantity">x<c:out value="${item.detailQuantity}"/></div>
                                                         </div>
+                                                        
+                                                        <!-- Review Buttons for each item (on the right) -->
+                                                        <div class="item-review-actions">
+                                                            <c:choose>
+                                                                <c:when test="${(order.paymentStatusId == completeStatusId || order.status == 'COMPLETED') && order.status != null && order.status != ''}">
+                                                                    <!-- Order is completed/delivered - show review button for this item -->
+                                                                    <c:choose>
+                                                                        <c:when test="${not empty item.review}">
+                                                                            <!-- Review exists -->
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-warning"
+                                                                                    data-action="edit"
+                                                                                    data-review-id="${item.review.reviewId}"
+                                                                                    data-star="${item.review.star}"
+                                                                                    data-content="${fn:escapeXml(item.review.reviewContent)}"
+                                                                                    data-variant-id="${item.productVariantId}"
+                                                                                    data-product-name="${fn:escapeXml(item.productName)}">
+                                                                                <i class="fas fa-edit"></i> Edit Review
+                                                                            </button>
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-danger"
+                                                                                    data-action="delete"
+                                                                                    data-review-id="${item.review.reviewId}">
+                                                                                <i class="fas fa-trash"></i> Delete
+                                                                            </button>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <!-- No review -->
+                                                                            <button type="button" 
+                                                                                    class="btn btn-sm btn-primary"
+                                                                                    data-action="create"
+                                                                                    data-variant-id="${item.productVariantId}"
+                                                                                    data-product-name="${fn:escapeXml(item.productName)}">
+                                                                                <i class="fas fa-star"></i> Write Review
+                                                                            </button>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </c:when>
+                                                                <c:when test="${order.status == 'CANCELLED'}">
+                                                                    <!-- Order is cancelled -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="Cannot review cancelled orders">
+                                                                        <i class="fas fa-ban"></i> Cancelled
+                                                                    </button>
+                                                                </c:when>
+                                                                <c:when test="${order.paymentStatusId == 4}">
+                                                                    <!-- Payment is cancelled -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="Payment cancelled - cannot review">
+                                                                        <i class="fas fa-ban"></i> Payment Cancelled
+                                                                    </button>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <!-- Order not completed -->
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled 
+                                                                            title="You can only review products after delivery">
+                                                                        <i class="fas fa-star"></i> Review
+                                                                    </button>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </div>
+                                                        
                                                         <div class="item-price">$<c:out value="${item.detailPrice}"/></div>
                                                     </div>
                                                 </c:forEach>
@@ -559,23 +557,12 @@
                                         </c:choose>
                                     </div>
 
-                                    <!-- Delivery Information -->
-                                    <div class="delivery-info">
-                                        <i class="fas fa-truck"></i>
-                                        <c:choose>
-                                            <c:when test="${not empty order.recipientName}">
-                                                Delivery to: <c:out value="${order.recipientName}"/>, 
-                                                <c:out value="${order.addressDetails}"/> | 
-                                                <c:out value="${order.recipientPhone}"/>
-                                            </c:when>
-                                            <c:otherwise>
-                                                Delivery to: Default Address
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
                                 </div>
                             </c:forEach>
                         </c:if>
+                        
+                        <!-- Pagination -->
+                        <jsp:include page="/WEB-INF/views/common/pagination.jsp" />
                     </div>
                 </div>
             </div>
@@ -745,7 +732,7 @@
                     // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '${pageContext.request.contextPath}/orders';
+                    form.action = '${pageContext.request.contextPath}/reviews';
                     
                     const fields = {
                         action: this.currentAction + 'Review',
@@ -777,7 +764,7 @@
                     
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '${pageContext.request.contextPath}/orders';
+                    form.action = '${pageContext.request.contextPath}/reviews';
                     
                     const actionInput = document.createElement('input');
                     actionInput.type = 'hidden';
@@ -842,6 +829,26 @@
                         ordersLink.classList.add('active');
                     }
                 }
+                
+                // Format datetime like in staff orders
+                document.querySelectorAll('.order-date[data-date]').forEach(element => {
+                    const dateStr = element.getAttribute('data-date');
+                    if (dateStr) {
+                        try {
+                            const date = new Date(dateStr);
+                            element.textContent = date.toLocaleString('vi-VN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                        } catch (e) {
+                            element.textContent = dateStr;
+                        }
+                    }
+                });
                 
                 // Auto-hide alerts after 5 seconds
                 const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');

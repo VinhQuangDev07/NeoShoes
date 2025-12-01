@@ -1,178 +1,182 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Models;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- *
- * @author Le Huu Nghia - CE181052
- */
 public class Staff {
+
     private int staffId;
-    private boolean role;
+    private boolean role;            // true=admin, false=staff
     private String email;
     private String passwordHash;
     private String name;
     private String phoneNumber;
     private String avatar;
     private String gender;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String address;          // NEW
+    private LocalDate dateOfBirth;   // NEW
+    private LocalDateTime createdAt, updatedAt;
     private boolean isDeleted;
 
-    public Staff() {
+    /**
+     * Get role name for display
+     * @return "Admin" or "Staff"
+     */
+    public String getRoleName() {
+        return role ? "Admin" : "Staff";
     }
-
-    public Staff(int staffId, boolean role, String email, String passwordHash, String name, String phoneNumber, String avatar, String gender, LocalDateTime createdAt, LocalDateTime updatedAt, boolean isDeleted) {
-        this.staffId = staffId;
-        this.role = role;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.avatar = avatar;
-        this.gender = gender;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.isDeleted = isDeleted;
+    
+    /**
+     * Get display avatar with fallback
+     * @return Avatar URL or default image
+     */
+    public String getDisplayAvatar() {
+        if (avatar == null || avatar.trim().isEmpty()) {
+            return "https://ui-avatars.com/api/?name=Staff&background=667eea&color=fff&size=200";
+        }
+        return avatar;
+    }
+    
+    /**
+     * Check if user is admin
+     * @return true if admin
+     */
+    public boolean isAdmin() {
+        return role;
+    }
+    
+    /**
+     * Format created date for display
+     * @return Formatted date string
+     */
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) return "N/A";
+        java.time.format.DateTimeFormatter formatter = 
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        return createdAt.format(formatter);
+    }
+    
+    /**
+     * Format date of birth for display
+     * @return Formatted date string
+     */
+    public String getFormattedDob() {
+        if (dateOfBirth == null) return "N/A";
+        java.time.format.DateTimeFormatter formatter = 
+            java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return dateOfBirth.format(formatter);
+    }
+    
+    /**
+     * Get age from date of birth
+     * @return Age in years or "N/A"
+     */
+    public String getAge() {
+        if (dateOfBirth == null) return "N/A";
+        return String.valueOf(LocalDate.now().getYear() - dateOfBirth.getYear());
     }
 
     public int getStaffId() {
         return staffId;
     }
 
-    public void setStaffId(int staffId) {
-        this.staffId = staffId;
+    public void setStaffId(int v) {
+        staffId = v;
     }
 
     public boolean isRole() {
         return role;
     }
 
-    public void setRole(boolean role) {
-        this.role = role;
+    public void setRole(boolean v) {
+        role = v;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmail(String v) {
+        email = v;
     }
 
     public String getPasswordHash() {
         return passwordHash;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPasswordHash(String v) {
+        passwordHash = v;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String v) {
+        name = v;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhoneNumber(String v) {
+        phoneNumber = v;
     }
 
     public String getAvatar() {
         return avatar;
     }
 
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
+    public void setAvatar(String v) {
+        avatar = v;
     }
 
     public String getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
+    public void setGender(String v) {
+        gender = v;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String v) {
+        address = v;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate v) {
+        dateOfBirth = v;
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedAt(LocalDateTime v) {
+        createdAt = v;
     }
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdatedAt(LocalDateTime v) {
+        updatedAt = v;
     }
 
-    public boolean isIsDeleted() {
+    public boolean isDeleted() {
         return isDeleted;
     }
 
-    public void setIsDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void setDeleted(boolean v) {
+        isDeleted = v;
     }
-    
-    // Helper method to get role name
-    public String getRoleName() {
-        return role ? "Admin" : "Staff";
-    }
-    
-    // Helper method to format createdAt
-    public String getFormattedCreatedAt() {
-        if (createdAt != null) {
-            return createdAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        }
-        return "N/A";
-    }
-
-    // Helper method to format updatedAt
-    public String getFormattedUpdatedAt() {
-        if (updatedAt != null) {
-            return updatedAt.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        }
-        return "N/A";
-    }
-
-    // Check if staff is admin
-    public boolean isAdmin() {
-        return role;
-    }
-
-    // Check if staff is regular staff
-    public boolean isStaff() {
-        return !role;
-    }
-
-    @Override
-    public String toString() {
-        return "Staff{" + "staffId=" + staffId 
-                + ", role=" + role 
-                + ", email=" + email 
-                + ", passwordHash=" + passwordHash 
-                + ", name=" + name 
-                + ", phoneNumber=" + phoneNumber 
-                + ", avatar=" + avatar 
-                + ", gender=" + gender 
-                + ", createdAt=" + createdAt 
-                + ", updatedAt=" + updatedAt 
-                + ", isDeleted=" + isDeleted + '}';
-    }
-    
-    
 }

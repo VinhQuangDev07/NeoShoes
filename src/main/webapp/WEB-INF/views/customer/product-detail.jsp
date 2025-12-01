@@ -6,8 +6,11 @@
 <html>
     <head>
         <title>${product.name} - NeoShoes</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+        <script src="${pageContext.request.contextPath}/assets/js/script.js?v=<%= System.currentTimeMillis()%>"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
 
     <style>
@@ -369,28 +372,11 @@
         }
     </style>
     <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header-container">
-                <a href="${pageContext.request.contextPath}/home" class="logo">NeoShoes</a>
-                <div class="nav-links">
-                    <a href="${pageContext.request.contextPath}/home" class="nav-link">Home</a>
-                    <a href="${pageContext.request.contextPath}/products" class="nav-link">Products</a>
-                </div>
-            </div>
-        </header>
-
-        <!-- Breadcrumb -->
-        <div class="breadcrumb">
-            <a href="${pageContext.request.contextPath}/home">Home</a> &gt;
-            <a href="${pageContext.request.contextPath}/products">Products</a> &gt;
-            <span>${product.name}</span>
-        </div>
+        <jsp:include page="common/header.jsp"/>
+        
         <jsp:include page="/WEB-INF/views/common/notification.jsp" />
         <!-- Product Detail -->
         <main class="product-detail">
-            <a href="javascript:history.back()" class="back-button">← Back</a>
-
             <div class="product-container">
                 <!-- Product Images -->
                 <div class="product-images">
@@ -403,7 +389,7 @@
                             <c:forEach var="variant" items="${variants}" varStatus="status" end="7">
                                 <c:if test="${not empty variant.image}">
                                     <img src="${variant.image}" alt="${product.name} - ${variant.color}" 
-                                         class="thumbnail ${status.first ? 'active' : ''}"
+                                         class="thumbnail"
                                          onclick="changeMainImage('${variant.image}')">
                                 </c:if>
                             </c:forEach>
@@ -449,39 +435,47 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <script>
-                                             // Change main image when thumbnail is clicked
-                                             function changeMainImage(imageUrl) {
-                                                 document.getElementById('mainImage').src = imageUrl;
-                                                 // Update active thumbnail
-                                                 document.querySelectorAll('.thumbnail').forEach(thumb => {
-                                                     thumb.classList.remove('active');
-                                                 });
-                                                 event.target.classList.add('active');
-                                             }
-
-                                             // Initialize first variant as selected
-                                             document.addEventListener('DOMContentLoaded', function () {
-                                                 const firstColor = document.querySelector('#colorOptions .variant-chip');
-                                                 const firstSize = document.querySelector('#sizeOptions .variant-chip');
-
-                                                 if (firstColor)
-                                                     firstColor.classList.add('selected');
-                                                 if (firstSize)
-                                                     firstSize.classList.add('selected');
-                                             });
+//                                             // Change main image when thumbnail is clicked
+//                                             function changeMainImage(imageUrl) {
+//                                                 document.getElementById('mainImage').src = imageUrl;
+//                                                 // Update active thumbnail
+//                                                 document.querySelectorAll('.thumbnail').forEach(thumb => {
+//                                                     thumb.classList.remove('active');
+//                                                 });
+//                                                 event.target.classList.add('active');
+//                                             }
+//
+//                                             // Initialize first variant as selected
+//                                             document.addEventListener('DOMContentLoaded', function () {
+//                                                 const firstColor = document.querySelector('#colorOptions .variant-chip');
+//                                                 const firstSize = document.querySelector('#sizeOptions .variant-chip');
+//
+//                                                 if (firstColor)
+//                                                     firstColor.classList.add('selected');
+//                                                 if (firstSize)
+//                                                     firstSize.classList.add('selected');
+//                                             });
         </script>
         
-        <!-- Include Reviews Section -->
-        <div id="reviews-section">
-            <jsp:include page="reviews.jsp"/>
+        <!-- Reviews Section -->
+        <div id="reviews-section" class="container mt-5">
+            <jsp:include page="reviews.jsp">
+                <jsp:param name="productId" value="${product.productId}"/>
+                <jsp:param name="reviews" value="${reviews}"/>
+                <jsp:param name="totalReviews" value="${totalReviews}"/>
+                <jsp:param name="formattedRating" value="${formattedRating}"/>
+                <jsp:param name="averageRating" value="${averageRating}"/>
+                <jsp:param name="showReplyButton" value="false"/>
+                <jsp:param name="skipCSS" value="true"/>
+            </jsp:include>
         </div>
         
         <jsp:include page="common/footer.jsp"/>

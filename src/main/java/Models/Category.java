@@ -24,13 +24,20 @@ public class Category {
     
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    
+            
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
     
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
     
+    // Thêm getter/setter theo chuẩn JavaBean
+    public boolean getIsActive() { return isActive; }
+    public void setIsActive(boolean active) { isActive = active; }
+    
     public boolean isDeleted() { return isDeleted; }
     public void setDeleted(boolean deleted) { isDeleted = deleted; }
+    
+    public boolean getIsDeleted() { return isDeleted; }
+    public void setIsDeleted(boolean deleted) { isDeleted = deleted; }
 }

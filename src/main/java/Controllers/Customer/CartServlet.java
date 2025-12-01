@@ -5,8 +5,11 @@
 package Controllers.Customer;
 
 import DAOs.CartDAO;
+import DAOs.ProductDAO;
 import DAOs.ProductVariantDAO;
 import Models.CartItem;
+import Models.Customer;
+import Models.Product;
 import Models.ProductVariant;
 import java.io.IOException;
 import java.util.List;
@@ -16,12 +19,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -32,12 +29,14 @@ public class CartServlet extends HttpServlet {
 
     private CartDAO cartDAO;
     private ProductVariantDAO variantDAO;
+    private ProductDAO productDAO;
 
     @Override
     public void init() throws ServletException {
         super.init();
         cartDAO = new CartDAO();
         variantDAO = new ProductVariantDAO();
+        productDAO = new ProductDAO();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -53,42 +52,33 @@ public class CartServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-//        HttpSession session = request.getSession();
-//        Customer customer = (Customer) session.getAttribute("customer");
-//
-//        if (customer == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
-        // For now, using hardcoded customer ID. In production, get from session
-        // Using Customer ID = ?
-        int customerId = 1;
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        int customerId = customer.getId();
         // Get cart items for the customer
         List<CartItem> cartItems = cartDAO.getItemsByCustomerId(customerId);
 
-        // For each cart item, load variant list for its product
-        Map<Integer, List<ProductVariant>> variantsByProduct = new HashMap<>();
-        Map<Integer, Set<String>> colorsByProduct = new HashMap<>();
-        Map<Integer, Set<String>> sizesByProduct = new HashMap<>();
-
         for (CartItem item : cartItems) {
             int productId = item.getVariant().getProduct().getProductId();
+            Product product = item.getVariant().getProduct();
 
-            if (!variantsByProduct.containsKey(productId)) {
-                List<ProductVariant> variants = variantDAO.getByProductId(productId);
-                variantsByProduct.put(productId, variants);
+            // Chỉ load nếu variants chưa được set
+            if (product.getVariants() == null || product.getVariants().isEmpty()) {
+                // Product already has variants, colors, and sizes loaded from ProductDAO
+                List<ProductVariant> variants = variantDAO.getVariantListByProductId(productId);
+                List<String> colors = variantDAO.getColorsByProductId(productId);
+                List<String> sizes = variantDAO.getSizesByProductId(productId);
 
-                // Extract unique colors và sizes
-                Set<String> colors = variants.stream()
-                        .map(ProductVariant::getColor)
-                        .collect(Collectors.toSet());
-
-                Set<String> sizes = variants.stream()
-                        .map(ProductVariant::getSize)
-                        .collect(Collectors.toSet());
-
-                colorsByProduct.put(productId, colors);
-                sizesByProduct.put(productId, sizes);
+                // Set trực tiếp vào product hiện tại, KHÔNG thay thế product
+                product.setVariants(variants);
+                product.setColors(colors);
+                product.setSizes(sizes);
             }
         }
 
@@ -98,9 +88,6 @@ public class CartServlet extends HttpServlet {
 
         // Set attributes for JSP
         request.setAttribute("cartItems", cartItems);
-        request.setAttribute("variantsByProduct", variantsByProduct);
-        request.setAttribute("colorsByProduct", colorsByProduct);
-        request.setAttribute("sizesByProduct", sizesByProduct);
 
         request.setAttribute("itemCount", itemCount);
 //        request.setAttribute("totalPrice", totalPrice);
@@ -121,24 +108,21 @@ public class CartServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("customerId") == null) {
-//            response.sendRedirect(request.getContextPath() + "/login");
-//            return;
-//        }
+        HttpSession session = request.getSession();
+        Customer customer = (Customer) session.getAttribute("customer");
+
+        if (customer == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
         String action = request.getParameter("action");
-        // Using Customer ID = ?
-        int customerId = 1;
+
+        int customerId = customer.getId();
 
         if ("add".equals(action)) {
             int variantId = Integer.parseInt(request.getParameter("variantId"));
             int quantity = Integer.parseInt(request.getParameter("quantity"));
-
-            if (quantity <= 0) {
-                session.setAttribute("flash_info", "Quantity must be greater than 0");
-                return;
-            }
 
             // Check variant exists and has quantity available
             ProductVariant variant = variantDAO.findById(variantId);
@@ -148,14 +132,43 @@ public class CartServlet extends HttpServlet {
                 return;
             }
 
-            // Check if item already in cart
-            CartItem existingItem = cartDAO.getExistItem(customerId, variantId);
-            int newQuantity = (existingItem != null) ? existingItem.getQuantity() + quantity : quantity;
+            if (quantity <= 0) {
+                session.setAttribute("flash_info", "Quantity must be greater than 0");
+                response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                return;
+            }
 
             // Check total quantity against available stock
-            if (newQuantity > variant.getQuantityAvailable()) {
+            if (quantity > variant.getQuantityAvailable()) {
                 session.setAttribute("flash_info", "Only " + variant.getQuantityAvailable() + " items available");
+                response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
                 return;
+            }
+
+            // Check if item already in cart
+            CartItem existingItem = cartDAO.getExistItem(customerId, variantId);
+
+            if (existingItem != null) {
+                quantity = existingItem.getQuantity() + quantity;
+                if (quantity > variant.getQuantityAvailable()) {
+                    session.setAttribute("flash_info", "Only " + variant.getQuantityAvailable() + " items available");
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                }
+                boolean updateSuccess = cartDAO.updateQuantity(existingItem.getCartItemId(), quantity);
+                if (updateSuccess) {
+                    int itemCount = cartDAO.countItems(customerId);
+                    session.setAttribute("cartQuantity", itemCount);
+                    session.setAttribute("flash", "Added to cart successfully");
+                    // reload page (redirect)
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                } else {
+                    session.setAttribute("flash_error", "Error adding to cart");
+                    // reload page (redirect)
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                }
             }
 
             // Add to cart (DAO handles update if exists)
@@ -172,35 +185,59 @@ public class CartServlet extends HttpServlet {
             // reload page (redirect)
             response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
         } else if ("updateQuantity".equals(action)) {
-            int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));
-            int quantity = Integer.parseInt(request.getParameter("quantity"));
+            try {
+                int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));
+                int quantity = Integer.parseInt(request.getParameter("quantity"));
 
-            if (quantity <= 0) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Quantity must be greater than 0");
-                return;
-            }
+                if (quantity <= 0) {
+                    session.setAttribute("flash_error", "Quantity must be greater than 0");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Quantity must be greater than 0\",\"reload\":true}");
+                    return;
+                }
 
-            CartItem cartItem = cartDAO.findCartItem(customerId, cartItemId);
-            if (cartItem == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Cart item not found");
-                return;
-            }
+                CartItem cartItem = cartDAO.findCartItem(customerId, cartItemId);
+                if (cartItem == null) {
+                    session.setAttribute("flash_error", "Cart item not found");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND); // 404
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Cart item not found\",\"reload\":true}");
+                    return;
+                }
 
-            ProductVariant variant = variantDAO.findById(cartItem.getProductVariantId());
+                ProductVariant variant = variantDAO.findById(cartItem.getProductVariantId());
 
-            int available = variant.getQuantityAvailable();
-            if (quantity > available) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Only " + available + " items available in stock");
-                return;
-            }
+                int available = variant.getQuantityAvailable();
+                if (quantity > available) {
+                    session.setAttribute("flash_error", "Only " + available + " items available in stock");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // 400
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Only " + available + " items available in stock\",\"reload\":true}");
+                    return;
+                }
 
-            boolean success = cartDAO.updateQuantity(cartItemId, quantity);
-            if (success) {
+                boolean success = cartDAO.updateQuantity(cartItemId, quantity);
+                if (success) {
+                    response.setStatus(HttpServletResponse.SC_OK); // 200
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"success\",\"available\":" + available + ",\"quantity\":" + quantity + "}");
+                } else {
+                    session.setAttribute("flash_error", "Error updating quantity");
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // 500
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Error updating quantity\",\"reload\":true}");
+                }
+            } catch (NumberFormatException e) {
+                session.setAttribute("flash_error", "Invalid input");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"status\":\"success\",\"available\":" + available + "}");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating quantity");
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid input\",\"reload\":true}");
+            } catch (Exception e) {
+                session.setAttribute("flash_error", "An error occurred");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"An error occurred\",\"reload\":true}");
             }
         } else if ("updateVariant".equals(action)) {
             int cartItemId = Integer.parseInt(request.getParameter("cartItemId"));
