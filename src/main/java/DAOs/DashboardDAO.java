@@ -199,7 +199,7 @@ public class DashboardDAO extends DB.DBContext {
                 + "p.Name AS ProductTitle, "
                 + "p.DefaultImageUrl AS ImageUrl, "
                 + "SUM(od.DetailQuantity) AS TotalSold, "
-                + "SUM(o.TotalAmount - o.ShippingFee) AS TotalRevenue "
+                + "SUM(od.DetailQuantity * od.DetailPrice) AS TotalRevenue "
                 + "FROM OrderDetail od "
                 + "JOIN ProductVariant pv ON od.ProductVariantId = pv.ProductVariantId "
                 + "JOIN Product p ON pv.ProductId = p.ProductId "

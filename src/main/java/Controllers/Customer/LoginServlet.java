@@ -87,7 +87,7 @@ public class LoginServlet extends HttpServlet {
                 CartDAO cartDAO = new CartDAO();
                 int itemCount = cartDAO.countItems(customer.getId());
                 session.setAttribute("cartQuantity", itemCount);
-                session.setMaxInactiveInterval(30 * 60); // 30 minutes
+                session.setMaxInactiveInterval(60 * 60); 
                 
                 // 3c. Handle "Remember me"
                 if ("on".equals(remember)) {

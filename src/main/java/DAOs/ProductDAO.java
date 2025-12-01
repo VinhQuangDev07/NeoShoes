@@ -137,7 +137,7 @@ public class ProductDAO extends DBContext {
 
         String query = buildBaseQuery()
                 + "WHERE p.CategoryId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+                + GROUP_BY + " ORDER BY p.CreatedAt DESC";
 
         Object[] params = {categoryId};
 
@@ -160,7 +160,7 @@ public class ProductDAO extends DBContext {
 
         String query = buildBaseQuery()
                 + "WHERE p.CategoryId = ? AND p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+                + GROUP_BY + " ORDER BY p.CreatedAt DESC";
 
         Object[] params = {categoryId, brandId};
 
@@ -184,7 +184,7 @@ public class ProductDAO extends DBContext {
 
         String query = buildBaseQuery()
                 + "WHERE p.BrandId = ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+                + GROUP_BY + " ORDER BY p.CreatedAt DESC";
 
         Object[] params = {brandId};
 
@@ -207,7 +207,7 @@ public class ProductDAO extends DBContext {
 
         String query = buildBaseQuery()
                 + "WHERE p.Name LIKE ? AND p.IsActive = 1 AND p.IsDeleted = 0 "
-                + GROUP_BY + " ORDER BY p.ProductId ASC";
+                + GROUP_BY + " ORDER BY p.CreatedAt DESC";
 
         String searchPattern = "%" + keyword + "%";
         Object[] params = {searchPattern};
@@ -317,7 +317,7 @@ public class ProductDAO extends DBContext {
         String query = buildBaseQuery()
                 + "WHERE p.IsActive = 1 AND p.IsDeleted = 0 "
                 + GROUP_BY + " "
-                + "ORDER BY p.ProductId ASC "
+                + "ORDER BY p.CreatedAt DESC "
                 + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         Object[] params = {offset, limit};

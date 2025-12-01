@@ -16,7 +16,7 @@ import Models.Category;
 import Models.Product;
 import java.sql.SQLException;
 
-@WebServlet(name = "HomeServlet", urlPatterns = {"/home"})
+@WebServlet(name = "HomeServlet", urlPatterns = {"/home", "/"})
 public class HomeServlet extends HttpServlet {
 
     private CategoryDAO categoryDAO;

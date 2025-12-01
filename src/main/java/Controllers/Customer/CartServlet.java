@@ -150,6 +150,11 @@ public class CartServlet extends HttpServlet {
 
             if (existingItem != null) {
                 quantity = existingItem.getQuantity() + quantity;
+                if (quantity > variant.getQuantityAvailable()) {
+                    session.setAttribute("flash_info", "Only " + variant.getQuantityAvailable() + " items available");
+                    response.sendRedirect(request.getContextPath() + "/product-detail?id=" + variant.getProductId());
+                    return;
+                }
                 boolean updateSuccess = cartDAO.updateQuantity(existingItem.getCartItemId(), quantity);
                 if (updateSuccess) {
                     int itemCount = cartDAO.countItems(customerId);

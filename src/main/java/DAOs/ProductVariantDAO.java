@@ -286,7 +286,7 @@ public class ProductVariantDAO extends DB.DBContext {
     public boolean adjustQuantityAvailable(int variantId, int delta) {
         String sql = "UPDATE dbo.ProductVariant "
                 + "SET QuantityAvailable = CASE "
-                + "WHEN QuantityAvailable + ? < 0 THEN 0 " // đảm bảo không âm tồn
+                + "WHEN QuantityAvailable + ? < 0 THEN 0 " 
                 + "ELSE QuantityAvailable + ? END, "
                 + "UpdatedAt = GETDATE() "
                 + "WHERE ProductVariantId = ? AND IsDeleted = 0";

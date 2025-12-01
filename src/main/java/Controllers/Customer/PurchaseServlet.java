@@ -72,7 +72,7 @@ public class PurchaseServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
+
         String action = request.getParameter("action");
 
         if ("placeOrder".equals(action)) {
@@ -120,6 +120,16 @@ public class PurchaseServlet extends HttpServlet {
                 session.setAttribute("flash_error", "Your cart is empty or no items selected");
                 response.sendRedirect(request.getContextPath() + "/cart");
                 return;
+            }
+
+            for (CartItem item : cartItems) {
+                int quantityAvailable = item.getVariant().getQuantityAvailable();
+                int quantityInCart = item.getQuantity();
+                if (quantityInCart > quantityAvailable) {
+                    request.getSession().setAttribute("flash_error", "One of the items you selected only has " + quantityAvailable + " items available.");
+                    response.sendRedirect(request.getContextPath() + "/cart");
+                    return;
+                }
             }
 
             // Get customer addresses

@@ -435,13 +435,23 @@
             if (variants.length === 0) {
             variantList.innerHTML = '<p class="text-muted text-center py-3">No existing variants</p>';
             } else {
+            const selectedVariantIds = Array.from(document.querySelectorAll('input[name="variantIds[]"]'))
+                    .map(i => i.value)
+                    .filter(v => v);
             variants.forEach(variant => {
             const div = document.createElement('div');
             div.className = 'variant-option';
-            div.innerHTML = '<strong>' + selectedProduct.name + ' - ' + variant.color + ' - ' + variant.size + '</strong>';
+            const alreadySelected = selectedVariantIds.includes(String(variant.variantId));
+            var addedText = alreadySelected ? ' <span class="badge bg-secondary">Added</span>' : '';
+            div.innerHTML = '<strong>' + selectedProduct.name + ' - ' + variant.color + ' - ' + variant.size + '</strong>' + addedText;
+            if (!alreadySelected) {
             div.addEventListener('click', function() {
             selectVariant(variant.variantId, variant.color, variant.size);
             });
+            } else {
+            div.style.opacity = "0.5";
+            div.style.pointerEvents = "none"; 
+            }
             variantList.appendChild(div);
             });
             }

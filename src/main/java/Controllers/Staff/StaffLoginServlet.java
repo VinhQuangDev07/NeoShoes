@@ -61,7 +61,7 @@ public class StaffLoginServlet extends HttpServlet {
         session.setAttribute("staff", staff);
         session.setAttribute("staffId", staff.getStaffId());
         session.setAttribute("role", staff.isRole() ? "admin" : "staff");
-        session.setMaxInactiveInterval(30 * 60);
+        session.setMaxInactiveInterval(60 * 60);
 
         String redirect = request.getParameter("redirect");
         if (redirect != null && !redirect.isEmpty()) {

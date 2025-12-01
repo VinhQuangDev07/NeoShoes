@@ -189,10 +189,6 @@
                 accent-color: #3b82f6;
             }
 
-            .products-table .checkbox-cell {
-                display: none;
-            }
-
             /* Quantity Input */
             .qty-input {
                 width: 80px;
@@ -214,13 +210,6 @@
                 background-color: #f1f5f9;
                 cursor: not-allowed;
                 color: #94a3b8;
-            }
-
-            .qty-input[readonly] {
-                background-color: #f1f5f9;
-                cursor: not-allowed;
-                color: #64748b;
-                border-color: #cbd5e1;
             }
 
             /* Form Group */
@@ -489,7 +478,7 @@
                                 <div class="order-info-value">$<c:out value="${order.totalAmount}"/></div>
                             </div>
                             <div class="order-info-item">
-                                <div class="order-info-label">Order Status</div>
+                                <div class="order-info-label">Status</div>
                                 <div class="order-info-value">
                                     <span class="badge badge-success"><c:out value="${order.status}"/></span>
                                 </div>
@@ -507,7 +496,7 @@
 
                             <!-- Select Items Section -->
                             <div class="form-section">
-                                <h2 class="section-title">Items to Return</h2>
+                                <h2 class="section-title">Select Items to Return</h2>
                                 <table class="products-table">
                                     <thead>
                                         <tr>
@@ -526,8 +515,6 @@
                                                            name="productId" 
                                                            value="${item.productVariantId}"
                                                            data-max="${item.detailQuantity}"
-                                                           checked
-                                                           style="display:none;"
                                                            onchange="toggleQty(this, ${item.productVariantId})">
                                                 </td>
                                                 <td>
@@ -547,12 +534,13 @@
                                                            min="1"
                                                            max="${item.detailQuantity}"
                                                            class="qty-input"
-                                                           readonly>
+                                                           disabled>
                                                 </td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
                                 </table>
+                                <div class="helper-text">* Select products you want to return and adjust quantities if needed</div>
                             </div>
 
                             <!-- Return Information Section -->
@@ -700,13 +688,12 @@
                          */
                         function validateForm() {
                             // 1. Check if at least one product is selected
-//                            const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
-//
-//                            if (checkedBoxes.length === 0) {
-//                                alert('⚠️ Please select at least one product to return');
-//                                return false;
-//                            }
-                            const checkedBoxes = document.querySelectorAll('input[name="productId"]');
+                            const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
+
+                            if (checkedBoxes.length === 0) {
+                                alert('⚠️ Please select at least one product to return');
+                                return false;
+                            }
 
                             // 2. Validate quantities for selected products
                             for (let checkbox of checkedBoxes) {
@@ -716,7 +703,7 @@
                                 const max = parseInt(qtyInput.max);
 
                                 if (isNaN(qty) || qty < 1 || qty > max) {
-                                    alert('⚠️ Invalid return quantity for selected product. Must be between 1 and ' + max);
+                                    alert(`⚠️ Invalid return quantity for selected product. Must be between 1 and ${max}`);
                                     qtyInput.focus();
                                     return false;
                                 }
@@ -765,9 +752,9 @@
                          * Show confirmation modal
                          */
                         function showConfirmModal() {
-                            const allProducts = document.querySelectorAll('input[name="productId"]');
-                            const count = allProducts.length;
-                            const message = 'You are about to submit a return request for ALL ' + count + ' product(s) in this order. Are you sure you want to continue?';
+                            const checkedBoxes = document.querySelectorAll('input[name="productId"]:checked');
+                            const count = checkedBoxes.length;
+                            const message = `You are about to submit a return request for ${count} product(s). Are you sure you want to continue?`;
 
                             document.getElementById('confirmMessage').textContent = message;
                             document.getElementById('confirmModal').classList.add('active');
@@ -844,9 +831,9 @@
                             noteTextarea.addEventListener('input', function () {
                                 const remaining = maxLength - this.value.length;
                                 if (this.value.length > 0) {
-                                    helperText.textContent = remaining + ' characters remaining';
+                                    helperText.textContent = `${remaining} characters remaining`;
                                 } else {
-                                    helperText.textContent = 'Optional: Add any relevant information about your return (max ' + maxLength + ' characters)';
+                                    helperText.textContent = `Optional: Add any relevant information about your return (max ${maxLength} characters)`;
                                 }
                             });
                         }
